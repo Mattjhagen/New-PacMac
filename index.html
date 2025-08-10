@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PacMac Mobile · Minimal Store</title>
+  <meta name="description" content="PacMac Mobile e‑commerce demo with plugin-ready APIs for trade‑ins, leasing, and Nomad Internet." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📱</text></svg>">
+  <style>
+    :root{
+      --bg: #000;
+      --fg: #eaeaea;
+      --muted:#9aa0a6;
+      --accent:#6aa7ff;
+      --accent-2:#8affd1;
+      --card:#0b0b0b;
+      --ring:#1f2937;
+      --shadow: 0 10px 25px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.5);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--fg); background:var(--bg);
+      font: 16px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      overflow-x:hidden;
+    }
+
+    /* Starfield canvas sits behind everything */
+    #stars{position:fixed; inset:0; z-index:-1; display:block; background:#000}
+
+    header{
+      position:sticky; top:0; backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,0,0,.3));
+      border-bottom:1px solid #111; z-index:20;
+    }
+    .nav{max-width:1200px;margin:0 auto;display:flex;gap:18px;align-items:center; padding:12px 16px}
+    .brand{display:flex;gap:10px;align-items:center; font-weight:600; letter-spacing:.2px}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 20px var(--accent)}
+    .spacer{flex:1}
+    .nav a, .nav button.link{color:var(--fg); text-decoration:none; opacity:.9}
+    .nav a:hover, .nav button.link:hover{opacity:1}
+    .nav .pill{padding:8px 14px; border:1px solid #1a1a1a; border-radius:9999px; background:#0b0b0b}
+
+    .hero{max-width:1200px;margin:40px auto 10px; padding:0 16px; display:grid; gap:18px}
+    .hero h1{font-size:clamp(28px, 4vw, 48px); margin:0; letter-spacing:-.02em}
+    .hero p{color:var(--muted); margin:0}
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+    .btn{border-radius:9999px; padding:10px 16px; border:1px solid #1a1a1a; background:linear-gradient(180deg, #0f0f0f, #080808); color:var(--fg); cursor:pointer; box-shadow:var(--shadow)}
+    .btn:hover{transform:translateY(-1px)}
+
+    .section{max-width:1200px; margin:28px auto; padding:0 16px}
+    .grid{display:grid; gap:16px; grid-template-columns:repeat(12, 1fr)}
+    .card{grid-column: span 4; background:var(--card); border:1px solid #131313; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow)}
+    .card .img{aspect-ratio: 16/12; display:flex; align-items:center; justify-content:center; background: radial-gradient(60% 60% at 50% 50%, rgba(106,167,255,.15), transparent 60%)}
+    .card h3{margin:10px 14px 6px}
+    .card p{margin:0 14px 10px; color:var(--muted)}
+    .price-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px 14px}
+    .chip{padding:4px 10px; border-radius:9999px; border:1px solid #1b1b1b; background:#0a0a0a; color:#c7c7c7; font-size:12px}
+
+    .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+
+    .panel{background:var(--card); border:1px solid #131313; border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+    .panel h3{margin:0 0 6px}
+    .panel p{margin:0 0 12px; color:var(--muted)}
+
+    .two-col{display:grid; gap:16px; grid-template-columns: 1fr 1fr}
+
+    footer{max-width:1200px;margin:40px auto 80px; padding:0 16px; color:#a0a0a0}
+    footer .cols{display:grid; grid-template-columns: repeat(4, 1fr); gap:16px}
+
+    .cart-fab{position:fixed; right:16px; bottom:16px; z-index:25}
+    .cart-fab .count{position:absolute; top:-6px; right:-6px; background:var(--accent); color:#000; font-weight:700; font-size:12px; border-radius:9999px; padding:2px 6px}
+
+    dialog.modal{border:none; border-radius:20px; padding:0; background:#0b0b0b; color:var(--fg); width:min(720px, 92vw); box-shadow:0 30px 80px rgba(0,0,0,.75)}
+    dialog::backdrop{background: rgba(0,0,0,.6)}
+    .modal .hd{display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #161616}
+    .modal .bd{padding:16px}
+    .modal .ft{padding:12px 16px; border-top:1px solid #161616; display:flex; justify-content:flex-end; gap:10px}
+
+    /* Responsive */
+    @media (max-width: 980px){ .card{grid-column: span 6} .two-col{grid-template-columns: 1fr} footer .cols{grid-template-columns: repeat(2, 1fr)} }
+    @media (max-width: 640px){ .card{grid-column: span 12} footer .cols{grid-template-columns: 1fr} }
+
+    /* Tiny helpful animations */
+    .glow{box-shadow: 0 0 0 1px #1a1a1a, 0 0 30px rgba(106,167,255,.15)}
+    .pulse{animation:pulse 2.2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.9} 50%{opacity:1}}
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <header>
+    <nav class="nav">
+      <div class="brand" aria-label="PacMac Mobile">
+        <span class="dot" aria-hidden="true"></span>
+        <span>PacMac Mobile</span>
+      </div>
+      <a href="#shop" class="pill">Shop</a>
+      <a href="#tradein" class="pill">Trade‑In</a>
+      <a href="#lease" class="pill">Lease‑to‑Own</a>
+      <a href="#internet" class="pill">Unlimited Internet</a>
+      <a href="#support" class="pill">Support</a>
+      <div class="spacer"></div>
+      <button class="link" id="open-cart" aria-label="Open cart">Cart</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="top">
+      <h1>Minimal. Fast. Plugin‑ready.</h1>
+      <p>Sell devices, take trade‑ins, offer Progressive Leasing, and connect customers to Nomad internet. A tiny, elegant storefront that plays nice with real‑world APIs.</p>
+      <div class="cta-row">
+        <a class="btn" href="#shop">Browse Devices</a>
+        <button class="btn" id="btn-apple-trade">Apple Authorized Trade‑In</button>
+        <button class="btn" id="btn-phobio-quote">Phobio Quote</button>
+        <button class="btn" id="btn-progressive">Lease with Progressive</button>
+        <button class="btn" id="btn-nomad">Nomad Internet</button>
+      </div>
+    </section>
+
+    <section class="section" id="shop" aria-label="Products">
+      <h2 style="margin:6px 0 10px">Featured Devices</h2>
+      <div class="grid" id="product-grid" role="list"></div>
+    </section>
+
+    <section class="section two-col" id="tradein">
+      <div class="panel glow">
+        <h3>Phobio Trade‑In</h3>
+        <p>Instant quotes and streamlined payouts through the Phobio platform. Fully swappable adapter.</p>
+        <div class="row">
+          <input id="phobio-model" class="chip" placeholder="Device model (e.g., iPhone 13)" />
+          <select id="phobio-cond" class="chip" aria-label="Condition">
+            <option>Like New</option>
+            <option>Good</option>
+            <option>Fair</option>
+            <option>Broken</option>
+          </select>
+          <button class="btn" id="phobio-get-quote">Get Quote</button>
+        </div>
+        <div id="phobio-output" style="margin-top:10px"></div>
+      </div>
+      <div class="panel">
+        <h3>Apple Authorized Trade‑In</h3>
+        <p>Offer Apple‑aligned trade‑in values and workflows. This demo exposes a plug‑in surface for an approved provider.</p>
+        <button class="btn" id="apple-begin">Start Apple Trade‑In</button>
+        <div id="apple-output" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <section class="section two-col" id="lease">
+      <div class="panel glow">
+        <h3>Progressive Leasing</h3>
+        <p>Give customers a lease‑to‑own option even with challenged credit. Pre‑qualify in minutes.</p>
+        <div class="row">
+          <input id="lease-name" class="chip" placeholder="Full name" />
+          <input id="lease-phone" class="chip" placeholder="Phone" />
+          <input id="lease-zip" class="chip" placeholder="ZIP" />
+          <button class="btn" id="lease-prequal">Check Pre‑Qualification</button>
+        </div>
+        <div id="lease-output" style="margin-top:10px"></div>
+      </div>
+      <div class="panel" id="internet">
+        <h3>Nomad Internet: Home & Travel Unlimited</h3>
+        <p>Offer high‑speed wireless plans for home or RV. Check coverage by ZIP and activate orders via plugin.</p>
+        <div class="row">
+          <input id="nomad-zip" class="chip" placeholder="ZIP code" />
+          <button class="btn" id="nomad-check">Check Availability</button>
+        </div>
+        <div id="nomad-output" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <section class="section" id="support">
+      <div class="panel">
+        <h3>Support</h3>
+        <p>Email: support@pacmacmobile.example · Mon–Sat 9–6 CT</p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="cols">
+        <div><strong>PacMac Mobile</strong><br><span class="muted">Built with care.</span></div>
+        <div><strong>Legal</strong><br>Privacy · Terms</div>
+        <div><strong>Partners</strong><br>Phobio · Progressive Leasing · Apple Trade‑In · Nomad Internet</div>
+        <div><strong>Cart</strong><br>Secure checkout powered on‑site</div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Cart Modal -->
+  <dialog id="cart-modal" class="modal">
+    <div class="hd"><div style="font-weight:600">Your Cart</div><button class="link" id="close-cart">Close</button></div>
+    <div class="bd" id="cart-contents"></div>
+    <div class="ft">
+      <div id="cart-total" style="margin-right:auto"></div>
+      <button class="btn" id="checkout">Checkout</button>
+    </div>
+  </dialog>
+
+  <!-- Generic Flow Modal -->
+  <dialog id="flow-modal" class="modal">
+    <div class="hd"><div id="flow-title" style="font-weight:600">Flow</div><button class="link" id="flow-close">Close</button></div>
+    <div class="bd" id="flow-body"></div>
+    <div class="ft" id="flow-actions"></div>
+  </dialog>
+
+  <button class="btn cart-fab" id="fab-cart">🛒 <span class="count" id="cart-count">0</span></button>
+
+  <script>
+    /***** 0) Utilities *****/
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+    const fmt = n => new Intl.NumberFormat(undefined,{style:'currency', currency:'USD'}).format(n);
+
+    const Store = {
+      key: 'pmm-cart-v1',
+      read(){ try{ return JSON.parse(localStorage.getItem(this.key)||'[]'); }catch{ return [] } },
+      write(items){ localStorage.setItem(this.key, JSON.stringify(items)); updateCartUI(); },
+      clear(){ localStorage.removeItem(this.key); updateCartUI(); }
+    };
+
+    /***** 1) Starfield (reactive parallax) *****/
+    const starCanvas = document.getElementById('stars');
+    const ctx = starCanvas.getContext('2d', { alpha: true });
+    let stars = [], mouse = {x:0, y:0}, w=0, h=0, dpr = Math.min(2, window.devicePixelRatio||1);
+
+    function resize(){ w = starCanvas.width = Math.floor(innerWidth*dpr); h = starCanvas.height = Math.floor(innerHeight*dpr); starCanvas.style.width=innerWidth+'px'; starCanvas.style.height=innerHeight+'px';
+      const count = Math.floor((innerWidth*innerHeight)/1800);
+      stars = Array.from({length:count}, ()=>({
+        x: Math.random()*w, y: Math.random()*h, z: Math.random()*1 + .3, r: Math.random()*1.2 + .2
+      }));
+    }
+    function draw(){ ctx.clearRect(0,0,w,h); const cx = (mouse.x*dpr - w/2)/w, cy = (mouse.y*dpr - h/2)/h; const scroll = window.scrollY/innerHeight;
+      for(const s of stars){ const px = s.x + (cx*30)*(1/s.z) + scroll*12*(1/s.z); const py = s.y + (cy*30)*(1/s.z) + scroll*18*(1/s.z);
+        const twinkle = (1 + Math.sin((performance.now()/600 + s.x)*s.z))*0.3;
+        ctx.beginPath(); ctx.arc((px+w)%w, (py+h)%h, s.r + twinkle, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${150 + s.z*80}, ${170 + s.z*50}, 255, ${.35 + .4*s.z})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize, {passive:true});
+    window.addEventListener('mousemove', e=> { mouse.x = e.clientX; mouse.y=e.clientY; }, {passive:true});
+    resize(); requestAnimationFrame(draw);
+
+    /***** 2) Minimal product catalog *****/
+    const PRODUCTS = [
+      {id:'pm-iphone15', name:'iPhone 15', price: 799, tags:['5G','128GB'], img:'📱'},
+      {id:'pm-iphone15pro', name:'iPhone 15 Pro', price: 999, tags:['5G','Titanium'], img:'📱'},
+      {id:'pm-ipad-air', name:'iPad Air', price: 599, tags:['Wi‑Fi','M2'], img:'💊'},
+      {id:'pm-watch9', name:'Apple Watch Series 9', price: 399, tags:['GPS'], img:'⌚️'},
+      {id:'pm-galaxyS24', name:'Samsung Galaxy S24', price: 799, tags:['Android','AI'], img:'📲'},
+      {id:'pm-pixel8', name:'Google Pixel 8', price: 699, tags:['Android','Tensor'], img:'📲'}
+    ];
+
+    const grid = document.getElementById('product-grid');
+    for(const p of PRODUCTS){
+      const el = document.createElement('article');
+      el.className='card';
+      el.setAttribute('role','listitem');
+      el.innerHTML = `
+        <div class="img" aria-hidden="true" style="font-size:64px">${p.img}</div>
+        <h3>${p.name}</h3>
+        <p>${p.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>
+        <div class="price-row"><div>${fmt(p.price)}</div> <button class="btn" data-id="${p.id}">Add to Cart</button></div>
+      `;
+      $('button', el).addEventListener('click', ()=> addToCart(p));
+      grid.appendChild(el);
+    }
+
+    /***** 3) Cart *****/
+    const cartBtn = document.getElementById('open-cart');
+    const cartFab = document.getElementById('fab-cart');
+    const cartCount = document.getElementById('cart-count');
+    const cartModal = document.getElementById('cart-modal');
+    const cartContents = document.getElementById('cart-contents');
+    const cartTotal = document.getElementById('cart-total');
+    const closeCart = document.getElementById('close-cart');
+    const checkout = document.getElementById('checkout');
+
+    cartBtn.addEventListener('click', ()=> cartModal.showModal());
+    cartFab.addEventListener('click', ()=> cartModal.showModal());
+    closeCart.addEventListener('click', ()=> cartModal.close());
+
+    function readCart(){ return Store.read(); }
+    function addToCart(p){ const items = readCart(); const found = items.find(i=>i.id===p.id); if(found) found.qty++; else items.push({...p, qty:1}); Store.write(items); pulseCount(); }
+    function removeFromCart(id){ const items = readCart().filter(i=>i.id!==id); Store.write(items); }
+    function changeQty(id, delta){ const items = readCart(); const it = items.find(i=>i.id===id); if(!it) return; it.qty = Math.max(1, it.qty+delta); Store.write(items); }
+
+    function updateCartUI(){ const items = readCart(); cartCount.textContent = items.reduce((s,i)=>s+i.qty,0);
+      cartContents.innerHTML = items.length? '' : '<p>Your cart is empty.</p>';
+      let sum=0;
+      for(const i of items){ sum += i.price*i.qty; const row = document.createElement('div'); row.className='row'; row.style.justifyContent='space-between'; row.style.borderBottom='1px solid #161616'; row.style.padding='8px 0';
+        row.innerHTML = `<div><strong>${i.name}</strong><br><span class="chip">${fmt(i.price)} × ${i.qty}</span></div>
+          <div class="row"><button class="btn" data-act="dec">−</button><button class="btn" data-act="inc">+</button><button class="btn" data-act="rm">Remove</button></div>`;
+        row.querySelector('[data-act="dec"]').onclick=()=>changeQty(i.id,-1);
+        row.querySelector('[data-act="inc"]').onclick=()=>changeQty(i.id,1);
+        row.querySelector('[data-act="rm"]').onclick=()=>removeFromCart(i.id);
+        cartContents.appendChild(row);
+      }
+      cartTotal.textContent = 'Total: ' + fmt(sum);
+    }
+    function pulseCount(){ cartFab.classList.add('pulse'); setTimeout(()=>cartFab.classList.remove('pulse'), 1200) }
+    updateCartUI();
+
+    checkout.addEventListener('click', ()=>{
+      const items = readCart(); if(!items.length){ alert('Cart is empty'); return; }
+      openFlow({
+        title: 'Checkout',
+        body: renderCheckout(items),
+        actions: [
+          {label:'Pay Now', handler: completeCheckout},
+          {label:'Lease with Progressive', handler: ()=> ProgressiveLeasing.startFromCart(items) },
+        ]
+      });
+    });
+
+    function renderCheckout(items){ const sum = items.reduce((s,i)=>s+i.price*i.qty,0);
+      return `<div>
+        <p>Secure card payment (demo). For production, swap in your gateway provider.</p>
+        <p><strong>Amount:</strong> ${fmt(sum)}</p>
+        <div class='row'><input class='chip' placeholder='Card number'><input class='chip' placeholder='MM/YY'><input class='chip' placeholder='CVC'></div>
+      </div>`;
+    }
+    function completeCheckout(){ alert('Payment processed (demo). Replace with your PSP.'); $('#flow-modal').close(); Store.clear(); updateCartUI(); cartModal.close(); }
+
+    /***** 4) Plugin surfaces (Adapters) *****/
+    // Each provider exposes a predictable interface. Swap the internals with real API calls.
+    // Set your real credentials in the CONFIG object and replace fetch mocks with live endpoints.
+    const CONFIG = {
+      phobio: {
+        // TODO: Replace with real endpoint & auth once provisioned by Phobio
+        endpoint: 'https://api.phobio.example/quote', apiKey: 'PHOBIO_API_KEY'
+      },
+      progressive: {
+        // TODO: Replace with Progressive Leasing partner API
+        endpoint: 'https://api.progressiveleasing.example', partnerId: 'PROG_PARTNER_ID'
+      },
+      appleTradeIn: {
+        // Typically facilitated via an approved aggregator (often Phobio) or Apple programs
+        endpoint: 'https://api.appletradein.example', merchantId: 'APPLE_TRADE_MERCHANT_ID'
+      },
+      nomad: {
+        // TODO: Replace with Nomad Internet partner API
+        endpoint: 'https://api.nomadinternet.example', resellerId: 'NOMAD_PARTNER_ID'
+      }
+    };
+
+    // ---- Phobio Adapter ----
+    const Phobio = {
+      async quote(model, condition){
+        // Replace this mock with: await fetch(CONFIG.phobio.endpoint, { method:'POST', headers:{'Authorization':`Bearer ${CONFIG.phobio.apiKey}`, 'Content-Type':'application/json'}, body: JSON.stringify({model, condition}) })
+        await sleep(700);
+        const base = 500 * (Math.random()*0.3 + 0.7); // demo randomness
+        const factor = { 'Like New':1, 'Good':.8, 'Fair':.55, 'Broken':.2 }[condition] || .5;
+        return { amount: Math.round(base*factor), currency:'USD', reference: 'PHO-'+Math.random().toString(36).slice(2,8) };
+      },
+      async submit(details){ await sleep(600); return { status:'submitted', id:'SUB-'+Math.random().toString(36).slice(2,8) } }
+    };
+
+    // ---- Apple Authorized Trade‑In Adapter (placeholder) ----
+    const AppleTradeIn = {
+      async start(model){ await sleep(600); return { status:'started', steps:['Package device','Ship with label','Receive credit'], ref:'APL-'+Math.random().toString(36).slice(2,8) } },
+      async quote(model){ await sleep(500); return { amount: Math.round(450*(Math.random()*0.25+.75)), currency:'USD' } }
+    };
+
+    // ---- Progressive Leasing Adapter ----
+    const ProgressiveLeasing = {
+      async prequalify({name, phone, zip, amount}){
+        await sleep(800);
+        const approved = Math.random() > 0.2; // demo logic
+        return approved ? { status:'approved', limit: Math.max(800, Math.round((amount||1200)*1.2)), reference: 'PL-'+rnd() } : { status:'declined', reason:'Not eligible at this time' };
+      },
+      async startFromCart(items){ const sum = items.reduce((s,i)=>s+i.price*i.qty,0); const name=$('#lease-name').value||'Customer';
+        const phone=$('#lease-phone').value||''; const zip=$('#lease-zip').value||'';
+        const res = await this.prequalify({name, phone, zip, amount: sum});
+        openFlow({ title:'Progressive Leasing', body: renderJSON(res), actions:[ {label:'Close', handler: closeFlow} ] });
+      }
+    };
+
+    // ---- Nomad Internet Adapter ----
+    const Nomad = {
+      async availability(zip){ await sleep(700); const ok = /\d{5}/.test(zip) && Math.random()>.1; const plans = ok ? [
+          {id:'nomad-home-pro', name:'Home Pro', down:'200 Mbps', price: 99},
+          {id:'nomad-travel', name:'Travel Unlimited', down:'100 Mbps', price: 79}
+        ] : [];
+        return { ok, zip, plans };
+      },
+      async order(planId, customer){ await sleep(700); return { status:'submitted', orderId:'NOM-'+rnd(), planId, customer } }
+    };
+
+    window.PMMPlugins = { Phobio, ProgressiveLeasing, AppleTradeIn, Nomad }; // exposed globally for easy swapping
+
+    /***** 5) Wire up flows *****/
+    const flowModal = document.getElementById('flow-modal');
+    const flowTitle = document.getElementById('flow-title');
+    const flowBody = document.getElementById('flow-body');
+    const flowActions = document.getElementById('flow-actions');
+    document.getElementById('flow-close').addEventListener('click', closeFlow);
+
+    function openFlow({title, body, actions=[]}){
+      flowTitle.textContent = title; flowBody.innerHTML = body; flowActions.innerHTML='';
+      for(const a of actions){ const b=document.createElement('button'); b.className='btn'; b.textContent=a.label; b.addEventListener('click', a.handler); flowActions.appendChild(b); }
+      flowModal.showModal();
+    }
+    function closeFlow(){ flowModal.close(); }
+
+    // Phobio UI
+    $('#phobio-get-quote').addEventListener('click', async ()=>{
+      const model = $('#phobio-model').value.trim() || 'iPhone';
+      const cond = $('#phobio-cond').value;
+      $('#phobio-output').textContent = 'Fetching quote…';
+      const q = await Phobio.quote(model, cond);
+      $('#phobio-output').innerHTML = `<div class='row'>Quote for <strong>${model}</strong> (${cond}): <span class='chip'>${fmt(q.amount)} ${q.currency}</span></div>
+        <div class='row' style='margin-top:8px'><button class='btn' id='phobio-submit'>Submit Trade‑In</button></div>`;
+      $('#phobio-submit').onclick = async ()=>{ const res = await Phobio.submit({model, cond, quote:q}); alert('Trade‑in submitted: '+res.id); };
+    });
+
+    // Apple Trade‑In UI
+    $('#apple-begin').addEventListener('click', async ()=>{
+      openFlow({ title:'Apple Authorized Trade‑In', body:'<p>Enter your device model to begin.</p><input id="apple-model" class="chip" placeholder="e.g., iPhone 13">', actions:[{label:'Next', handler: async ()=>{
+        const model = $('#apple-model').value || 'iPhone'; const q = await AppleTradeIn.quote(model);
+        flowBody.innerHTML = `<p>Estimated credit for <strong>${model}</strong>: <span class='chip'>${fmt(q.amount)}</span></p>`;
+      }}] });
+    });
+
+    // Progressive UI shortcuts
+    $('#lease-prequal').addEventListener('click', async ()=>{
+      const res = await ProgressiveLeasing.prequalify({ name: $('#lease-name').value, phone: $('#lease-phone').value, zip: $('#lease-zip').value, amount: readCart().reduce((s,i)=>s+i.price*i.qty,0) });
+      $('#lease-output').innerHTML = renderJSON(res);
+    });
+
+    // Nomad UI
+    $('#nomad-check').addEventListener('click', async ()=>{
+      const zip = $('#nomad-zip').value.trim();
+      const res = await Nomad.availability(zip);
+      if(!res.ok){ $('#nomad-output').innerHTML = '<p>No coverage found. Try another ZIP.</p>'; return; }
+      $('#nomad-output').innerHTML = `<div>${res.plans.map(p=>`<div class='row' style='justify-content:space-between; border-bottom:1px solid #161616; padding:8px 0'>
+        <div><strong>${p.name}</strong><br><span class='chip'>${p.down}</span></div>
+        <div class='row'><span class='chip'>${fmt(p.price)}/mo</span> <button class='btn' data-plan='${p.id}'>Order</button></div>
+      </div>`).join('')}</div>`;
+      $$('#nomad-output [data-plan]').forEach(btn=> btn.addEventListener('click', async e=>{
+        const planId = e.currentTarget.getAttribute('data-plan');
+        openFlow({ title:'Nomad Order', body:`<p>Plan: <strong>${planId}</strong></p><div class='row'><input id='nm-name' class='chip' placeholder='Full name'><input id='nm-email' class='chip' placeholder='Email'></div>`, actions:[{label:'Submit', handler: async ()=>{
+          const customer = { name: $('#nm-name').value, email: $('#nm-email').value, zip: $('#nomad-zip').value };
+          const out = await Nomad.order(planId, customer); flowBody.innerHTML = renderJSON(out);
+        }}] });
+      }));
+    });
+
+    // Quick action buttons up top
+    document.getElementById('btn-phobio-quote').addEventListener('click', ()=> document.getElementById('phobio-model').focus());
+    document.getElementById('btn-apple-trade').addEventListener('click', ()=> document.getElementById('apple-begin').click());
+    document.getElementById('btn-progressive').addEventListener('click', ()=> document.getElementById('lease-name').focus());
+    document.getElementById('btn-nomad').addEventListener('click', ()=> document.getElementById('nomad-zip').focus());
+
+    /***** 6) Helpers *****/
+    function sleep(ms){ return new Promise(r=> setTimeout(r, ms)); }
+    function rnd(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
+    function renderJSON(o){ return `<pre style="white-space:pre-wrap; background:#0a0a0a; padding:12px; border-radius:12px; border:1px solid #161616;">${escapeHTML(JSON.stringify(o, null, 2))}</pre>`; }
+    function escapeHTML(s){ return s.replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'\\'}[c])); }
+
+    // Keyboard: Esc closes modals
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ try{$('#flow-modal').close()}catch{} try{$('#cart-modal').close()}catch{} } });
+
+  </script>
+</body>
+</html>
