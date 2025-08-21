@@ -255,23 +255,14 @@
     resize(); requestAnimationFrame(draw);
 
     /***** 2) Minimal product catalog *****/
-    container.innerHTML += `
-  <div class="card">
-    <img src="${product.img}" alt="${product.name}" class="product-img" />
-    <h2>${product.name}</h2>
-    <p>$${product.price.toFixed(2)}</p>
-    <div>${product.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</div>
-    <button>Add to Cart</button>
-  </div>
-`;
-const PRODUCTS = [
-  {id:'pm-iphone15', name:'iPhone 15', price: 649, tags:['5G','128GB'], img:'https://www.apple.com/v/iphone-15/f/images/overview/hero/hero_iphone15__f2ni9g9my06u_large.jpg'},
-  {id:'pm-iphone15pro', name:'iPhone 15 Plus', price: 749, tags:['5G','Titanium'], img:'https://www.apple.com/v/iphone-15-pro/f/images/overview/hero/hero_iphone15pro__f6g0xskw3m66_large.jpg'},
-  {id:'pm-ipad-air', name:'iPad Air', price: 549, tags:['Wi-Fi','M2'], img:'https://www.apple.com/v/ipad-air/f/images/overview/hero/hero_ipad_air__f2ni9g9my06u_large.jpg'},
-  {id:'pm-watch10', name:'Apple Watch Series 10', price: 349, tags:['GPS'], img:'https://www.apple.com/v/watch/f/images/overview/hero/hero_watch__f2ni9g9my06u_large.jpg'},
-  {id:'pm-galaxyS25', name:'Samsung Galaxy S25', price: 749, tags:['Android','AI'], img:'https://image-us.samsung.com/us/smartphones/galaxy-s25/gallery/images/galaxy-s25-black.jpg'},
-  {id:'pm-galaxyS25Ultra', name:'Samsung Galaxy S25 Ultra', price: 1199, tags:['Android','AI'], img:'https://image-us.samsung.com/us/smartphones/galaxy-s25-ultra/gallery/images/SCOMPARA-188-BuyPage-S25Ultra-Single-ExclusiveColors-Jetblack-800x600.jpg?$product-details-jpg$'}
-];
+    const PRODUCTS = [
+      {id:'pm-iphone15', name:'iPhone 15', price: 649.00, tags:['5G','128GB'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708'},
+      {id:'pm-iphone15pro', name:'iPhone 15 Plus', price: 749.00, tags:['5G','Titanium'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-bluetitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845699335'},
+      {id:'pm-ipad-air', name:'iPad Air', price: 549.00, tags:['Wi-Fi','M2'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/ipad-air-finish-unselect-gallery-1-202405?wid=2560&hei=1440&fmt=p-jpg&qlt=95&.v=1713559262952'},
+      {id:'pm-watch10', name:'Apple Watch Series 10', price: 349.00, tags:['GPS'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/watch-ultra-2-hero-202309?wid=1000&hei=1000&fmt=jpeg&qlt=95&.v=1693613492044'},
+      {id:'pm-galaxyS25', name:'Samsung Galaxy S25', price: 749.00, tags:['Android','AI'], img:'https://media.wired.com/photos/6500ad5618d6c2d75440b1d3/master/w_2560%2Cc_limit/Samsung-Galaxy-S24-Ultra-SOURCE-Samsung-Gear.jpg'},
+      {id:'pm-galaxyS25Ultra', name:'Samsung Galaxy S25 Ultra', price: 1199.00, tags:['Android','AI'], img:'https://i.blogs.es/3031b3/samsung-galaxy-s23-ultra-lifestyles/840_560.jpeg'}
+    ];
 
     const grid = document.getElementById('product-grid');
     for(const p of PRODUCTS){
@@ -279,7 +270,7 @@ const PRODUCTS = [
       el.className='card';
       el.setAttribute('role','listitem');
       el.innerHTML = `
-        <div class="img" aria-hidden="true" style="font-size:64px">${p.img}</div>
+        <div class="img" aria-hidden="true"><img src="${p.img}" alt="${p.name}" /></div>
         <h3>${p.name}</h3>
         <p>${p.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>
         <div class="price-row"><div>${fmt(p.price)}</div> <button class="btn" data-id="${p.id}">Add to Cart</button></div>
