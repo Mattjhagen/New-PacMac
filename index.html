@@ -255,6 +255,15 @@
     resize(); requestAnimationFrame(draw);
 
     /***** 2) Minimal product catalog *****/
+    container.innerHTML += `
+  <div class="card">
+    <img src="${product.img}" alt="${product.name}" class="product-img" />
+    <h2>${product.name}</h2>
+    <p>$${product.price.toFixed(2)}</p>
+    <div>${product.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</div>
+    <button>Add to Cart</button>
+  </div>
+`;
 const PRODUCTS = [
   {id:'pm-iphone15', name:'iPhone 15', price: 649, tags:['5G','128GB'], img:'https://www.apple.com/v/iphone-15/f/images/overview/hero/hero_iphone15__f2ni9g9my06u_large.jpg'},
   {id:'pm-iphone15pro', name:'iPhone 15 Plus', price: 749, tags:['5G','Titanium'], img:'https://www.apple.com/v/iphone-15-pro/f/images/overview/hero/hero_iphone15pro__f6g0xskw3m66_large.jpg'},
