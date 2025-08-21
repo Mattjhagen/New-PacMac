@@ -53,3 +53,26 @@ nav a {
     gap: 20px;
     padding: 2em;
 }
+.card {
+  background: #111;
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 250px;
+}
+.product-img {
+  width: 200px;
+  height: auto;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+.tag {
+  display: inline-block;
+  background: #333;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 2px;
+  font-size: 0.8em;
+}
