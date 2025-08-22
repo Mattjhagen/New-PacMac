@@ -53,11 +53,23 @@
 
     .section{max-width:1200px; margin:28px auto; padding:0 16px}
     .grid{display:grid; gap:16px; grid-template-columns:repeat(12, 1fr)}
-    .card{grid-column: span 4; background:var(--card); border:1px solid #131313; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow)}
+    .card{grid-column: span 4; background:var(--card); border:1px solid #131313; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); position:relative; transform-style:preserve-3d; transition:transform 0.8s ease-in-out; cursor:pointer}
+    .card.flipped{transform:rotateY(180deg)}
+    .card-front,.card-back{position:absolute; width:100%; height:100%; backface-visibility:hidden; display:flex; flex-direction:column}
+    .card-back{transform:rotateY(180deg); background:var(--card); padding:16px; justify-content:space-between}
     .card .img{aspect-ratio: 16/12; display:flex; align-items:center; justify-content:center; background: radial-gradient(60% 60% at 50% 50%, rgba(106,167,255,.15), transparent 60%)}
     .card h3{margin:10px 14px 6px}
     .card p{margin:0 14px 10px; color:var(--muted)}
     .price-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px 14px}
+    .specs-list{list-style:none; padding:0; margin:16px 0; font-size:14px}
+    .specs-list li{padding:6px 0; border-bottom:1px solid #161616; display:flex; justify-content:space-between}
+    .specs-list li:last-child{border-bottom:none}
+    .specs-label{color:var(--muted); font-weight:500}
+    .specs-value{color:var(--fg)}
+    .flip-indicator{position:absolute; top:8px; right:8px; background:rgba(0,0,0,.7); color:var(--fg); padding:4px 8px; border-radius:6px; font-size:12px; opacity:0; transition:opacity 0.3s; pointer-events:none}
+    .card:hover .flip-indicator{opacity:1}
+    .card::after{content:'↻'; position:absolute; bottom:8px; right:8px; background:var(--accent); color:#000; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; opacity:0.7; transition:opacity 0.3s}
+    .card:hover::after{opacity:1}
     .chip{padding:4px 10px; border-radius:9999px; border:1px solid #1b1b1b; background:#0a0a0a; color:#c7c7c7; font-size:12px}
 
     .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
@@ -82,7 +94,16 @@
 
     /* Responsive */
     @media (max-width: 980px){ .card{grid-column: span 6} .two-col{grid-template-columns: 1fr} footer .cols{grid-template-columns: repeat(2, 1fr)} }
-    @media (max-width: 640px){ .card{grid-column: span 12} footer .cols{grid-template-columns: 1fr} }
+    @media (max-width: 640px){ 
+      .card{grid-column: span 12} 
+      .card{transform-style:flat} /* Disable 3D transforms on mobile for better performance */
+      .card.flipped{transform:none} /* Use opacity-based flip on mobile */
+      .card-back{transform:none; opacity:0; transition:opacity 0.4s}
+      .card.flipped .card-back{opacity:1}
+      .card.flipped .card-front{opacity:0}
+      .card-front{opacity:1; transition:opacity 0.4s}
+      footer .cols{grid-template-columns: 1fr} 
+    }
 
     /* Tiny helpful animations */
     .glow{box-shadow: 0 0 0 1px #1a1a1a, 0 0 30px rgba(106,167,255,.15)}
@@ -266,7 +287,16 @@
         price: 799.00, 
         tags:['5G','128GB','A16 Bionic'],
         img:'Products/iPhone-15.jpg',
-        description: 'Latest iPhone with USB-C, Dynamic Island, and 48MP camera'
+        description: 'Latest iPhone with USB-C, Dynamic Island, and 48MP camera',
+        specs: {
+          'Display': '6.1" Super Retina XDR',
+          'Chip': 'A16 Bionic',
+          'Storage': '128GB',
+          'Camera': '48MP Main + 12MP Ultra Wide',
+          'Battery': 'Up to 20 hours video playback',
+          'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.3',
+          'Colors': 'Black, Blue, Green, Yellow, Pink'
+        }
       },
       {
         id:'pm-iphone15plus', 
@@ -274,7 +304,16 @@
         price: 899.00, 
         tags:['5G','128GB','6.7" Display'],
         img:'Products/iPhone15Plus.jpg',
-        description: 'Larger display with all iPhone 15 features and extended battery life'
+        description: 'Larger display with all iPhone 15 features and extended battery life',
+        specs: {
+          'Display': '6.7" Super Retina XDR',
+          'Chip': 'A16 Bionic',
+          'Storage': '128GB',
+          'Camera': '48MP Main + 12MP Ultra Wide',
+          'Battery': 'Up to 26 hours video playback',
+          'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.3',
+          'Colors': 'Black, Blue, Green, Yellow, Pink'
+        }
       },
       {
         id:'pm-ipad-air', 
@@ -282,7 +321,16 @@
         price: 599.00, 
         tags:['Wi-Fi','M2','11" Display'],
         img:'Products/iPadAir11.jpg',
-        description: 'Powerful tablet with M2 chip, perfect for work and creativity'
+        description: 'Powerful tablet with M2 chip, perfect for work and creativity',
+        specs: {
+          'Display': '11" Liquid Retina',
+          'Chip': 'M2 with 8-core CPU',
+          'Storage': '128GB',
+          'Camera': '12MP Ultra Wide front camera',
+          'Battery': 'Up to 10 hours',
+          'Connectivity': 'Wi-Fi 6, Bluetooth 5.3',
+          'Colors': 'Space Gray, Starlight, Blue, Purple, Pink'
+        }
       },
       {
         id:'pm-watch10', 
@@ -290,7 +338,16 @@
         price: 399.00, 
         tags:['GPS','Health','S9 Chip'],
         img:'Products/AppleWatch10.jpg',
-        description: 'Advanced health monitoring with faster performance and brighter display'
+        description: 'Advanced health monitoring with faster performance and brighter display',
+        specs: {
+          'Display': 'Always-On Retina',
+          'Chip': 'S9 SiP',
+          'Storage': '32GB',
+          'Sensors': 'Heart Rate, ECG, Blood Oxygen',
+          'Battery': 'Up to 18 hours',
+          'Connectivity': 'GPS, Wi-Fi, Bluetooth 5.3',
+          'Colors': 'Midnight, Starlight, Silver, Red, Blue'
+        }
       },
       {
         id:'pm-galaxyS25', 
@@ -298,7 +355,16 @@
         price: 799.00, 
         tags:['Android','AI','5G'],
         img:'Products/SamS25.jpg',
-        description: 'AI-powered Android flagship with advanced camera system'
+        description: 'AI-powered Android flagship with advanced camera system',
+        specs: {
+          'Display': '6.2" Dynamic AMOLED 2X',
+          'Chip': 'Snapdragon 8 Gen 4',
+          'Storage': '128GB',
+          'Camera': '50MP Main + 12MP Ultra Wide + 10MP Tele',
+          'Battery': '4000mAh',
+          'Connectivity': '5G, Wi-Fi 7, Bluetooth 5.4',
+          'Colors': 'Onyx Black, Marble Gray, Cobalt Violet'
+        }
       },
       {
         id:'pm-galaxyS25ultra', 
@@ -306,7 +372,16 @@
         price: 1199.00, 
         tags:['Android','AI','S Pen'],
         img:'Products/SamS25Ultra.jpg',
-        description: 'Ultimate Android experience with S Pen and 200MP camera'
+        description: 'Ultimate Android experience with S Pen and 200MP camera',
+        specs: {
+          'Display': '6.8" Dynamic AMOLED 2X',
+          'Chip': 'Snapdragon 8 Gen 4',
+          'Storage': '256GB',
+          'Camera': '200MP Main + 12MP Ultra Wide + 50MP Tele + 10MP Tele',
+          'Battery': '5000mAh',
+          'Connectivity': '5G, Wi-Fi 7, Bluetooth 5.4',
+          'Colors': 'Titanium Black, Titanium Gray, Titanium Violet'
+        }
       }
     ];
 
@@ -315,14 +390,61 @@
       const el = document.createElement('article');
       el.className='card';
       el.setAttribute('role','listitem');
-      el.innerHTML = `
-        <div class="img" aria-hidden="true"><img src="${p.img}" alt="${p.name}" style="max-width:100%; height:auto; border-radius:8px;" /></div>
-        <h3>${p.name}</h3>
-        <p style="color:var(--muted); font-size:14px; margin:0 14px 8px;">${p.description}</p>
-        <p>${p.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>
-        <div class="price-row"><div><strong>${fmt(p.price)}</strong></div> <button class="btn" data-id="${p.id}">Add to Cart</button></div>
+      
+      // Create front of card
+      const frontContent = `
+        <div class="card-front">
+          <div class="flip-indicator">Click to see specs</div>
+          <div class="img" aria-hidden="true"><img src="${p.img}" alt="${p.name}" style="max-width:100%; height:auto; border-radius:8px;" /></div>
+          <h3>${p.name}</h3>
+          <p style="color:var(--muted); font-size:14px; margin:0 14px 8px;">${p.description}</p>
+          <p>${p.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>
+          <div class="price-row">
+            <div><strong>${fmt(p.price)}</strong></div>
+            <button class="btn" data-id="${p.id}">Add to Cart</button>
+          </div>
+        </div>
       `;
-      $('button', el).addEventListener('click', ()=> addToCart(p));
+      
+      // Create back of card with specifications
+      const specsList = Object.entries(p.specs).map(([key, value]) => 
+        `<li><span class="specs-label">${key}</span><span class="specs-value">${value}</span></li>`
+      ).join('');
+      
+      const backContent = `
+        <div class="card-back">
+          <div>
+            <h3 style="margin:0 0 12px 0; color:var(--accent);">${p.name} Specifications</h3>
+            <ul class="specs-list">
+              ${specsList}
+            </ul>
+          </div>
+          <div style="text-align:center; margin-top:16px;">
+            <button class="btn" data-id="${p.id}" style="width:100%;">Add to Cart - ${fmt(p.price)}</button>
+          </div>
+        </div>
+      `;
+      
+      el.innerHTML = frontContent + backContent;
+      
+      // Add click event for card flip
+      el.addEventListener('click', (e) => {
+        // Don't flip if clicking the Add to Cart button
+        if (e.target.classList.contains('btn')) {
+          addToCart(p);
+          return;
+        }
+        el.classList.toggle('flipped');
+      });
+      
+      // Add to cart button events
+      $$('button[data-id]', el).forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent card flip
+          addToCart(p);
+        });
+      });
+      
       grid.appendChild(el);
     }
 
