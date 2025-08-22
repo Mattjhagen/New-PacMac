@@ -1,0 +1,44 @@
+{
+  "name": "pacmac-mobile",
+  "description": "PacMac Mobile e-commerce site for trade-ins, leasing, and Nomad Internet",
+  "repository": "https://github.com/Mattjhagen/New-PacMac",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["node", "express", "e-commerce", "mobile", "trade-in"],
+  "env": {
+    "STRIPE_SECRET_KEY": {
+      "description": "Your Stripe secret key for payment processing",
+      "required": true
+    },
+    "STRIPE_PUBLISHABLE_KEY": {
+      "description": "Your Stripe publishable key for frontend",
+      "required": true
+    },
+    "SENDGRID_API_KEY": {
+      "description": "Your SendGrid API key for email notifications",
+      "required": true
+    },
+    "FROM_EMAIL": {
+      "description": "Email address for sending notifications",
+      "value": "orders@pacmacmobile.com"
+    },
+    "FROM_NAME": {
+      "description": "Name for sending notifications",
+      "value": "PacMac Mobile"
+    },
+    "NODE_ENV": {
+      "description": "Environment setting",
+      "value": "production"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
