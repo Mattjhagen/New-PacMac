@@ -70,6 +70,24 @@
     .card:hover .flip-indicator{opacity:1}
     .card::after{content:'↻'; position:absolute; bottom:8px; right:8px; background:var(--accent); color:#000; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; opacity:0.7; transition:opacity 0.3s}
     .card:hover::after{opacity:1}
+    
+    /* Add to Cart Animation */
+    .add-to-cart-animation{position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--accent); color:#000; padding:16px 24px; border-radius:12px; font-weight:600; z-index:1000; animation:cartBounce 0.8s ease-out forwards; pointer-events:none}
+    @keyframes cartBounce{0%{opacity:0; transform:translate(-50%,-50%) scale(0.5)} 50%{opacity:1; transform:translate(-50%,-50%) scale(1.2)} 100%{opacity:0; transform:translate(-50%,-50%) scale(1)}}
+    
+    /* Accessories Section */
+    .accessories-section{display:none; margin-top:40px}
+    .accessories-section.active{display:block; animation:fadeInUp 0.6s ease-out}
+    @keyframes fadeInUp{from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)}}
+    .accessories-grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); margin-top:20px}
+    .accessory-card{background:var(--card); border:1px solid #131313; border-radius:var(--radius); padding:16px; text-align:center; transition:transform 0.2s, box-shadow 0.2s}
+    .accessory-card:hover{transform:translateY(-2px); box-shadow:0 8px 25px rgba(0,0,0,.3)}
+    .accessory-card img{width:80px; height:80px; object-fit:contain; margin:0 auto 12px; border-radius:8px}
+    .accessory-card h4{margin:0 0 8px; font-size:16px}
+    .accessory-card .price{color:var(--accent); font-weight:600; margin:8px 0}
+    .accessory-card .compatibility{font-size:12px; color:var(--muted); margin-bottom:12px}
+    .back-to-products{background:var(--accent); color:#000; border:none; padding:12px 20px; border-radius:8px; font-weight:600; cursor:pointer; margin-bottom:20px; transition:opacity 0.2s}
+    .back-to-products:hover{opacity:0.9}
     .chip{padding:4px 10px; border-radius:9999px; border:1px solid #1b1b1b; background:#0a0a0a; color:#c7c7c7; font-size:12px}
 
     .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
@@ -145,6 +163,14 @@
     <section class="section" id="shop" aria-label="Products">
       <h2 style="margin:6px 0 10px">Featured Devices</h2>
       <div class="grid" id="product-grid" role="list"></div>
+      
+      <!-- Accessories Section -->
+      <div class="accessories-section" id="accessories-section">
+        <button class="back-to-products" id="back-to-products">← Back to Products</button>
+        <h2 id="accessories-title" style="margin:6px 0 10px">Compatible Accessories</h2>
+        <p id="accessories-subtitle" style="color:var(--muted); margin-bottom:20px">Enhance your device with these recommended accessories</p>
+        <div class="accessories-grid" id="accessories-grid"></div>
+      </div>
     </section>
 
     <section class="section two-col" id="tradein">
@@ -385,6 +411,106 @@
       }
     ];
 
+    // Accessories data with compatibility mapping
+    const ACCESSORIES = [
+      {
+        id: 'acc-iphone-case',
+        name: 'Silicone Case',
+        price: 49.00,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="10" y="10" width="80" height="80" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="30" cy="30" r="8" fill="%23000"/><rect x="60" y="25" width="20" height="10" fill="%23000"/></svg>',
+        compatibility: ['pm-iphone15', 'pm-iphone15plus'],
+        category: 'Protection'
+      },
+      {
+        id: 'acc-iphone-screen',
+        name: 'Tempered Glass Screen Protector',
+        price: 19.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="15" y="15" width="70" height="70" fill="%23fff" stroke="%23000" stroke-width="1"/><circle cx="50" cy="50" r="15" fill="%23ddd"/></svg>',
+        compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-galaxyS25', 'pm-galaxyS25ultra'],
+        category: 'Protection'
+      },
+      {
+        id: 'acc-wireless-charger',
+        name: 'MagSafe Wireless Charger',
+        price: 39.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><circle cx="50" cy="50" r="25" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="50" cy="50" r="15" fill="%23fff"/><path d="M30 50 L70 50 M50 30 L50 70" stroke="%23000" stroke-width="2"/></svg>',
+        compatibility: ['pm-iphone15', 'pm-iphone15plus'],
+        category: 'Charging'
+      },
+      {
+        id: 'acc-usb-c-cable',
+        name: 'USB-C to USB-C Cable',
+        price: 19.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="20" y="40" width="60" height="20" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="15" y="35" width="10" height="30" fill="%23000"/><rect x="75" y="35" width="10" height="30" fill="%23000"/></svg>',
+        compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-ipad-air'],
+        category: 'Charging'
+      },
+      {
+        id: 'acc-ipad-case',
+        name: 'Smart Folio Case',
+        price: 79.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="10" y="20" width="80" height="60" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="15" y="25" width="70" height="50" fill="%23fff"/><rect x="20" y="30" width="60" height="40" fill="%23eee"/></svg>',
+        compatibility: ['pm-ipad-air'],
+        category: 'Protection'
+      },
+      {
+        id: 'acc-apple-pencil',
+        name: 'Apple Pencil (2nd Gen)',
+        price: 129.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="35" y="20" width="30" height="60" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="40" y="25" width="20" height="50" fill="%23fff"/><circle cx="50" cy="15" r="5" fill="%23000"/></svg>',
+        compatibility: ['pm-ipad-air'],
+        category: 'Accessories'
+      },
+      {
+        id: 'acc-watch-band',
+        name: 'Sport Band',
+        price: 49.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><circle cx="50" cy="50" r="20" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="20" y="45" width="20" height="10" fill="%23000"/><rect x="60" y="45" width="20" height="10" fill="%23000"/></svg>',
+        compatibility: ['pm-watch10'],
+        category: 'Accessories'
+      },
+      {
+        id: 'acc-galaxy-case',
+        name: 'Galaxy Protective Case',
+        price: 34.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="15" y="15" width="70" height="70" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="35" cy="35" r="8" fill="%23000"/><rect x="55" y="30" width="25" height="10" fill="%23000"/></svg>',
+        compatibility: ['pm-galaxyS25', 'pm-galaxyS25ultra'],
+        category: 'Protection'
+      },
+      {
+        id: 'acc-s-pen',
+        name: 'S Pen',
+        price: 59.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="40" y="20" width="20" height="60" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="42" y="22" width="16" height="56" fill="%23fff"/><circle cx="50" cy="15" r="3" fill="%23000"/></svg>',
+        compatibility: ['pm-galaxyS25ultra'],
+        category: 'Accessories'
+      },
+      {
+        id: 'acc-fast-charger',
+        name: '25W Fast Charger',
+        price: 29.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="30" y="30" width="40" height="40" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="35" y="35" width="30" height="30" fill="%23fff"/><circle cx="50" cy="50" r="8" fill="%23000"/></svg>',
+        compatibility: ['pm-galaxyS25', 'pm-galaxyS25ultra'],
+        category: 'Charging'
+      },
+      {
+        id: 'acc-bluetooth-earbuds',
+        name: 'Wireless Earbuds',
+        price: 89.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><circle cx="30" cy="50" r="12" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="70" cy="50" r="12" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="35" y="48" width="30" height="4" fill="%23000"/></svg>',
+        compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-ipad-air', 'pm-galaxyS25', 'pm-galaxyS25ultra'],
+        category: 'Audio'
+      },
+      {
+        id: 'acc-power-bank',
+        name: '10,000mAh Power Bank',
+        price: 39.99,
+        image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="20" y="25" width="60" height="50" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="25" y="30" width="50" height="40" fill="%23fff"/><rect x="30" y="35" width="40" height="30" fill="%23eee"/><circle cx="50" cy="50" r="8" fill="%23000"/></svg>',
+        compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-ipad-air', 'pm-galaxyS25', 'pm-galaxyS25ultra'],
+        category: 'Charging'
+      }
+    ];
+
     const grid = document.getElementById('product-grid');
     for(const p of PRODUCTS){
       const el = document.createElement('article');
@@ -399,10 +525,13 @@
           <h3>${p.name}</h3>
           <p style="color:var(--muted); font-size:14px; margin:0 14px 8px;">${p.description}</p>
           <p>${p.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>
-          <div class="price-row">
-            <div><strong>${fmt(p.price)}</strong></div>
+                  <div class="price-row">
+          <div><strong>${fmt(p.price)}</strong></div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn" style="background: var(--accent-2); color: #000; font-size: 12px; padding: 8px 12px;" onclick="showTradeInPrompt(${JSON.stringify(p).replace(/"/g, '&quot;')})">Trade In</button>
             <button class="btn" data-id="${p.id}">Add to Cart</button>
           </div>
+        </div>
         </div>
       `;
       
@@ -463,7 +592,100 @@
     closeCart.addEventListener('click', ()=> cartModal.close());
 
     function readCart(){ return Store.read(); }
-    function addToCart(p){ const items = readCart(); const found = items.find(i=>i.id===p.id); if(found) found.qty++; else items.push({...p, qty:1}); Store.write(items); pulseCount(); }
+    function addToCart(p){ 
+      const items = readCart(); 
+      const found = items.find(i=>i.id===p.id); 
+      if(found) found.qty++; 
+      else items.push({...p, qty:1}); 
+      Store.write(items); 
+      pulseCount(); 
+      
+      // Show add to cart animation
+      showAddToCartAnimation();
+      
+      // Show trade-in prompt after a short delay
+      setTimeout(() => {
+        showTradeInPrompt(p);
+      }, 800);
+      
+      // Show accessories after trade-in prompt
+      setTimeout(() => {
+        showAccessoriesForProduct(p);
+      }, 3000);
+    }
+    
+    function showAddToCartAnimation() {
+      const animation = document.createElement('div');
+      animation.className = 'add-to-cart-animation';
+      animation.textContent = 'Added to Cart! 🛒';
+      document.body.appendChild(animation);
+      
+      // Remove animation element after animation completes
+      setTimeout(() => {
+        document.body.removeChild(animation);
+      }, 800);
+    }
+    
+    function showAccessoriesForProduct(product) {
+      // Hide product grid
+      const productGrid = document.getElementById('product-grid');
+      const accessoriesSection = document.getElementById('accessories-section');
+      
+      productGrid.style.display = 'none';
+      
+      // Update accessories section title
+      document.getElementById('accessories-title').textContent = `Accessories for ${product.name}`;
+      document.getElementById('accessories-subtitle').textContent = `Enhance your ${product.name} with these compatible accessories`;
+      
+      // Filter accessories for this product
+      const compatibleAccessories = ACCESSORIES.filter(acc => 
+        acc.compatibility.includes(product.id)
+      );
+      
+      // Render accessories
+      const accessoriesGrid = document.getElementById('accessories-grid');
+      accessoriesGrid.innerHTML = '';
+      
+      compatibleAccessories.forEach(acc => {
+        const accCard = document.createElement('div');
+        accCard.className = 'accessory-card';
+        accCard.innerHTML = `
+          <img src="${acc.image}" alt="${acc.name}" />
+          <h4>${acc.name}</h4>
+          <div class="price">${fmt(acc.price)}</div>
+          <div class="compatibility">Compatible with ${product.name}</div>
+          <button class="btn" data-acc-id="${acc.id}">Add to Cart</button>
+        `;
+        
+        // Add to cart functionality for accessories
+        const addButton = accCard.querySelector('button');
+        addButton.addEventListener('click', () => {
+          const accItems = readCart();
+          const found = accItems.find(i => i.id === acc.id);
+          if (found) found.qty++;
+          else accItems.push({...acc, qty: 1});
+          Store.write(accItems);
+          pulseCount();
+          showAddToCartAnimation();
+        });
+        
+        accessoriesGrid.appendChild(accCard);
+      });
+      
+      // Show accessories section
+      accessoriesSection.classList.add('active');
+      
+      // Scroll to accessories section
+      accessoriesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function showProducts() {
+      const productGrid = document.getElementById('product-grid');
+      const accessoriesSection = document.getElementById('accessories-section');
+      
+      productGrid.style.display = 'grid';
+      accessoriesSection.classList.remove('active');
+    }
     function removeFromCart(id){ const items = readCart().filter(i=>i.id!==id); Store.write(items); }
     function changeQty(id, delta){ const items = readCart(); const it = items.find(i=>i.id===id); if(!it) return; it.qty = Math.max(1, it.qty+delta); Store.write(items); }
 
@@ -501,7 +723,28 @@
       const total = sum + tax;
       
       return `<div>
-        <p>Secure payment powered by Stripe. Your information is encrypted and secure.</p>
+        <p>Choose your preferred payment method. All options are secure and encrypted.</p>
+        
+        <!-- Payment Method Selection -->
+        <div style="margin: 20px 0;">
+          <label style="display: block; margin-bottom: 12px; font-weight: 600; font-size: 16px;">Payment Method</label>
+          <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <label style="flex: 1; cursor: pointer;">
+              <input type="radio" name="payment-method" value="card" checked style="margin-right: 8px;">
+              <span style="display: inline-block; padding: 12px; border: 2px solid #161616; border-radius: 8px; background: #0a0a0a; width: 100%; text-align: center; transition: all 0.2s;" id="card-option">
+                💳 Credit/Debit Card
+              </span>
+            </label>
+            <label style="flex: 1; cursor: pointer;">
+              <input type="radio" name="payment-method" value="progressive" style="margin-right: 8px;">
+              <span style="display: inline-block; padding: 12px; border: 2px solid #161616; border-radius: 8px; background: #0a0a0a; width: 100%; text-align: center; transition: all 0.2s;" id="progressive-option">
+                📋 Progressive Leasing
+              </span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Order Summary -->
         <div style="margin: 20px 0; padding: 16px; background: #0a0a0a; border-radius: 12px; border: 1px solid #161616;">
           <h4 style="margin: 0 0 12px 0;">Order Summary</h4>
           <div style="display: flex; justify-content: space-between; margin: 4px 0;">
@@ -516,28 +759,122 @@
             <span>Total:</span>
             <span>${fmt(total)}</span>
           </div>
-        </div>
-        <div style="margin: 20px 0;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address</label>
-          <input id="checkout-email" class="chip" placeholder="your@email.com" style="width: 100%; margin-bottom: 12px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number</label>
-          <input id="checkout-phone" class="chip" placeholder="(402) 555-0123" style="width: 100%; margin-bottom: 12px;">
-        </div>
-        <div style="margin: 20px 0;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Card Information</label>
-          <div class='row' style="gap: 8px;">
-            <input id="checkout-card" class="chip" placeholder="1234 5678 9012 3456" style="flex: 2;">
-            <input id="checkout-expiry" class="chip" placeholder="MM/YY" style="flex: 1;">
-            <input id="checkout-cvc" class="chip" placeholder="CVC" style="flex: 1;">
+          
+          <!-- Trade-in Savings Section -->
+          <div style="margin-top: 16px; padding: 12px; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); border-radius: 8px; border: 1px solid #161616;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 14px; color: var(--accent-2);">💡 Save with Trade-In</span>
+              <button class="btn" style="background: var(--accent-2); color: #000; font-size: 12px; padding: 6px 12px;" onclick="showTradeInPrompt({name: 'your device', id: 'checkout-trade-in'})">Trade In Now</button>
+            </div>
+            <p style="margin: 0; font-size: 12px; color: var(--muted);">
+              Trade in your old device and save up to ${fmt(total * 0.6)} on your purchase. 
+              <a href="https://apidocs.phobio.com" target="_blank" style="color: var(--accent); text-decoration: underline;">Learn more</a>
+            </p>
           </div>
         </div>
-        <div style="margin: 20px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #161616; font-size: 14px; color: var(--muted);">
-          <strong>🔒 Secure Checkout:</strong> Your payment information is encrypted and processed securely by Stripe. We never store your card details.
+        
+        <!-- Credit Card Payment Form -->
+        <div id="card-payment-form" style="margin: 20px 0;">
+          <div style="margin: 20px 0;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address</label>
+            <input id="checkout-email" class="chip" placeholder="your@email.com" style="width: 100%; margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number</label>
+            <input id="checkout-phone" class="chip" placeholder="(402) 555-0123" style="width: 100%; margin-bottom: 12px;">
+          </div>
+          <div style="margin: 20px 0;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Card Information</label>
+            <div class='row' style="gap: 8px;">
+              <input id="checkout-card" class="chip" placeholder="1234 5678 9012 3456" style="flex: 2;">
+              <input id="checkout-expiry" class="chip" placeholder="MM/YY" style="flex: 1;">
+              <input id="checkout-cvc" class="chip" placeholder="CVC" style="flex: 1;">
+            </div>
+          </div>
+          <div style="margin: 20px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #161616; font-size: 14px; color: var(--muted);">
+            <strong>🔒 Secure Checkout:</strong> Your payment information is encrypted and processed securely by Stripe. We never store your card details.
+          </div>
+        </div>
+        
+        <!-- Progressive Leasing Form -->
+        <div id="progressive-payment-form" style="margin: 20px 0; display: none;">
+          <div style="margin: 20px 0; padding: 16px; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); border-radius: 12px; border: 1px solid #161616;">
+            <h4 style="margin: 0 0 12px 0; color: var(--accent);">📋 Progressive Leasing Application</h4>
+            <p style="margin: 0 0 16px 0; color: var(--muted); font-size: 14px;">
+              Progressive Leasing offers flexible lease-to-own options with no credit check required. 
+              <a href="https://developers.progleasing.com/docs/before-you-begin" target="_blank" style="color: var(--accent); text-decoration: underline;">Learn more about Progressive Leasing</a>
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">First Name</label>
+                <input id="prog-first-name" class="chip" placeholder="John" style="width: 100%;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Last Name</label>
+                <input id="prog-last-name" class="chip" placeholder="Doe" style="width: 100%;">
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Email Address</label>
+                <input id="prog-email" class="chip" placeholder="john@example.com" style="width: 100%;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Phone Number</label>
+                <input id="prog-phone" class="chip" placeholder="(402) 555-0123" style="width: 100%;">
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">ZIP Code</label>
+                <input id="prog-zip" class="chip" placeholder="68102" style="width: 100%;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px;">Date of Birth</label>
+                <input id="prog-dob" class="chip" placeholder="MM/DD/YYYY" style="width: 100%;">
+              </div>
+            </div>
+            
+            <div style="margin: 16px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #161616; font-size: 14px;">
+              <h5 style="margin: 0 0 8px 0; color: var(--accent-2);">Lease Terms Preview</h5>
+              <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Lease Amount:</span>
+                <span>${fmt(total)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Estimated Monthly Payment:</span>
+                <span>${fmt(Math.round(total / 12))}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                <span>Term Length:</span>
+                <span>12 months</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 8px 0; padding-top: 8px; border-top: 1px solid #161616; font-weight: bold;">
+                <span>Total Cost of Ownership:</span>
+                <span>${fmt(total * 1.2)}</span>
+              </div>
+            </div>
+            
+            <div style="margin: 16px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #161616; font-size: 12px; color: var(--muted);">
+              <strong>ℹ️ Important Information:</strong> Progressive Leasing is a lease-to-own program. You will own the merchandise after making all payments. This is not a credit transaction. Additional fees may apply. See <a href="https://developers.progleasing.com/docs/before-you-begin" target="_blank" style="color: var(--accent);">Progressive Leasing terms</a> for complete details.
+            </div>
+          </div>
         </div>
       </div>`;
     }
     
     async function completeCheckout(){ 
+      const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+      
+      if (paymentMethod === 'card') {
+        await processCardPayment();
+      } else if (paymentMethod === 'progressive') {
+        await processProgressiveLeasing();
+      }
+    }
+    
+    async function processCardPayment() {
       const email = $('#checkout-email').value;
       const phone = $('#checkout-phone').value;
       const card = $('#checkout-card').value;
@@ -573,10 +910,11 @@
           `<h2>Order Confirmed!</h2>
            <p>Thank you for your order with PacMac Mobile.</p>
            <p><strong>Order ID:</strong> ${orderId}</p>
+           <p><strong>Payment Method:</strong> Credit/Debit Card</p>
            <p><strong>Total:</strong> ${PMM_UTILS.formatPrice(total)}</p>
            <p>We'll ship your items within 1-2 business days and send you tracking information.</p>
            <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>`,
-          `Order Confirmed!\n\nOrder ID: ${orderId}\nTotal: ${PMM_UTILS.formatPrice(total)}\n\nWe'll ship your items within 1-2 business days.`
+          `Order Confirmed!\n\nOrder ID: ${orderId}\nPayment Method: Credit/Debit Card\nTotal: ${PMM_UTILS.formatPrice(total)}\n\nWe'll ship your items within 1-2 business days.`
         );
         
         alert(`Order confirmed! Order ID: ${orderId}\nCheck your email for confirmation.`);
@@ -586,6 +924,75 @@
         cartModal.close();
       } else {
         alert('Payment failed. Please check your card information and try again.');
+      }
+    }
+    
+    async function processProgressiveLeasing() {
+      const firstName = $('#prog-first-name').value;
+      const lastName = $('#prog-last-name').value;
+      const email = $('#prog-email').value;
+      const phone = $('#prog-phone').value;
+      const zip = $('#prog-zip').value;
+      const dob = $('#prog-dob').value;
+      
+      // Basic validation
+      if (!firstName || !lastName || !email || !phone || !zip || !dob) {
+        alert('Please fill in all required fields for Progressive Leasing application.');
+        return;
+      }
+      
+      if (!PMM_UTILS.validateEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
+      if (!PMM_UTILS.validateZip(zip)) {
+        alert('Please enter a valid ZIP code.');
+        return;
+      }
+      
+      const items = readCart();
+      const sum = items.reduce((s,i)=>s+i.price*i.qty,0);
+      const tax = sum * 0.07;
+      const total = sum + tax;
+      
+      // Process Progressive Leasing application
+      const leaseResult = await PMM_PROGRESSIVE.startLease(items, {
+        name: `${firstName} ${lastName}`,
+        email: email,
+        phone: phone,
+        zip: zip,
+        dob: dob,
+        amount: total
+      });
+      
+      if (leaseResult.status === 'approved') {
+        const orderId = PMM_UTILS.generateOrderId();
+        
+        // Send lease approval email
+        await PMM_UTILS.sendEmail(
+          email,
+          'Progressive Leasing Approved - PacMac Mobile',
+          `<h2>Lease Application Approved!</h2>
+           <p>Congratulations! Your Progressive Leasing application has been approved.</p>
+           <p><strong>Order ID:</strong> ${orderId}</p>
+           <p><strong>Lease ID:</strong> ${leaseResult.id}</p>
+           <p><strong>Credit Limit:</strong> ${PMM_UTILS.formatPrice(leaseResult.limit)}</p>
+           <p><strong>Monthly Payment:</strong> ${PMM_UTILS.formatPrice(leaseResult.monthlyPayment)}</p>
+           <p><strong>Terms:</strong> ${leaseResult.terms}</p>
+           <p>We'll contact you within 24 hours to complete your order and arrange delivery.</p>
+           <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>
+           <p><small>Progressive Leasing is a lease-to-own program. You will own the merchandise after making all payments. This is not a credit transaction. Additional fees may apply.</small></p>`,
+          `Lease Application Approved!\n\nOrder ID: ${orderId}\nLease ID: ${leaseResult.id}\nCredit Limit: ${PMM_UTILS.formatPrice(leaseResult.limit)}\nMonthly Payment: ${PMM_UTILS.formatPrice(leaseResult.monthlyPayment)}\nTerms: ${leaseResult.terms}\n\nWe'll contact you within 24 hours to complete your order.`
+        );
+        
+        alert(`Lease application approved!\nOrder ID: ${orderId}\nLease ID: ${leaseResult.id}\nCheck your email for complete details.`);
+        $('#flow-modal').close(); 
+        Store.clear(); 
+        updateCartUI(); 
+        cartModal.close();
+      } else {
+        alert(`Lease application not approved: ${leaseResult.reason}\n\nPlease try a different payment method or contact us for assistance.`);
       }
     }
 
@@ -720,6 +1127,117 @@
         $('#phobio-output').innerHTML = '<p style="color: var(--accent);">✅ Trade-in submitted! Check your email for next steps.</p>';
       };
     });
+    
+    // Trade-in prompt system
+    function showTradeInPrompt(product) {
+      const promptModal = document.createElement('dialog');
+      promptModal.className = 'modal';
+      promptModal.innerHTML = `
+        <div class="hd">
+          <div style="font-weight:600">Trade In Your Old Device</div>
+          <button class="link" onclick="this.closest('dialog').close()">Close</button>
+        </div>
+        <div class="bd">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+            <h3 style="margin: 0 0 8px 0;">Get Credit for Your Old Device</h3>
+            <p style="color: var(--muted); margin: 0;">Trade in your old device and save on your new ${product.name}</p>
+          </div>
+          
+          <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); padding: 20px; border-radius: 12px; border: 1px solid #161616; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 12px 0; color: var(--accent);">How It Works</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+              <div>
+                <div style="font-size: 24px; margin-bottom: 8px;">1️⃣</div>
+                <div style="font-size: 14px; font-weight: 500;">Get Instant Quote</div>
+                <div style="font-size: 12px; color: var(--muted);">Tell us about your device</div>
+              </div>
+              <div>
+                <div style="font-size: 24px; margin-bottom: 8px;">2️⃣</div>
+                <div style="font-size: 14px; font-weight: 500;">Ship Your Device</div>
+                <div style="font-size: 12px; color: var(--muted);">Free shipping label provided</div>
+              </div>
+              <div>
+                <div style="font-size: 24px; margin-bottom: 8px;">3️⃣</div>
+                <div style="font-size: 14px; font-weight: 500;">Get Your Credit</div>
+                <div style="font-size: 12px; color: var(--muted);">Apply to your new purchase</div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background: #0a0a0a; padding: 16px; border-radius: 12px; border: 1px solid #161616; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 12px 0;">Estimated Trade-In Values</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #161616;">
+                <span>iPhone 13 (Good):</span>
+                <span style="color: var(--accent); font-weight: 600;">$450</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #161616;">
+                <span>iPhone 12 (Good):</span>
+                <span style="color: var(--accent); font-weight: 600;">$350</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #161616;">
+                <span>iPhone 11 (Good):</span>
+                <span style="color: var(--accent); font-weight: 600;">$250</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #161616;">
+                <span>iPad Air (Good):</span>
+                <span style="color: var(--accent); font-weight: 600;">$400</span>
+              </div>
+            </div>
+            <p style="margin: 12px 0 0 0; font-size: 12px; color: var(--muted);">
+              * Values are estimates. Final value determined after device inspection.
+            </p>
+          </div>
+          
+          <div style="background: #0a0a0a; padding: 16px; border-radius: 12px; border: 1px solid #161616; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 12px 0;">Why Trade In?</h4>
+            <ul style="margin: 0; padding-left: 20px; color: var(--muted);">
+              <li>Instant credit toward your new device</li>
+              <li>Free shipping and handling</li>
+              <li>Secure data wiping included</li>
+              <li>Environmentally responsible disposal</li>
+              <li>No hassle, no hidden fees</li>
+            </ul>
+          </div>
+          
+          <div style="margin: 16px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #161616; font-size: 12px; color: var(--muted);">
+            <strong>ℹ️ Powered by Phobio:</strong> Our trade-in program is powered by <a href="https://apidocs.phobio.com" target="_blank" style="color: var(--accent); text-decoration: underline;">Phobio's industry-leading trade-in platform</a>, ensuring you get the best value for your device with secure, reliable service.
+          </div>
+        </div>
+        <div class="ft">
+          <button class="btn" onclick="this.closest('dialog').close()">Maybe Later</button>
+          <button class="btn" style="background: var(--accent); color: #000;" onclick="startTradeIn('${product.id}'); this.closest('dialog').close()">Start Trade-In</button>
+        </div>
+      `;
+      
+      document.body.appendChild(promptModal);
+      promptModal.showModal();
+      
+      // Remove modal when closed
+      promptModal.addEventListener('close', () => {
+        document.body.removeChild(promptModal);
+      });
+    }
+    
+    function startTradeIn(productId) {
+      // Scroll to trade-in section and pre-fill with product info
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (product) {
+        document.getElementById('phobio-model').value = product.name;
+        document.getElementById('tradein').scrollIntoView({ behavior: 'smooth' });
+        
+        // Show a helpful message
+        setTimeout(() => {
+          $('#phobio-output').innerHTML = `
+            <div style="background: var(--accent); color: #000; padding: 12px; border-radius: 8px; margin: 12px 0;">
+              <strong>Ready to trade in your old device?</strong><br>
+              We've pre-filled the form with "${product.name}". Just select the condition and get your instant quote!
+            </div>
+          `;
+        }, 500);
+      }
+    }
 
     // Apple Trade‑In UI
     $('#apple-begin').addEventListener('click', async ()=>{
@@ -812,6 +1330,31 @@
     document.getElementById('btn-apple-trade').addEventListener('click', ()=> document.getElementById('apple-begin').click());
     document.getElementById('btn-progressive').addEventListener('click', ()=> document.getElementById('lease-name').focus());
     document.getElementById('btn-nomad').addEventListener('click', ()=> document.getElementById('nomad-zip').focus());
+    
+    // Back to products button
+    document.getElementById('back-to-products').addEventListener('click', showProducts);
+    
+    // Payment method switching
+    document.addEventListener('change', function(e) {
+      if (e.target.name === 'payment-method') {
+        const cardForm = document.getElementById('card-payment-form');
+        const progressiveForm = document.getElementById('progressive-payment-form');
+        const cardOption = document.getElementById('card-option');
+        const progressiveOption = document.getElementById('progressive-option');
+        
+        if (e.target.value === 'card') {
+          cardForm.style.display = 'block';
+          progressiveForm.style.display = 'none';
+          cardOption.style.borderColor = 'var(--accent)';
+          progressiveOption.style.borderColor = '#161616';
+        } else if (e.target.value === 'progressive') {
+          cardForm.style.display = 'none';
+          progressiveForm.style.display = 'block';
+          progressiveOption.style.borderColor = 'var(--accent)';
+          cardOption.style.borderColor = '#161616';
+        }
+      }
+    });
 
     /***** 6) Helpers *****/
     function sleep(ms){ return new Promise(r=> setTimeout(r, ms)); }
