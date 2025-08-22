@@ -127,6 +127,16 @@
     .glow{box-shadow: 0 0 0 1px #1a1a1a, 0 0 30px rgba(106,167,255,.15)}
     .pulse{animation:pulse 2.2s ease-in-out infinite}
     @keyframes pulse{0%,100%{opacity:.9} 50%{opacity:1}}
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -608,10 +618,18 @@
         showTradeInPrompt(p);
       }, 800);
       
-      // Show accessories after trade-in prompt
-      setTimeout(() => {
-        showAccessoriesForProduct(p);
-      }, 3000);
+              // Show accessories after trade-in prompt
+        setTimeout(() => {
+          showAccessoriesForProduct(p);
+        }, 3000);
+        
+        // Add event listener for Nomad add-on checkbox
+        document.addEventListener('DOMContentLoaded', function() {
+          const nomadCheckbox = document.getElementById('nomad-addon');
+          if (nomadCheckbox) {
+            nomadCheckbox.addEventListener('change', updateCheckoutWithNomad);
+          }
+        });
     }
     
     function showAddToCartAnimation() {
@@ -771,6 +789,59 @@
               <a href="https://apidocs.phobio.com" target="_blank" style="color: var(--accent); text-decoration: underline;">Learn more</a>
             </p>
           </div>
+          
+          <!-- Nomad Internet Add-On Section -->
+          <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #1a0a1a 0%, #2a1a2a 100%); border-radius: 12px; border: 2px solid var(--accent-2); position: relative; overflow: hidden;">
+            <!-- Special Offer Badge -->
+            <div style="position: absolute; top: -8px; right: -8px; background: var(--accent-2); color: #000; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; transform: rotate(15deg);">
+              SPECIAL OFFER
+            </div>
+            
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+              <div style="font-size: 24px; margin-right: 12px;">🌐</div>
+              <div>
+                <h4 style="margin: 0 0 4px 0; color: var(--accent-2);">Nomad Internet</h4>
+                <p style="margin: 0; font-size: 14px; color: var(--muted);">Unlimited Wireless Internet</p>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                  <span style="text-decoration: line-through; color: var(--muted); font-size: 14px;">$59.95/mo</span>
+                  <span style="margin-left: 8px; background: var(--accent-2); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">SAVE 20%</span>
+                </div>
+                <div style="font-size: 18px; font-weight: bold; color: var(--accent-2);">$47.96/mo</div>
+                <div style="font-size: 12px; color: var(--muted);">+ FREE Modem Included</div>
+              </div>
+              <div style="text-align: right;">
+                <label class="checkbox-container" style="margin: 0;">
+                  <input type="checkbox" id="nomad-addon" style="margin-right: 8px;">
+                  <span style="font-size: 12px; color: var(--muted);">Add to Order</span>
+                </label>
+              </div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; margin-bottom: 12px;">
+              <div style="font-size: 12px; color: var(--accent-2); font-weight: 500; margin-bottom: 4px;">✨ What's Included:</div>
+              <ul style="margin: 0; padding-left: 16px; font-size: 11px; color: var(--muted);">
+                <li>Unlimited data with no throttling</li>
+                <li>14-day risk-free trial</li>
+                <li>Easy self-installation</li>
+                <li>No contracts, cancel anytime</li>
+                <li>Coverage in your area</li>
+              </ul>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+              <button class="btn" style="background: transparent; border: 1px solid var(--accent-2); color: var(--accent-2); font-size: 12px; padding: 8px 12px; flex: 1;" onclick="window.open('https://bit.ly/3IN8z0d', '_blank')">
+                Learn More
+              </button>
+              <button class="btn" style="background: var(--accent-2); color: #000; font-size: 12px; padding: 8px 12px; flex: 1;" onclick="addNomadToOrder()">
+                Add Internet
+              </button>
+            </div>
+          </div>
         </div>
         
         <!-- Credit Card Payment Form -->
@@ -903,18 +974,50 @@
       if (paymentResult.success) {
         const orderId = PMM_UTILS.generateOrderId();
         
-        // Send order confirmation email
-        await PMM_UTILS.sendEmail(
-          email,
-          'Order Confirmed - PacMac Mobile',
-          `<h2>Order Confirmed!</h2>
+        // Check if Nomad add-on was selected
+        const nomadAddon = sessionStorage.getItem('nomadAddon');
+        let emailHtml = `<h2>Order Confirmed!</h2>
            <p>Thank you for your order with PacMac Mobile.</p>
            <p><strong>Order ID:</strong> ${orderId}</p>
            <p><strong>Payment Method:</strong> Credit/Debit Card</p>
            <p><strong>Total:</strong> ${PMM_UTILS.formatPrice(total)}</p>
            <p>We'll ship your items within 1-2 business days and send you tracking information.</p>
-           <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>`,
-          `Order Confirmed!\n\nOrder ID: ${orderId}\nPayment Method: Credit/Debit Card\nTotal: ${PMM_UTILS.formatPrice(total)}\n\nWe'll ship your items within 1-2 business days.`
+           <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>`;
+        
+        let emailText = `Order Confirmed!\n\nOrder ID: ${orderId}\nPayment Method: Credit/Debit Card\nTotal: ${PMM_UTILS.formatPrice(total)}\n\nWe'll ship your items within 1-2 business days.`;
+        
+        if (nomadAddon) {
+          const nomadItem = JSON.parse(nomadAddon);
+          emailHtml += `
+           <div style="margin-top: 20px; padding: 16px; background: #f0f0f0; border-radius: 8px;">
+             <h3>🌐 Nomad Internet Add-On</h3>
+             <p>You've added Nomad Internet to your order!</p>
+             <p><strong>Service:</strong> ${nomadItem.name}</p>
+             <p><strong>Monthly Cost:</strong> $${nomadItem.price}</p>
+             <p><strong>Next Steps:</strong></p>
+             <ol>
+               <li>Complete your Nomad Internet setup at <a href="https://bit.ly/3IN8z0d" style="color: #007bff;">Nomad Internet</a></li>
+               <li>Enter your address to check coverage</li>
+               <li>Start your 14-day risk-free trial</li>
+               <li>Enjoy unlimited wireless internet!</li>
+             </ol>
+             <p style="margin-top: 12px; font-size: 14px; color: #666;">
+               <strong>Special Offer:</strong> You're getting 20% off the regular price of $59.95/mo!
+             </p>
+           </div>`;
+          
+          emailText += `\n\n🌐 Nomad Internet Add-On\nService: ${nomadItem.name}\nMonthly Cost: $${nomadItem.price}\nNext Steps: Visit https://bit.ly/3IN8z0d to complete setup\nSpecial Offer: 20% off regular price!`;
+          
+          // Clear the session storage
+          sessionStorage.removeItem('nomadAddon');
+        }
+        
+        // Send order confirmation email
+        await PMM_UTILS.sendEmail(
+          email,
+          'Order Confirmed - PacMac Mobile',
+          emailHtml,
+          emailText
         );
         
         alert(`Order confirmed! Order ID: ${orderId}\nCheck your email for confirmation.`);
@@ -969,11 +1072,9 @@
       if (leaseResult.status === 'approved') {
         const orderId = PMM_UTILS.generateOrderId();
         
-        // Send lease approval email
-        await PMM_UTILS.sendEmail(
-          email,
-          'Progressive Leasing Approved - PacMac Mobile',
-          `<h2>Lease Application Approved!</h2>
+        // Check if Nomad add-on was selected
+        const nomadAddon = sessionStorage.getItem('nomadAddon');
+        let emailHtml = `<h2>Lease Application Approved!</h2>
            <p>Congratulations! Your Progressive Leasing application has been approved.</p>
            <p><strong>Order ID:</strong> ${orderId}</p>
            <p><strong>Lease ID:</strong> ${leaseResult.id}</p>
@@ -982,8 +1083,42 @@
            <p><strong>Terms:</strong> ${leaseResult.terms}</p>
            <p>We'll contact you within 24 hours to complete your order and arrange delivery.</p>
            <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>
-           <p><small>Progressive Leasing is a lease-to-own program. You will own the merchandise after making all payments. This is not a credit transaction. Additional fees may apply.</small></p>`,
-          `Lease Application Approved!\n\nOrder ID: ${orderId}\nLease ID: ${leaseResult.id}\nCredit Limit: ${PMM_UTILS.formatPrice(leaseResult.limit)}\nMonthly Payment: ${PMM_UTILS.formatPrice(leaseResult.monthlyPayment)}\nTerms: ${leaseResult.terms}\n\nWe'll contact you within 24 hours to complete your order.`
+           <p><small>Progressive Leasing is a lease-to-own program. You will own the merchandise after making all payments. This is not a credit transaction. Additional fees may apply.</small></p>`;
+        
+        let emailText = `Lease Application Approved!\n\nOrder ID: ${orderId}\nLease ID: ${leaseResult.id}\nCredit Limit: ${PMM_UTILS.formatPrice(leaseResult.limit)}\nMonthly Payment: ${PMM_UTILS.formatPrice(leaseResult.monthlyPayment)}\nTerms: ${leaseResult.terms}\n\nWe'll contact you within 24 hours to complete your order.`;
+        
+        if (nomadAddon) {
+          const nomadItem = JSON.parse(nomadAddon);
+          emailHtml += `
+           <div style="margin-top: 20px; padding: 16px; background: #f0f0f0; border-radius: 8px;">
+             <h3>🌐 Nomad Internet Add-On</h3>
+             <p>You've added Nomad Internet to your order!</p>
+             <p><strong>Service:</strong> ${nomadItem.name}</p>
+             <p><strong>Monthly Cost:</strong> $${nomadItem.price}</p>
+             <p><strong>Next Steps:</strong></p>
+             <ol>
+               <li>Complete your Nomad Internet setup at <a href="https://bit.ly/3IN8z0d" style="color: #007bff;">Nomad Internet</a></li>
+               <li>Enter your address to check coverage</li>
+               <li>Start your 14-day risk-free trial</li>
+               <li>Enjoy unlimited wireless internet!</li>
+             </ol>
+             <p style="margin-top: 12px; font-size: 14px; color: #666;">
+               <strong>Special Offer:</strong> You're getting 20% off the regular price of $59.95/mo!
+             </p>
+           </div>`;
+          
+          emailText += `\n\n🌐 Nomad Internet Add-On\nService: ${nomadItem.name}\nMonthly Cost: $${nomadItem.price}\nNext Steps: Visit https://bit.ly/3IN8z0d to complete setup\nSpecial Offer: 20% off regular price!`;
+          
+          // Clear the session storage
+          sessionStorage.removeItem('nomadAddon');
+        }
+        
+        // Send lease approval email
+        await PMM_UTILS.sendEmail(
+          email,
+          'Progressive Leasing Approved - PacMac Mobile',
+          emailHtml,
+          emailText
         );
         
         alert(`Lease application approved!\nOrder ID: ${orderId}\nLease ID: ${leaseResult.id}\nCheck your email for complete details.`);
@@ -1236,6 +1371,86 @@
             </div>
           `;
         }, 500);
+      }
+    }
+    
+    // Nomad Internet Add-On Functions
+    function addNomadToOrder() {
+      const nomadAddon = document.getElementById('nomad-addon');
+      if (nomadAddon) {
+        nomadAddon.checked = true;
+        nomadAddon.dispatchEvent(new Event('change'));
+      }
+      
+      // Show confirmation message
+      const confirmation = document.createElement('div');
+      confirmation.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--accent-2);
+        color: #000;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        max-width: 300px;
+        animation: slideIn 0.3s ease-out;
+      `;
+      confirmation.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+          <div style="font-size: 20px; margin-right: 8px;">🌐</div>
+          <strong>Nomad Internet Added!</strong>
+        </div>
+        <div style="font-size: 14px; margin-bottom: 8px;">
+          Unlimited wireless internet for $47.96/mo
+        </div>
+        <div style="font-size: 12px; color: #666;">
+          You'll be redirected to Nomad to complete setup after checkout
+        </div>
+      `;
+      
+      document.body.appendChild(confirmation);
+      
+      // Remove after 4 seconds
+      setTimeout(() => {
+        if (confirmation.parentNode) {
+          confirmation.style.animation = 'slideOut 0.3s ease-in';
+          setTimeout(() => {
+            if (confirmation.parentNode) {
+              document.body.removeChild(confirmation);
+            }
+          }, 300);
+        }
+      }, 4000);
+    }
+    
+    // Update checkout total when Nomad add-on is selected
+    function updateCheckoutWithNomad() {
+      const nomadAddon = document.getElementById('nomad-addon');
+      if (nomadAddon && nomadAddon.checked) {
+        // Add Nomad to cart or update total
+        const nomadItem = {
+          id: 'nomad-internet',
+          name: 'Nomad Internet - Unlimited Wireless',
+          price: 47.96,
+          qty: 1,
+          description: 'Monthly unlimited internet service with free modem'
+        };
+        
+        // Store in session for checkout
+        sessionStorage.setItem('nomadAddon', JSON.stringify(nomadItem));
+        
+        // Update the total display
+        const totalElement = document.querySelector('.price-row .total');
+        if (totalElement) {
+          const currentTotal = parseFloat(totalElement.textContent.replace(/[^0-9.]/g, ''));
+          const newTotal = currentTotal + 47.96;
+          totalElement.textContent = fmt(newTotal);
+        }
+      } else {
+        // Remove from session
+        sessionStorage.removeItem('nomadAddon');
       }
     }
 
