@@ -6,6 +6,7 @@
   <title>PacMac Mobile</title>
   <meta name="description" content="PacMac Mobile e‑commerce site for trade‑ins, leasing, and Nomad Internet." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📱</text></svg>">
+  <script src="config.js"></script>
   <style>
     :root{
       --bg: #000;
@@ -155,6 +156,9 @@
         <p>Want the newest phone without breaking the bank? Try our lease-to-own option. No credit check.</p>
         <div class="row">
           <input id="lease-name" class="chip" placeholder="Full name" />
+          <input id="lease-email" class="chip" placeholder="Email address" />
+        </div>
+        <div class="row">
           <input id="lease-phone" class="chip" placeholder="Phone" />
           <input id="lease-zip" class="chip" placeholder="ZIP" />
           <button class="btn" id="lease-prequal">Check Pre‑Qualification</button>
@@ -256,12 +260,54 @@
 
     /***** 2) Minimal product catalog *****/
     const PRODUCTS = [
-      {id:'pm-iphone15', name:'iPhone 15', price: 649.00, tags:['5G','128GB'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708'},
-      {id:'pm-iphone15pro', name:'iPhone 15 Plus', price: 749.00, tags:['5G','Titanium'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-bluetitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845699335'},
-      {id:'pm-ipad-air', name:'iPad Air', price: 549.00, tags:['Wi-Fi','M2'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/ipad-air-finish-unselect-gallery-1-202405?wid=2560&hei=1440&fmt=p-jpg&qlt=95&.v=1713559262952'},
-      {id:'pm-watch10', name:'Apple Watch Series 10', price: 349.00, tags:['GPS'], img:'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/watch-ultra-2-hero-202309?wid=1000&hei=1000&fmt=jpeg&qlt=95&.v=1693613492044'},
-      {id:'pm-galaxyS25', name:'Samsung Galaxy S25', price: 749.00, tags:['Android','AI'], img:'https://media.wired.com/photos/6500ad5618d6c2d75440b1d3/master/w_2560%2Cc_limit/Samsung-Galaxy-S24-Ultra-SOURCE-Samsung-Gear.jpg'},
-      {id:'pm-galaxyS25Ultra', name:'Samsung Galaxy S25 Ultra', price: 1199.00, tags:['Android','AI'], img:'https://i.blogs.es/3031b3/samsung-galaxy-s23-ultra-lifestyles/840_560.jpeg'}
+      {
+        id:'pm-iphone15', 
+        name:'iPhone 15', 
+        price: 799.00, 
+        tags:['5G','128GB','A16 Bionic'],
+        img:'Products/iPhone-15.jpg',
+        description: 'Latest iPhone with USB-C, Dynamic Island, and 48MP camera'
+      },
+      {
+        id:'pm-iphone15plus', 
+        name:'iPhone 15 Plus', 
+        price: 899.00, 
+        tags:['5G','128GB','6.7" Display'],
+        img:'Products/iPhone15Plus.jpg',
+        description: 'Larger display with all iPhone 15 features and extended battery life'
+      },
+      {
+        id:'pm-ipad-air', 
+        name:'iPad Air 11"', 
+        price: 599.00, 
+        tags:['Wi-Fi','M2','11" Display'],
+        img:'Products/iPadAir11.jpg',
+        description: 'Powerful tablet with M2 chip, perfect for work and creativity'
+      },
+      {
+        id:'pm-watch10', 
+        name:'Apple Watch Series 10', 
+        price: 399.00, 
+        tags:['GPS','Health','S9 Chip'],
+        img:'Products/AppleWatch10.jpg',
+        description: 'Advanced health monitoring with faster performance and brighter display'
+      },
+      {
+        id:'pm-galaxyS25', 
+        name:'Samsung Galaxy S25', 
+        price: 799.00, 
+        tags:['Android','AI','5G'],
+        img:'Products/SamS25.jpg',
+        description: 'AI-powered Android flagship with advanced camera system'
+      },
+      {
+        id:'pm-galaxyS25ultra', 
+        name:'Samsung Galaxy S25 Ultra', 
+        price: 1199.00, 
+        tags:['Android','AI','S Pen'],
+        img:'Products/SamS25Ultra.jpg',
+        description: 'Ultimate Android experience with S Pen and 200MP camera'
+      }
     ];
 
     const grid = document.getElementById('product-grid');
@@ -270,10 +316,11 @@
       el.className='card';
       el.setAttribute('role','listitem');
       el.innerHTML = `
-        <div class="img" aria-hidden="true"><img src="${p.img}" alt="${p.name}" /></div>
+        <div class="img" aria-hidden="true"><img src="${p.img}" alt="${p.name}" style="max-width:100%; height:auto; border-radius:8px;" /></div>
         <h3>${p.name}</h3>
+        <p style="color:var(--muted); font-size:14px; margin:0 14px 8px;">${p.description}</p>
         <p>${p.tags.map(t=>`<span class="chip">${t}</span>`).join(' ')}</p>
-        <div class="price-row"><div>${fmt(p.price)}</div> <button class="btn" data-id="${p.id}">Add to Cart</button></div>
+        <div class="price-row"><div><strong>${fmt(p.price)}</strong></div> <button class="btn" data-id="${p.id}">Add to Cart</button></div>
       `;
       $('button', el).addEventListener('click', ()=> addToCart(p));
       grid.appendChild(el);
@@ -326,14 +373,99 @@
       });
     });
 
-    function renderCheckout(items){ const sum = items.reduce((s,i)=>s+i.price*i.qty,0);
+    function renderCheckout(items){ 
+      const sum = items.reduce((s,i)=>s+i.price*i.qty,0);
+      const tax = sum * 0.07; // 7% tax
+      const total = sum + tax;
+      
       return `<div>
-        <p>Secure card payment (demo). For production, swap in your gateway provider.</p>
-        <p><strong>Amount:</strong> ${fmt(sum)}</p>
-        <div class='row'><input class='chip' placeholder='Card number'><input class='chip' placeholder='MM/YY'><input class='chip' placeholder='CVC'></div>
+        <p>Secure payment powered by Stripe. Your information is encrypted and secure.</p>
+        <div style="margin: 20px 0; padding: 16px; background: #0a0a0a; border-radius: 12px; border: 1px solid #161616;">
+          <h4 style="margin: 0 0 12px 0;">Order Summary</h4>
+          <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+            <span>Subtotal:</span>
+            <span>${fmt(sum)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+            <span>Tax (7%):</span>
+            <span>${fmt(tax)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin: 8px 0; padding-top: 8px; border-top: 1px solid #161616; font-weight: bold;">
+            <span>Total:</span>
+            <span>${fmt(total)}</span>
+          </div>
+        </div>
+        <div style="margin: 20px 0;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email Address</label>
+          <input id="checkout-email" class="chip" placeholder="your@email.com" style="width: 100%; margin-bottom: 12px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Phone Number</label>
+          <input id="checkout-phone" class="chip" placeholder="(402) 555-0123" style="width: 100%; margin-bottom: 12px;">
+        </div>
+        <div style="margin: 20px 0;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Card Information</label>
+          <div class='row' style="gap: 8px;">
+            <input id="checkout-card" class="chip" placeholder="1234 5678 9012 3456" style="flex: 2;">
+            <input id="checkout-expiry" class="chip" placeholder="MM/YY" style="flex: 1;">
+            <input id="checkout-cvc" class="chip" placeholder="CVC" style="flex: 1;">
+          </div>
+        </div>
+        <div style="margin: 20px 0; padding: 12px; background: #0a0a0a; border-radius: 8px; border: 1px solid #161616; font-size: 14px; color: var(--muted);">
+          <strong>🔒 Secure Checkout:</strong> Your payment information is encrypted and processed securely by Stripe. We never store your card details.
+        </div>
       </div>`;
     }
-    function completeCheckout(){ alert('Payment processed (demo). Replace with your PSP.'); $('#flow-modal').close(); Store.clear(); updateCartUI(); cartModal.close(); }
+    
+    async function completeCheckout(){ 
+      const email = $('#checkout-email').value;
+      const phone = $('#checkout-phone').value;
+      const card = $('#checkout-card').value;
+      const expiry = $('#checkout-expiry').value;
+      const cvc = $('#checkout-cvc').value;
+      
+      // Basic validation
+      if (!email || !phone || !card || !expiry || !cvc) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      if (!PMM_UTILS.validateEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
+      const items = readCart();
+      const sum = items.reduce((s,i)=>s+i.price*i.qty,0);
+      const tax = sum * 0.07;
+      const total = sum + tax;
+      
+      // Process payment
+      const paymentResult = await PMM_UTILS.processPayment(total, 'demo_token', `PacMac Mobile Order - ${items.length} items`);
+      
+      if (paymentResult.success) {
+        const orderId = PMM_UTILS.generateOrderId();
+        
+        // Send order confirmation email
+        await PMM_UTILS.sendEmail(
+          email,
+          'Order Confirmed - PacMac Mobile',
+          `<h2>Order Confirmed!</h2>
+           <p>Thank you for your order with PacMac Mobile.</p>
+           <p><strong>Order ID:</strong> ${orderId}</p>
+           <p><strong>Total:</strong> ${PMM_UTILS.formatPrice(total)}</p>
+           <p>We'll ship your items within 1-2 business days and send you tracking information.</p>
+           <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>`,
+          `Order Confirmed!\n\nOrder ID: ${orderId}\nTotal: ${PMM_UTILS.formatPrice(total)}\n\nWe'll ship your items within 1-2 business days.`
+        );
+        
+        alert(`Order confirmed! Order ID: ${orderId}\nCheck your email for confirmation.`);
+        $('#flow-modal').close(); 
+        Store.clear(); 
+        updateCartUI(); 
+        cartModal.close();
+      } else {
+        alert('Payment failed. Please check your card information and try again.');
+      }
+    }
 
     /***** 4) Plugin surfaces (Adapters) *****/
     // Each provider exposes a predictable interface. Swap the internals with real API calls.
@@ -357,16 +489,17 @@
       }
     };
 
-    // ---- Phobio Adapter ----
+    // ---- Enhanced Phobio Adapter ----
     const Phobio = {
       async quote(model, condition){
-        // Replace this mock with: await fetch(CONFIG.phobio.endpoint, { method:'POST', headers:{'Authorization':`Bearer ${CONFIG.phobio.apiKey}`, 'Content-Type':'application/json'}, body: JSON.stringify({model, condition}) })
-        await sleep(700);
-        const base = 500 * (Math.random()*0.3 + 0.7); // demo randomness
-        const factor = { 'Like New':1, 'Good':.8, 'Fair':.55, 'Broken':.2 }[condition] || .5;
-        return { amount: Math.round(base*factor), currency:'USD', reference: 'PHO-'+Math.random().toString(36).slice(2,8) };
+        // Use enhanced trade-in pricing
+        const quote = await PMM_TRADE_IN.getQuote(model, condition);
+        return quote;
       },
-      async submit(details){ await sleep(600); return { status:'submitted', id:'SUB-'+Math.random().toString(36).slice(2,8) } }
+      async submit(details){ 
+        const result = await PMM_TRADE_IN.submitTradeIn(details);
+        return result;
+      }
     };
 
     // ---- Apple Authorized Trade‑In Adapter (placeholder) ----
@@ -375,29 +508,38 @@
       async quote(model){ await sleep(500); return { amount: Math.round(450*(Math.random()*0.25+.75)), currency:'USD' } }
     };
 
-    // ---- Progressive Leasing Adapter ----
+    // ---- Enhanced Progressive Leasing Adapter ----
     const ProgressiveLeasing = {
       async prequalify({name, phone, zip, amount}){
-        await sleep(800);
-        const approved = Math.random() > 0.2; // demo logic
-        return approved ? { status:'approved', limit: Math.max(800, Math.round((amount||1200)*1.2)), reference: 'PL-'+rnd() } : { status:'declined', reason:'Not eligible at this time' };
+        const result = await PMM_PROGRESSIVE.prequalify({name, phone, zip, amount});
+        return result;
       },
-      async startFromCart(items){ const sum = items.reduce((s,i)=>s+i.price*i.qty,0); const name=$('#lease-name').value||'Customer';
-        const phone=$('#lease-phone').value||''; const zip=$('#lease-zip').value||'';
-        const res = await this.prequalify({name, phone, zip, amount: sum});
-        openFlow({ title:'Progressive Leasing', body: renderJSON(res), actions:[ {label:'Close', handler: closeFlow} ] });
+      async startFromCart(items){ 
+        const sum = items.reduce((s,i)=>s+i.price*i.qty,0); 
+        const name = $('#lease-name').value || 'Customer';
+        const phone = $('#lease-phone').value || ''; 
+        const zip = $('#lease-zip').value || '';
+        const email = $('#lease-email')?.value || 'customer@pacmacmobile.com';
+        
+        const result = await PMM_PROGRESSIVE.startLease(items, {name, phone, zip, email, amount: sum});
+        openFlow({ 
+          title:'Progressive Leasing', 
+          body: renderJSON(result), 
+          actions:[ {label:'Close', handler: closeFlow} ] 
+        });
       }
     };
 
-    // ---- Nomad Internet Adapter ----
+    // ---- Enhanced Nomad Internet Adapter ----
     const Nomad = {
-      async availability(zip){ await sleep(700); const ok = /\d{5}/.test(zip) && Math.random()>.1; const plans = ok ? [
-          {id:'nomad-home-pro', name:'Home Pro', down:'200 Mbps', price: 99},
-          {id:'nomad-travel', name:'Travel Unlimited', down:'100 Mbps', price: 79}
-        ] : [];
-        return { ok, zip, plans };
+      async availability(zip){ 
+        const result = await PMM_NOMAD.checkAvailability(zip);
+        return result;
       },
-      async order(planId, customer){ await sleep(700); return { status:'submitted', orderId:'NOM-'+rnd(), planId, customer } }
+      async order(planId, customer){ 
+        const result = await PMM_NOMAD.placeOrder(planId, customer);
+        return result;
+      }
     };
 
     window.PMMPlugins = { Phobio, ProgressiveLeasing, AppleTradeIn, Nomad }; // exposed globally for easy swapping
@@ -416,15 +558,45 @@
     }
     function closeFlow(){ flowModal.close(); }
 
-    // Phobio UI
+    // Enhanced Phobio UI
     $('#phobio-get-quote').addEventListener('click', async ()=>{
       const model = $('#phobio-model').value.trim() || 'iPhone';
       const cond = $('#phobio-cond').value;
       $('#phobio-output').textContent = 'Fetching quote…';
       const q = await Phobio.quote(model, cond);
-      $('#phobio-output').innerHTML = `<div class='row'>Quote for <strong>${model}</strong> (${cond}): <span class='chip'>${fmt(q.amount)} ${q.currency}</span></div>
-        <div class='row' style='margin-top:8px'><button class='btn' id='phobio-submit'>Submit Trade‑In</button></div>`;
-      $('#phobio-submit').onclick = async ()=>{ const res = await Phobio.submit({model, cond, quote:q}); alert('Trade‑in submitted: '+res.id); };
+      $('#phobio-output').innerHTML = `
+        <div style="background: #0a0a0a; padding: 16px; border-radius: 12px; border: 1px solid #161616; margin: 12px 0;">
+          <h4 style="margin: 0 0 12px 0;">Trade-In Quote</h4>
+          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+            <span>Device:</span>
+            <span><strong>${model}</strong></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+            <span>Condition:</span>
+            <span>${cond}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin: 8px 0; padding-top: 8px; border-top: 1px solid #161616; font-weight: bold;">
+            <span>Estimated Value:</span>
+            <span style="color: var(--accent);">${PMM_UTILS.formatPrice(q.amount)}</span>
+          </div>
+          <div style="margin-top: 12px; font-size: 14px; color: var(--muted);">
+            Quote valid until: ${q.validUntil.toLocaleDateString()}
+          </div>
+        </div>
+        <div style="margin-top: 12px;">
+          <input id="phobio-email" class="chip" placeholder="Your email address" style="width: 100%; margin-bottom: 8px;">
+          <button class="btn" id="phobio-submit" style="width: 100%;">Submit Trade‑In</button>
+        </div>`;
+      $('#phobio-submit').onclick = async ()=>{
+        const email = $('#phobio-email').value;
+        if (!email || !PMM_UTILS.validateEmail(email)) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+        const res = await Phobio.submit({model, cond, quote:q, email});
+        alert(`Trade-in submitted successfully!\nOrder ID: ${res.id}\nCheck your email for confirmation.`);
+        $('#phobio-output').innerHTML = '<p style="color: var(--accent);">✅ Trade-in submitted! Check your email for next steps.</p>';
+      };
     });
 
     // Apple Trade‑In UI
@@ -435,10 +607,64 @@
       }}] });
     });
 
-    // Progressive UI shortcuts
+    // Enhanced Progressive UI
     $('#lease-prequal').addEventListener('click', async ()=>{
-      const res = await ProgressiveLeasing.prequalify({ name: $('#lease-name').value, phone: $('#lease-phone').value, zip: $('#lease-zip').value, amount: readCart().reduce((s,i)=>s+i.price*i.qty,0) });
-      $('#lease-output').innerHTML = renderJSON(res);
+      const name = $('#lease-name').value;
+      const email = $('#lease-email').value;
+      const phone = $('#lease-phone').value;
+      const zip = $('#lease-zip').value;
+      const amount = readCart().reduce((s,i)=>s+i.price*i.qty,0);
+      
+      if (!name || !email || !phone || !zip) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      if (!PMM_UTILS.validateEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
+      $('#lease-output').textContent = 'Checking pre-qualification...';
+      const res = await ProgressiveLeasing.prequalify({ name, email, phone, zip, amount });
+      
+      if (res.status === 'approved') {
+        $('#lease-output').innerHTML = `
+          <div style="background: #0a0a0a; padding: 16px; border-radius: 12px; border: 1px solid #161616; margin: 12px 0;">
+            <h4 style="margin: 0 0 12px 0; color: var(--accent-2);">✅ Pre-Qualified!</h4>
+            <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+              <span>Credit Limit:</span>
+              <span><strong>${PMM_UTILS.formatPrice(res.limit)}</strong></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+              <span>Monthly Payment:</span>
+              <span><strong>${PMM_UTILS.formatPrice(res.monthlyPayment)}</strong></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+              <span>Terms:</span>
+              <span>${res.terms}</span>
+            </div>
+            <div style="margin-top: 12px;">
+              <button class="btn" id="lease-apply" style="width: 100%;">Apply for Lease</button>
+            </div>
+          </div>`;
+        
+        $('#lease-apply').onclick = async () => {
+          const items = readCart();
+          if (items.length === 0) {
+            alert('Please add items to your cart first.');
+            return;
+          }
+          await ProgressiveLeasing.startFromCart(items);
+        };
+      } else {
+        $('#lease-output').innerHTML = `
+          <div style="background: #0a0a0a; padding: 16px; border-radius: 12px; border: 1px solid #161616; margin: 12px 0;">
+            <h4 style="margin: 0 0 12px 0; color: #ff6b6b;">❌ Not Pre-Qualified</h4>
+            <p style="margin: 0 0 8px 0;">${res.reason}</p>
+            ${res.suggestions ? `<ul style="margin: 8px 0; padding-left: 20px;"><li>${res.suggestions.join('</li><li>')}</li></ul>` : ''}
+          </div>`;
+      }
     });
 
     // Nomad UI

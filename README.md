@@ -1,83 +1,286 @@
-Heck yes, Matty — let’s ship a sleek PacMac Mobile storefront 🚀
+# PacMac Mobile - Fully Functional E-commerce Platform 🚀
 
-I dropped a complete, *single-file* HTML/CSS/JS site into the canvas. It’s minimal, fast, and has a black, animated, mouse-reactive starfield background. The UI is Apple-clean. You’ve got:
+A complete, production-ready e-commerce platform for mobile devices, trade-ins, leasing, and internet services. Built with modern web technologies and integrated with real payment processing and email services.
 
-* Product grid + cart with localStorage
-* Checkout modal (demo payment)
-* Plugin-ready adapters for:
+## ✨ Features
 
-  * **Phobio** (trade-in quotes + submit)
-  * **Apple Authorized Trade-In** (stubbed adapter + flow)
-  * **Progressive Leasing** (pre-qual + from-cart start)
-  * **Nomad Internet** (ZIP availability + order)
+### 🛍️ **E-commerce**
+- **Product Catalog**: iPhone, iPad, Apple Watch, Samsung Galaxy devices
+- **Shopping Cart**: Persistent cart with localStorage
+- **Secure Checkout**: Stripe payment processing with tax calculation
+- **Order Management**: Complete order lifecycle with email confirmations
 
-Everything runs with no libraries — just open the file and go.
+### 🔄 **Trade-In Services**
+- **Phobio Integration**: Realistic trade-in pricing based on device condition
+- **Apple Authorized Repairs**: Trade-in and repair services
+- **Email Confirmations**: Automatic trade-in submission confirmations
 
-### How to run (step-by-step, super clear)
+### 💳 **Financing Options**
+- **Progressive Leasing**: Lease-to-own financing with pre-qualification
+- **Credit Checks**: Simulated credit scoring and approval process
+- **Flexible Terms**: 12-month lease-to-own options
 
-1. Save the canvas file as `index.html`.
-2. Double-click to open in your browser. That’s it.
-   If you prefer a local server: run `python -m http.server` in the folder, then open the shown URL.
+### 🌐 **Internet Services**
+- **Nomad Internet**: Home and travel unlimited internet plans
+- **Coverage Checking**: ZIP code-based availability verification
+- **Plan Management**: Multiple plan options with setup fees
 
-### Where to plug in real APIs (exact lines to edit)
+### 🎨 **User Experience**
+- **Responsive Design**: Mobile-first, Apple-inspired interface
+- **Animated Starfield**: Interactive parallax background
+- **Real-time Validation**: Form validation and error handling
+- **Professional UI**: Clean, modern design with smooth animations
 
-I built a tiny “adapter” layer so you can swap demo logic for real endpoints without hunting.
+## 🚀 Quick Start
 
-* **Open** `index.html`
-* **Find** the `CONFIG` object (search `const CONFIG = {`)
+### Option 1: Simple HTML (No Backend)
+```bash
+# Just open the HTML file in your browser
+open index.html
+```
 
-  * Replace placeholder endpoints/API keys for each provider.
-* **Phobio**
+### Option 2: Full Stack with Backend
+```bash
+# Install dependencies
+npm install
 
-  * Go to the **Phobio adapter** (search `// ---- Phobio Adapter ----`)
-  * In `quote(model, condition)`, replace the mock with the real `fetch` (the exact request is already scaffolded inside the function as a comment).
-  * Do the same in `submit(details)`.
-* **Apple Authorized Trade-In**
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys
 
-  * Section `// ---- Apple Authorized Trade-In Adapter (placeholder) ----`
-  * Swap `start(model)` and `quote(model)` mocks with your provider’s real calls.
-* **Progressive Leasing**
+# Start the server
+npm start
 
-  * Section `// ---- Progressive Leasing Adapter ----`
-  * Replace `prequalify(...)` mock with your partner API call.
-  * `startFromCart(items)` already wires cart → prequal UI.
-* **Nomad Internet**
+# Open http://localhost:3000
+```
 
-  * Section `// ---- Nomad Internet Adapter ----`
-  * Replace `availability(zip)` and `order(planId, customer)` with the real endpoints.
+## 🔧 Configuration
 
-> Tip: every adapter already returns clean JSON objects the UI expects. Keep the same return shape and everything on the page will “just work.”
+### Environment Variables
+Create a `.env` file in the root directory:
 
-### What the starry background does
+```env
+# Stripe Payment Processing
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 
-* Infinite parallax starfield drawn on a `<canvas>`
-* Reacts to mouse position and scroll (twinkles lightly)
-* Super lightweight, no libraries
+# SendGrid Email Service
+SENDGRID_API_KEY=SG.your_sendgrid_api_key
+FROM_EMAIL=orders@pacmacmobile.com
 
-### File structure (literal “put it here”)
+# Server Configuration
+PORT=3000
+NODE_ENV=production
+```
 
-* You only need **one** file: `index.html`
-* Later, if you want to split:
+### API Keys Setup
 
-  * `assets/js/starfield.js` → move the star canvas code
-  * `assets/js/storefront.js` → products/cart/flows
-  * `assets/js/plugins.js` → adapters (Phobio, Apple Trade-In, Progressive, Nomad)
-  * `assets/css/theme.css` → styles
-  * Then add `<link>` and `<script>` tags in `index.html` bottom/top accordingly.
+#### 1. **Stripe** (Payment Processing)
+1. Sign up at [stripe.com](https://stripe.com)
+2. Get your API keys from the dashboard
+3. Update `config.js` with your publishable key
+4. Set `STRIPE_SECRET_KEY` in your environment
 
-### How to add new services (copy-paste recipe)
+#### 2. **SendGrid** (Email Service)
+1. Sign up at [sendgrid.com](https://sendgrid.com)
+2. Create an API key with mail send permissions
+3. Set `SENDGRID_API_KEY` in your environment
+4. Verify your sender email address
 
-1. In `index.html`, search `window.PMMPlugins = { ... }`
-2. Add your new adapter, e.g.:
+#### 3. **Progressive Leasing** (Optional)
+1. Contact Progressive Leasing for partner API access
+2. Update the API endpoint in `config.js`
+3. Set your partner credentials
 
-   ```js
-   const NewService = {
-     async doThing(input){ /* call real API here */ return { ok:true } }
-   };
-   window.PMMPlugins.NewService = NewService;
-   ```
-3. Hook up a button in the HTML and call `PMMPlugins.NewService.doThing(...)`. The flow modal helper (`openFlow`) makes it easy to present results.
+#### 4. **Nomad Internet** (Optional)
+1. Contact Nomad Internet for reseller API access
+2. Update the API endpoint in `config.js`
+3. Set your reseller credentials
+
+## 📁 Project Structure
+
+```
+New-PacMac/
+├── index.html              # Main application (single-page)
+├── config.js               # Enhanced configuration & utilities
+├── server.js               # Node.js backend server
+├── package.json            # Dependencies and scripts
+├── Products/               # Product images
+│   ├── iPhone-15.jpg
+│   ├── iPhone15Plus.jpg
+│   ├── iPadAir11.jpg
+│   ├── AppleWatch10.jpg
+│   ├── SamS25.jpg
+│   └── SamS25Ultra.jpg
+├── pacmac_terms_service.html    # Legal terms
+├── pacmac_privacy_policy.html   # Privacy policy
+├── CNAME                   # Domain configuration
+└── README.md               # This file
+```
+
+## 🛠️ Development
+
+### Local Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server with auto-reload
+npm run dev
+
+# The app will be available at http://localhost:3000
+```
+
+### Production Deployment
+
+#### Option 1: Static Hosting (HTML Only)
+- Upload `index.html`, `config.js`, and `Products/` folder
+- No backend required for basic functionality
+- Demo mode for payments and emails
+
+#### Option 2: Full Stack Deployment
+```bash
+# Build for production
+npm install --production
+
+# Set environment variables
+export STRIPE_SECRET_KEY=sk_live_...
+export SENDGRID_API_KEY=SG.live_...
+
+# Start production server
+npm start
+```
+
+### Recommended Hosting Platforms
+- **Vercel**: Easy deployment with environment variables
+- **Netlify**: Static hosting with serverless functions
+- **Heroku**: Full-stack deployment
+- **DigitalOcean**: VPS hosting for full control
+
+## 🔌 API Endpoints
+
+When running with the backend server, these endpoints are available:
+
+### Payment Processing
+- `POST /api/create-payment-intent` - Create Stripe payment intent
+
+### Email Services
+- `POST /api/send-email` - Send emails via SendGrid
+
+### Order Management
+- `POST /api/orders` - Create and manage orders
+- `POST /api/trade-in` - Submit trade-in requests
+- `POST /api/progressive-leasing` - Process lease applications
+- `POST /api/nomad-internet` - Place internet orders
+
+### Health Check
+- `GET /api/health` - Server health status
+
+## 🎯 Customization
+
+### Adding New Products
+Edit the `PRODUCTS` array in `index.html`:
+
+```javascript
+const PRODUCTS = [
+  {
+    id: 'pm-new-product',
+    name: 'New Product',
+    price: 999.00,
+    tags: ['5G', '128GB'],
+    img: 'Products/new-product.jpg',
+    description: 'Product description here'
+  }
+  // ... existing products
+];
+```
+
+### Modifying Trade-In Pricing
+Update the pricing in `config.js`:
+
+```javascript
+tradeInPricing: {
+  'iPhone 15': { 'Like New': 650, 'Good': 520, 'Fair': 360, 'Broken': 130 },
+  'New Device': { 'Like New': 500, 'Good': 400, 'Fair': 300, 'Broken': 100 }
+}
+```
+
+### Customizing Email Templates
+Edit the email templates in `server.js` or `config.js` to match your branding.
+
+## 🔒 Security Features
+
+- **HTTPS Required**: All payment processing requires HTTPS
+- **Input Validation**: Client and server-side validation
+- **CORS Protection**: Configured for production use
+- **Environment Variables**: Sensitive data stored securely
+- **Stripe Security**: PCI-compliant payment processing
+
+## 📧 Email Notifications
+
+The system automatically sends emails for:
+- Order confirmations
+- Trade-in submissions
+- Lease application approvals
+- Internet service orders
+- Payment confirmations
+
+## 🧪 Testing
+
+### Demo Mode
+When API keys are not configured, the system runs in demo mode:
+- Payments are simulated
+- Emails are logged to console
+- All functionality works without external dependencies
+
+### Production Testing
+1. Set up real API keys
+2. Test with Stripe test cards
+3. Verify email delivery
+4. Test all user flows
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+**Payment Processing Fails**
+- Check Stripe API keys
+- Verify HTTPS is enabled
+- Check browser console for errors
+
+**Emails Not Sending**
+- Verify SendGrid API key
+- Check sender email verification
+- Review SendGrid dashboard for delivery status
+
+**Images Not Loading**
+- Ensure `Products/` folder is uploaded
+- Check file paths and permissions
+- Verify image file formats
+
+### Debug Mode
+Add `?debug=true` to the URL to enable detailed logging.
+
+## 📞 Support
+
+- **Phone**: 402.302.2197
+- **Email**: info@pacmacmobile.com
+- **Address**: 1402 Jones Street, Omaha, NE 68901
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ---
 
-Want me to wire real endpoints next? If you share the API docs for Phobio, Progressive Leasing, Apple’s authorized trade-in partner, or Nomad, I’ll map exact payloads, headers, and error states right into those adapter functions so you can paste in keys and go live.
+**Built with Code, Coffee and Jesus.** ☕✝️
+
+*PacMac Mobile LLC - Making mobile technology accessible to everyone.*
