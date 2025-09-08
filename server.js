@@ -357,6 +357,114 @@ app.post('/api/nomad-internet', async (req, res) => {
   }
 });
 
+// T-Mobile MVNO Activation endpoint
+app.post('/api/activate-mvno', async (req, res) => {
+  try {
+    const { customer, plan, planId } = req.body;
+    
+    // Generate order ID
+    const orderId = `PMM-MVNO-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
+    
+    // Simulate T-Mobile MVNO activation
+    const activationResult = {
+      success: true,
+      orderId: orderId,
+      plan: plan,
+      customer: customer,
+      simCardNumber: `890141032111185107${Math.random().toString().slice(2, 10)}`,
+      activationDate: new Date(),
+      estimatedShipping: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // 2 days
+    };
+    
+    res.json(activationResult);
+  } catch (error) {
+    console.error('MVNO activation failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ElevenLabs AI Voice Generation endpoint
+app.post('/api/generate-ai-voice', async (req, res) => {
+  try {
+    const { voiceId, script, personality } = req.body;
+    
+    // Simulate ElevenLabs API call
+    const aiVoiceResult = {
+      success: true,
+      voiceId: voiceId,
+      audioUrl: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      duration: Math.floor(Math.random() * 60) + 30, // 30-90 seconds
+      script: script,
+      personality: personality
+    };
+    
+    res.json(aiVoiceResult);
+  } catch (error) {
+    console.error('AI voice generation failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Scam Call Handling endpoint
+app.post('/api/handle-scam-call', async (req, res) => {
+  try {
+    const { callerNumber, customerNumber, callTime, riskScore } = req.body;
+    
+    // Simulate scam call handling
+    const callHandlingResult = {
+      success: true,
+      callId: `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      callerNumber: callerNumber,
+      customerNumber: customerNumber,
+      callTime: callTime,
+      riskScore: riskScore,
+      action: riskScore > 70 ? 'intercepted' : 'allowed',
+      aiPersonaUsed: riskScore > 70 ? 'grandma' : null,
+      callDuration: riskScore > 70 ? Math.floor(Math.random() * 300) + 30 : 0
+    };
+    
+    res.json(callHandlingResult);
+  } catch (error) {
+    console.error('Scam call handling failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// FCC Complaint Submission endpoint
+app.post('/api/submit-fcc-complaint', async (req, res) => {
+  try {
+    const { callerNumber, callRecording, transcription, category, description } = req.body;
+    
+    // Simulate FCC complaint submission
+    const complaintResult = {
+      success: true,
+      complaintId: `FCC-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase(),
+      callerNumber: callerNumber,
+      category: category,
+      status: 'submitted',
+      submissionDate: new Date(),
+      estimatedResponse: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+    };
+    
+    res.json(complaintResult);
+  } catch (error) {
+    console.error('FCC complaint submission failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({

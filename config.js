@@ -14,6 +14,84 @@ const PMM_CONFIG = {
     fromName: 'PacMac Mobile'
   },
 
+  // T-Mobile MVNO Configuration
+  tmobile: {
+    mvnoId: 'PACMAC_MOBILE_MVNO',
+    partnerId: 'PACMAC_TMOBILE_001',
+    apiKey: 'your_tmobile_mvno_api_key',
+    endpoint: 'https://api.tmobile.com/mvno/v1',
+    plans: {
+      'unlimited-basic': {
+        name: 'PacMac Basic',
+        price: 25,
+        data: 'Unlimited',
+        features: ['Unlimited Talk & Text', '5GB High-Speed Data', 'Scam Call Protection', 'AI Call Assistant']
+      },
+      'unlimited-plus': {
+        name: 'PacMac Plus',
+        price: 35,
+        data: 'Unlimited',
+        features: ['Unlimited Talk & Text', 'Unlimited High-Speed Data', 'Scam Call Fighting AI', 'Live Dashboard', 'FCC Reporting']
+      },
+      'unlimited-premium': {
+        name: 'PacMac Premium',
+        price: 45,
+        data: 'Unlimited',
+        features: ['Everything in Plus', 'International Calling', 'Premium AI Personas', 'Priority Support', 'Advanced Analytics']
+      }
+    }
+  },
+
+  // ElevenLabs AI Voice Configuration
+  elevenlabs: {
+    apiKey: 'your_elevenlabs_api_key',
+    endpoint: 'https://api.elevenlabs.io/v1',
+    personas: {
+      'grandma': {
+        name: 'Grandma Betty',
+        voiceId: 'voice_id_grandma_betty',
+        personality: 'Sweet elderly woman who loves to talk about her grandchildren and recipes',
+        script: 'Oh my, you called at such a perfect time! I was just making my famous apple pie. You know, my grandson Tommy loves when I make it. He\'s such a good boy, always helping me with my garden...'
+      },
+      'tech_support': {
+        name: 'Mike from IT',
+        voiceId: 'voice_id_mike_it',
+        personality: 'Friendly but slightly confused IT support guy',
+        script: 'Hi there! This is Mike from technical support. I\'m trying to help you with your computer issue, but I\'m having trouble accessing your system. Can you help me troubleshoot this?'
+      },
+      'sales_rep': {
+        name: 'Sarah Sales',
+        voiceId: 'voice_id_sarah_sales',
+        personality: 'Enthusiastic sales representative',
+        script: 'Hi! I\'m Sarah and I\'m so excited to tell you about our amazing new product! It\'s absolutely revolutionary and I think you\'re going to love it. Can I take just a moment of your time?'
+      },
+      'confused_customer': {
+        name: 'Bob the Confused',
+        voiceId: 'voice_id_bob_confused',
+        personality: 'Easily confused customer who asks lots of questions',
+        script: 'Wait, I\'m not sure I understand. You want me to do what with my computer? I\'m not very good with technology. My daughter usually helps me with this stuff...'
+      }
+    }
+  },
+
+  // Twilio Configuration for Call Handling
+  twilio: {
+    accountSid: 'your_twilio_account_sid',
+    authToken: 'your_twilio_auth_token',
+    phoneNumber: '+1-402-302-2197', // PacMac Mobile number
+    webhookUrl: 'https://your-domain.com/api/scam-call-handler',
+    callRecording: true,
+    transcription: true
+  },
+
+  // FCC Reporting Configuration
+  fcc: {
+    apiKey: 'your_fcc_api_key',
+    endpoint: 'https://api.fcc.gov/complaints/v1',
+    autoReport: true,
+    categories: ['Robocalls', 'Telemarketing', 'Scam Calls', 'Spoofing']
+  },
+
   // Enhanced Trade-In Pricing
   tradeInPricing: {
     'iPhone 15': { 'Like New': 650, 'Good': 520, 'Fair': 360, 'Broken': 130 },
@@ -159,6 +237,106 @@ const PMM_UTILS = {
       return result;
     } catch (error) {
       console.error('Payment processing failed:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // T-Mobile MVNO Service Functions
+  async activateMVNOService(customerData, planId) {
+    const plan = PMM_CONFIG.tmobile.plans[planId];
+    if (!plan) {
+      throw new Error('Invalid plan selected');
+    }
+
+    try {
+      const response = await fetch('/api/activate-mvno', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer: customerData,
+          plan: plan,
+          planId: planId,
+          features: plan.features
+        })
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('MVNO activation failed:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // ElevenLabs AI Voice Generation
+  async generateAIVoice(personaId, customScript = null) {
+    const persona = PMM_CONFIG.elevenlabs.personas[personaId];
+    if (!persona) {
+      throw new Error('Invalid persona selected');
+    }
+
+    const script = customScript || persona.script;
+    
+    try {
+      const response = await fetch('/api/generate-ai-voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          voiceId: persona.voiceId,
+          script: script,
+          personality: persona.personality
+        })
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('AI voice generation failed:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Scam Call Detection and Handling
+  async handleScamCall(callData) {
+    try {
+      const response = await fetch('/api/handle-scam-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          callerNumber: callData.callerNumber,
+          customerNumber: callData.customerNumber,
+          callTime: callData.callTime,
+          riskScore: callData.riskScore
+        })
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Scam call handling failed:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // FCC Complaint Submission
+  async submitFCCComplaint(complaintData) {
+    try {
+      const response = await fetch('/api/submit-fcc-complaint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          callerNumber: complaintData.callerNumber,
+          callRecording: complaintData.callRecording,
+          transcription: complaintData.transcription,
+          category: complaintData.category,
+          description: complaintData.description
+        })
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('FCC complaint submission failed:', error);
       return { success: false, error: error.message };
     }
   }
@@ -342,9 +520,74 @@ const PMM_NOMAD = {
   }
 };
 
+// T-Mobile MVNO Service Module
+const PMM_TMOBILE = {
+  async activateService(customerData, planId) {
+    return await PMM_UTILS.activateMVNOService(customerData, planId);
+  },
+
+  async getPlans() {
+    return PMM_CONFIG.tmobile.plans;
+  },
+
+  async checkCoverage(zipCode) {
+    return {
+      coverage: 'Excellent',
+      signalStrength: 'Strong',
+      networkType: '5G/LTE',
+      available: true
+    };
+  }
+};
+
+// AI Scam Call Fighting Module
+const PMM_SCAM_FIGHTER = {
+  async detectScamCall(callData) {
+    const riskScore = Math.random() * 100;
+    const isScam = riskScore > 70;
+    
+    return {
+      isScam: isScam,
+      riskScore: riskScore,
+      confidence: Math.random() * 100,
+      recommendedAction: isScam ? 'intercept' : 'allow'
+    };
+  },
+
+  async interceptCall(callData, personaId = 'grandma') {
+    const aiVoice = await PMM_UTILS.generateAIVoice(personaId);
+    const callHandling = await PMM_UTILS.handleScamCall(callData);
+    
+    return {
+      success: true,
+      aiVoiceGenerated: aiVoice.success,
+      callIntercepted: callHandling.success,
+      personaUsed: personaId,
+      callDuration: Math.floor(Math.random() * 300) + 30 // 30-330 seconds
+    };
+  },
+
+  async submitToFCC(complaintData) {
+    return await PMM_UTILS.submitFCCComplaint(complaintData);
+  },
+
+  async getDashboardStats() {
+    return {
+      totalCallsIntercepted: 1247,
+      totalScamCallsBlocked: 892,
+      totalFCCComplaints: 445,
+      averageCallDuration: 127,
+      mostUsedPersona: 'grandma',
+      customerSatisfaction: 98.5
+    };
+  }
+};
+
 // Export for use in main application
 window.PMM_CONFIG = PMM_CONFIG;
 window.PMM_UTILS = PMM_UTILS;
 window.PMM_TRADE_IN = PMM_TRADE_IN;
 window.PMM_PROGRESSIVE = PMM_PROGRESSIVE;
 window.PMM_NOMAD = PMM_NOMAD;
+window.PMM_TMOBILE = PMM_TMOBILE;
+window.PMM_SCAM_FIGHTER = PMM_SCAM_FIGHTER;
