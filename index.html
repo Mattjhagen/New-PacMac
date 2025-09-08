@@ -582,8 +582,9 @@
       }
     ];
 
-    const grid = document.getElementById('product-grid');
-    for(const p of PRODUCTS){
+    function initializeApp() {
+      const grid = document.getElementById('product-grid');
+      for(const p of PRODUCTS){
       const el = document.createElement('article');
       el.className='card';
       el.setAttribute('role','listitem');
@@ -687,6 +688,7 @@
       });
       
       grid.appendChild(el);
+    }
     }
 
     /***** 3) Cart *****/
