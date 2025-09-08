@@ -1,5 +1,5 @@
 // Create a starry background effect
-const canvas = document.getElementById('starry-background');
+const canvas = document.getElementById('stars');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
