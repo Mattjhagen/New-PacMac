@@ -1,5 +1,5 @@
 // Create a starry background effect
-const canvas = document.getElementById('starry-background');
+const canvas = document.getElementById('stars');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -52,4 +52,20 @@ window.addEventListener('scroll', () => {
     stars.forEach(star => {
         star.y += window.scrollY * 0.01;
     });
+});
+
+
+// Add event listener for window resize
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = [];
+    for (let i = 0; i < 100; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 2,
+            speed: Math.random() * 0.5
+        });
+    }
 });
