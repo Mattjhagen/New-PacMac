@@ -92,18 +92,21 @@ const PMM_CONFIG = {
     categories: ['Robocalls', 'Telemarketing', 'Scam Calls', 'Spoofing']
   },
 
-  // Enhanced Trade-In Pricing
+  // Enhanced Trade-In Pricing (Updated for 22% markup)
   tradeInPricing: {
-    'iPhone 15': { 'Like New': 650, 'Good': 520, 'Fair': 360, 'Broken': 130 },
-    'iPhone 14': { 'Like New': 550, 'Good': 440, 'Fair': 300, 'Broken': 110 },
-    'iPhone 13': { 'Like New': 450, 'Good': 360, 'Fair': 250, 'Broken': 90 },
-    'iPhone 12': { 'Like New': 350, 'Good': 280, 'Fair': 200, 'Broken': 70 },
-    'iPhone 11': { 'Like New': 250, 'Good': 200, 'Fair': 150, 'Broken': 50 },
-    'iPad Air': { 'Like New': 400, 'Good': 320, 'Fair': 220, 'Broken': 80 },
-    'iPad Pro': { 'Like New': 600, 'Good': 480, 'Fair': 330, 'Broken': 120 },
-    'Apple Watch': { 'Like New': 200, 'Good': 160, 'Fair': 110, 'Broken': 40 },
-    'Samsung Galaxy S25': { 'Like New': 500, 'Good': 400, 'Fair': 280, 'Broken': 100 },
-    'Samsung Galaxy S24': { 'Like New': 400, 'Good': 320, 'Fair': 220, 'Broken': 80 }
+    'iPhone 15': { 'Like New': 793, 'Good': 634, 'Fair': 439, 'Broken': 159 },
+    'iPhone 15 Plus': { 'Like New': 893, 'Good': 714, 'Fair': 494, 'Broken': 179 },
+    'iPhone 14': { 'Like New': 671, 'Good': 537, 'Fair': 366, 'Broken': 134 },
+    'iPhone 13': { 'Like New': 549, 'Good': 439, 'Fair': 305, 'Broken': 110 },
+    'iPhone 12': { 'Like New': 427, 'Good': 342, 'Fair': 244, 'Broken': 85 },
+    'iPhone 11': { 'Like New': 305, 'Good': 244, 'Fair': 183, 'Broken': 61 },
+    'iPad Air': { 'Like New': 488, 'Good': 390, 'Fair': 268, 'Broken': 98 },
+    'iPad Pro': { 'Like New': 732, 'Good': 586, 'Fair': 403, 'Broken': 146 },
+    'Apple Watch': { 'Like New': 244, 'Good': 195, 'Fair': 134, 'Broken': 49 },
+    'Samsung Galaxy S25': { 'Like New': 610, 'Good': 488, 'Fair': 342, 'Broken': 122 },
+    'Samsung Galaxy S25 Plus': { 'Like New': 610, 'Good': 488, 'Fair': 342, 'Broken': 122 },
+    'Samsung Galaxy S25 Ultra': { 'Like New': 732, 'Good': 586, 'Fair': 403, 'Broken': 146 },
+    'Samsung Galaxy S24': { 'Like New': 488, 'Good': 390, 'Fair': 268, 'Broken': 98 }
   },
 
   // Progressive Leasing Configuration

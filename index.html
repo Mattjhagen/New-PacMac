@@ -331,7 +331,7 @@
       {
         id:'pm-iphone15', 
         name:'iPhone 15', 
-        price: 799.00, 
+        price: 975.00, 
         tags:['5G','128GB','A16 Bionic'],
         img:'products/iPhone-15.jpg',
         description: 'Latest iPhone with USB-C, Dynamic Island, and 48MP camera',
@@ -348,7 +348,7 @@
       {
         id:'pm-iphone15plus', 
         name:'iPhone 15 Plus', 
-        price: 899.00, 
+        price: 1097.00, 
         tags:['5G','128GB','6.7" Display'],
         img:'products/iPhone15Plus.jpg',
         description: 'Larger display with all iPhone 15 features and extended battery life',
@@ -365,7 +365,7 @@
       {
         id:'pm-ipad-air', 
         name:'iPad Air 11"',
-        price: 599.00, 
+        price: 731.00, 
         tags:['Wi-Fi','M2','11" Display'],
         img:'products/iPadAir11.jpg',
         description: 'Powerful tablet with M2 chip, perfect for work and creativity',
@@ -382,7 +382,7 @@
       {
         id:'pm-watch10', 
         name:'Apple Watch Series 10', 
-        price: 399.00, 
+        price: 487.00, 
         tags:['GPS','Health','S9 Chip'],
         img:'products/AppleWatch10.jpg',
         description: 'Advanced health monitoring with faster performance and brighter display',
@@ -399,7 +399,7 @@
       {
         id:'pm-galaxyS25', 
         name:'Samsung Galaxy S25', 
-        price: 799.00, 
+        price: 975.00, 
         tags:['Android','AI','5G'],
         img:'products/SamS25.jpg',
         description: 'AI-powered Android flagship with advanced camera system',
@@ -414,9 +414,26 @@
         }
       },
       {
+        id:'pm-galaxyS25plus', 
+        name:'Samsung Galaxy S25 Plus', 
+        price: 1097.00, 
+        tags:['Android','AI','5G','6.7" Display'],
+        img:'products/SamS25Plus.jpg',
+        description: 'Larger Galaxy S25 with enhanced features and extended battery',
+        specs: {
+          'Display': '6.7" Dynamic AMOLED 2X',
+          'Chip': 'Snapdragon 8 Gen 4',
+          'Storage': '256GB',
+          'Camera': '50MP Main + 12MP Ultra Wide + 10MP Tele',
+          'Battery': '4900mAh',
+          'Connectivity': '5G, Wi-Fi 7, Bluetooth 5.4',
+          'Colors': 'Onyx Black, Marble Gray, Cobalt Violet'
+        }
+      },
+      {
         id:'pm-galaxyS25ultra', 
         name:'Samsung Galaxy S25 Ultra', 
-        price: 1199.00, 
+        price: 1463.00, 
         tags:['Android','AI','S Pen'],
         img:'products/SamS25Ultra.jpg',
         description: 'Ultimate Android experience with S Pen and 200MP camera',
@@ -432,38 +449,43 @@
       },
       {
         id: 'pm-ipad10-64-plcd',
-        name: 'iPad 10',
-        price: 115.00,
-        tags: ['Tablet', '64GB', 'PLCD'],
+        name: 'iPad 10 (Refurbished)',
+        price: 140.00,
+        tags: ['Tablet', '64GB', 'Refurbished'],
         img: 'products/iPadAir11.jpg',
-        description: 'Apple iPad 10th Generation',
+        description: 'Apple iPad 10th Generation - Certified Refurbished',
         specs: {
           'Display': '10.9" Liquid Retina',
           'Capacity': '64GB',
-          'Grade': 'PLCD'
+          'Grade': 'Certified Refurbished',
+          'Warranty': '90-day warranty',
+          'Condition': 'Like new with minimal signs of use'
         }
       },
       {
         id: 'pm-ipad11-128-plcd',
-        name: 'iPad 11',
-        price: 210.00,
-        tags: ['Tablet', '128GB', 'PLCD'],
+
+        name: 'iPad 11 (Refurbished)',
+        price: 256.00,
+        tags: ['Tablet', '128GB', 'Refurbished'],
         img: 'products/iPadAir11.jpg',
-        description: 'Apple iPad 11th Generation',
+        description: 'Apple iPad 11th Generation - Certified Refurbished',
         specs: {
           'Display': '11" Liquid Retina',
           'Capacity': '128GB',
-          'Grade': 'PLCD'
+          'Grade': 'Certified Refurbished',
+          'Warranty': '90-day warranty',
+          'Condition': 'Like new with minimal signs of use'
         }
       }
     ];
 
-    // Accessories data with compatibility mapping
+    // Accessories data with compatibility mapping (22% markup applied)
     const ACCESSORIES = [
       {
         id: 'acc-iphone-case',
         name: 'Silicone Case',
-        price: 49.00,
+        price: 59.78,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="10" y="10" width="80" height="80" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="30" cy="30" r="8" fill="%23000"/><rect x="60" y="25" width="20" height="10" fill="%23000"/></svg>',
         compatibility: ['pm-iphone15', 'pm-iphone15plus'],
         category: 'Protection'
@@ -471,7 +493,7 @@
       {
         id: 'acc-iphone-screen',
         name: 'Tempered Glass Screen Protector',
-        price: 19.99,
+        price: 24.39,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="15" y="15" width="70" height="70" fill="%23fff" stroke="%23000" stroke-width="1"/><circle cx="50" cy="50" r="15" fill="%23ddd"/></svg>',
         compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-galaxyS25', 'pm-galaxyS25ultra'],
         category: 'Protection'
@@ -479,7 +501,7 @@
       {
         id: 'acc-wireless-charger',
         name: 'MagSafe Wireless Charger',
-        price: 39.99,
+        price: 48.79,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><circle cx="50" cy="50" r="25" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="50" cy="50" r="15" fill="%23fff"/><path d="M30 50 L70 50 M50 30 L50 70" stroke="%23000" stroke-width="2"/></svg>',
         compatibility: ['pm-iphone15', 'pm-iphone15plus'],
         category: 'Charging'
@@ -487,7 +509,7 @@
       {
         id: 'acc-usb-c-cable',
         name: 'USB-C to USB-C Cable',
-        price: 19.99,
+        price: 24.39,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="20" y="40" width="60" height="20" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="15" y="35" width="10" height="30" fill="%23000"/><rect x="75" y="35" width="10" height="30" fill="%23000"/></svg>',
         compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-ipad-air'],
         category: 'Charging'
@@ -495,7 +517,7 @@
       {
         id: 'acc-ipad-case',
         name: 'Smart Folio Case',
-        price: 79.99,
+        price: 97.59,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="10" y="20" width="80" height="60" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="15" y="25" width="70" height="50" fill="%23fff"/><rect x="20" y="30" width="60" height="40" fill="%23eee"/></svg>',
         compatibility: ['pm-ipad-air'],
         category: 'Protection'
@@ -503,7 +525,7 @@
       {
         id: 'acc-apple-pencil',
         name: 'Apple Pencil (2nd Gen)',
-        price: 129.99,
+        price: 158.59,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="35" y="20" width="30" height="60" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="40" y="25" width="20" height="50" fill="%23fff"/><circle cx="50" cy="15" r="5" fill="%23000"/></svg>',
         compatibility: ['pm-ipad-air'],
         category: 'Accessories'
@@ -511,7 +533,7 @@
       {
         id: 'acc-watch-band',
         name: 'Sport Band',
-        price: 49.99,
+        price: 60.99,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><circle cx="50" cy="50" r="20" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="20" y="45" width="20" height="10" fill="%23000"/><rect x="60" y="45" width="20" height="10" fill="%23000"/></svg>',
         compatibility: ['pm-watch10'],
         category: 'Accessories'
@@ -519,15 +541,15 @@
       {
         id: 'acc-galaxy-case',
         name: 'Galaxy Protective Case',
-        price: 34.99,
+        price: 42.69,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="15" y="15" width="70" height="70" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="35" cy="35" r="8" fill="%23000"/><rect x="55" y="30" width="25" height="10" fill="%23000"/></svg>',
-        compatibility: ['pm-galaxyS25', 'pm-galaxyS25ultra'],
+        compatibility: ['pm-galaxyS25', 'pm-galaxyS25plus', 'pm-galaxyS25ultra'],
         category: 'Protection'
       },
       {
         id: 'acc-s-pen',
         name: 'S Pen',
-        price: 59.99,
+        price: 73.19,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="40" y="20" width="20" height="60" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="42" y="22" width="16" height="56" fill="%23fff"/><circle cx="50" cy="15" r="3" fill="%23000"/></svg>',
         compatibility: ['pm-galaxyS25ultra'],
         category: 'Accessories'
@@ -535,15 +557,15 @@
       {
         id: 'acc-fast-charger',
         name: '25W Fast Charger',
-        price: 29.99,
+        price: 36.59,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="30" y="30" width="40" height="40" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="35" y="35" width="30" height="30" fill="%23fff"/><circle cx="50" cy="50" r="8" fill="%23000"/></svg>',
-        compatibility: ['pm-galaxyS25', 'pm-galaxyS25ultra'],
+        compatibility: ['pm-galaxyS25', 'pm-galaxyS25plus', 'pm-galaxyS25ultra'],
         category: 'Charging'
       },
       {
         id: 'acc-bluetooth-earbuds',
         name: 'Wireless Earbuds',
-        price: 89.99,
+        price: 109.79,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><circle cx="30" cy="50" r="12" fill="%23ddd" stroke="%23000" stroke-width="2"/><circle cx="70" cy="50" r="12" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="35" y="48" width="30" height="4" fill="%23000"/></svg>',
         compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-ipad-air', 'pm-galaxyS25', 'pm-galaxyS25ultra'],
         category: 'Audio'
@@ -551,7 +573,7 @@
       {
         id: 'acc-power-bank',
         name: '10,000mAh Power Bank',
-        price: 39.99,
+        price: 48.79,
         image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f0f0"/><rect x="20" y="25" width="60" height="50" fill="%23ddd" stroke="%23000" stroke-width="2"/><rect x="25" y="30" width="50" height="40" fill="%23fff"/><rect x="30" y="35" width="40" height="30" fill="%23eee"/><circle cx="50" cy="50" r="8" fill="%23000"/></svg>',
         compatibility: ['pm-iphone15', 'pm-iphone15plus', 'pm-ipad-air', 'pm-galaxyS25', 'pm-galaxyS25ultra'],
         category: 'Charging'
@@ -1461,7 +1483,7 @@
       
       // Show confirmation message
       const confirmation = document.createElement('div');
-      confirmation.style.cssText = '
+      confirmation.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -1473,7 +1495,7 @@
         z-index: 1000;
         max-width: 300px;
         animation: slideIn 0.3s ease-out;
-      ';
+      `;
       confirmation.innerHTML = `
         <div style="display: flex; align-items: center; margin-bottom: 8px;">
           <div style="font-size: 20px; margin-right: 8px;">🌐</div>
@@ -1756,4 +1778,12 @@
     function sleep(ms){ return new Promise(r=> setTimeout(r, ms)); }
     function rnd(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
     function renderJSON(o){ return `<pre style="white-space:pre-wrap; background:#0a0a0a; padding:12px; border-radius:12px; border:1px solid #161616;">${escapeHTML(JSON.stringify(o, null, 2))}</pre>`; }
-    function escapeHTML(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','
+    function escapeHTML(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]); }
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeApp();
+    });
+  </script>
+</body>
+</html>
