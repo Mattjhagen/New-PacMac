@@ -1257,6 +1257,33 @@
     };
 
     // ---- Enhanced Phobio Adapter ----
+    
+    const PMM_PROGRESSIVE = {
+        prequalify: async (details) => {
+            console.log("Prequalifying for Progressive Leasing:", details);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return { status: 'approved', limit: 3000, monthlyPayment: 150, terms: '12 months' };
+        },
+        startLease: async (items, details) => {
+            console.log("Starting Progressive Lease for items:", items, "with details:", details);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return { status: 'approved', id: `LEASE-${Date.now()}`, limit: 3000, monthlyPayment: 150, terms: '12 months' };
+        }
+    };
+
+    const PMM_NOMAD = {
+        checkAvailability: async (zip) => {
+            console.log(`Checking Nomad availability for ZIP code ${zip}`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            return { ok: true, plans: [{ id: 'nomad-unlimited', name: 'Nomad Unlimited', down: '100 Mbps', price: 47.96 }] };
+        },
+        placeOrder: async (planId, customer) => {
+            console.log(`Placing Nomad order for plan ${planId} with customer:`, customer);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return { success: true, orderId: `NOMAD-${Date.now()}` };
+        }
+    };
+
     const Phobio = {
       async quote(model, condition){
         // Use enhanced trade-in pricing
