@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test Admin Portal</h1>
+    <div class="test">
+        <h2>Dashboard</h2>
+        <p>Total Products: <span id="total-products">0</span></p>
+        <p>Total Value: $<span id="total-value">0</span></p>
+    </div>
+    
+    <div class="test">
+        <h2>Add Product</h2>
+        <form id="product-form">
+            <input type="text" id="product-name" placeholder="Product Name" required>
+            <input type="number" id="product-price" placeholder="Price" step="0.01" required>
+            <button type="submit">Add Product</button>
+        </form>
+    </div>
+    
+    <div id="inventory-grid"></div>
+    
+    <script>
+        console.log('Script loaded successfully');
+        
+        class TestInventoryManager {
+            constructor() {
+                this.inventory = [];
+                this.initializeEventListeners();
+                this.updateDashboard();
+            }
+            
+            initializeEventListeners() {
+                document.getElementById('product-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addProduct();
+                });
+            }
+            
+            addProduct() {
+                const name = document.getElementById('product-name').value;
+                const price = parseFloat(document.getElementById('product-price').value);
+                
+                if (name && price) {
+                    this.inventory.push({ name, price });
+                    this.updateDashboard();
+                    this.loadInventoryGrid();
+                    
+                    // Clear form
+                    document.getElementById('product-name').value = '';
+                    document.getElementById('product-price').value = '';
+                }
+            }
+            
+            updateDashboard() {
+                const totalProducts = this.inventory.length;
+                const totalValue = this.inventory.reduce((sum, p) => sum + p.price, 0);
+                
+                document.getElementById('total-products').textContent = totalProducts;
+                document.getElementById('total-value').textContent = totalValue.toFixed(2);
+            }
+            
+            loadInventoryGrid() {
+                const grid = document.getElementById('inventory-grid');
+                grid.innerHTML = '';
+                
+                this.inventory.forEach((product, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'test';
+                    div.innerHTML = `
+                        <h3>${product.name}</h3>
+                        <p>Price: $${product.price.toFixed(2)}</p>
+                        <button onclick="inventoryManager.deleteProduct(${index})">Delete</button>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+            
+            deleteProduct(index) {
+                this.inventory.splice(index, 1);
+                this.updateDashboard();
+                this.loadInventoryGrid();
+            }
+        }
+        
+        // Initialize
+        const inventoryManager = new TestInventoryManager();
+    </script>
+</body>
+</html>
