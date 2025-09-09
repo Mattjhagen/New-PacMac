@@ -407,10 +407,19 @@
                         <button class="btn btn-secondary" onclick="importInventory()">Import from JSON</button>
                     </div>
                 </div>
+                <div class="export-section">
+                    <h3>Import from Wholesaler XLSX</h3>
+                    <p>Upload your wholesaler's Excel file to automatically import inventory.</p>
+                    <input type="file" id="xlsx-file" accept=".xlsx,.xls" style="margin-bottom: 15px;">
+                    <br>
+                    <button class="btn" onclick="importFromXLSX()">Import from XLSX</button>
+                    <div id="xlsx-preview" class="hidden"></div>
+                </div>
             </div>
         </div>
     </div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         // Inventory Management System
         class InventoryManager {
@@ -806,6 +815,101 @@
         
         function syncToMainSite() {
             inventoryManager.syncToMainSite();
+        }
+
+        function importFromXLSX() {
+            const fileInput = document.getElementById('xlsx-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an XLSX file first.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Get the first worksheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Convert to JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // Process the data
+                    processWholesalerData(jsonData);
+                    
+                } catch (error) {
+                    console.error('Error reading XLSX file:', error);
+                    alert('Error reading XLSX file. Please check the format.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processWholesalerData(data) {
+            // Preview the data first
+            const preview = document.getElementById('xlsx-preview');
+            preview.innerHTML = `
+                <h4>Preview (First 5 rows):</h4>
+                <table border="1" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            ${Object.keys(data[0] || {}).map(key => `<th>${key}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.slice(0, 5).map(row => `
+                            <tr>
+                                ${Object.values(row).map(value => `<td>${value}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p><strong>Total rows:</strong> ${data.length}</p>
+                <button class="btn" onclick="confirmImport(${JSON.stringify(data).replace(/"/g, '&quot;')})">Confirm Import</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('xlsx-preview').classList.add('hidden')">Cancel</button>
+            `;
+            preview.classList.remove('hidden');
+        }
+
+        function confirmImport(data) {
+            const products = data.map((row, index) => {
+                // Map your wholesaler's columns to your product structure
+                // Adjust these field mappings based on your XLSX structure
+                return {
+                    id: `pm-${row['Product ID'] || row['SKU'] || `item-${index}`}`,
+                    name: row['Product Name'] || row['Name'] || row['Title'] || 'Unknown Product',
+                    price: parseFloat(row['Price'] || row['Cost'] || row['Wholesale Price'] || 0),
+                    category: 'main',
+                    description: row['Description'] || row['Details'],
+                    brand: row['Brand'] || row['Manufacturer'],
+                    model: row['Model'] || row['Model Number'],
+                    color: row['Color'] || row['Finish'],
+                    storage: row['Storage'] || row['Capacity'],
+                    condition: row['Condition'] || row['Grade']
+                };
+            });
+            
+            // Apply 22% markup
+            products.forEach(product => {
+                product.price = parseFloat((product.price * 1.22).toFixed(2));
+            });
+            
+            // Replace current inventory
+            inventoryManager.inventory = products;
+            inventoryManager.saveInventory();
+            
+            // Hide preview and show success
+            document.getElementById('xlsx-preview').classList.add('hidden');
+            inventoryManager.showAlert(`Successfully imported ${products.length} products!`, 'success');
+            
+            // Refresh the display
+            inventoryManager.updateDashboard();
+            inventoryManager.loadInventoryGrid();
         }
         
         // Initialize the inventory manager
