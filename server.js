@@ -685,6 +685,108 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
+// Create a new product
+app.post('/api/products', async (req, res) => {
+  try {
+    const { name, brand, model, price, description, imageUrl, specs, inStock, stockCount, category } = req.body;
+    
+    // Validate required fields
+    if (!name || !price) {
+      return res.status(400).json({
+        success: false,
+        error: 'Name and price are required'
+      });
+    }
+    
+    // Generate unique ID
+    const productId = `pm-${name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}-${Date.now()}`;
+    
+    // Create product object
+    const newProduct = {
+      id: productId,
+      name: name,
+      brand: brand || 'Unknown',
+      model: model || name,
+      price: parseFloat(price),
+      description: description || '',
+      imageUrl: imageUrl || 'products/placeholder.jpg',
+      specs: specs || {},
+      inStock: inStock !== undefined ? inStock : true,
+      stockCount: parseInt(stockCount) || 0,
+      category: category || 'main',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // In production, this would save to the backend admin portal database
+    console.log('Creating new product:', newProduct);
+    
+    res.status(201).json({
+      success: true,
+      product: newProduct,
+      message: 'Product created successfully'
+    });
+  } catch (error) {
+    console.error('Failed to create product:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create product'
+    });
+  }
+});
+
+// Update a product
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const updateData = req.body;
+    
+    // In production, this would update the backend admin portal database
+    console.log(`Updating product ${productId}:`, updateData);
+    
+    // Simulate successful update
+    const updatedProduct = {
+      id: productId,
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    res.json({
+      success: true,
+      product: updatedProduct,
+      message: 'Product updated successfully'
+    });
+  } catch (error) {
+    console.error('Failed to update product:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update product'
+    });
+  }
+});
+
+// Delete a product
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    // In production, this would delete from the backend admin portal database
+    console.log(`Deleting product ${productId}`);
+    
+    res.json({
+      success: true,
+      message: 'Product deleted successfully',
+      productId: productId
+    });
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete product'
+    });
+  }
+});
+
 // Update product stock (for order processing)
 app.put('/api/products/:id/stock', async (req, res) => {
   try {

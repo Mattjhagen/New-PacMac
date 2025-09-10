@@ -379,6 +379,108 @@ class InventoryAPI {
   }
 
   /**
+   * Create a new product
+   * @param {Object} productData - Product data
+   * @returns {Promise<Object>} Created product
+   */
+  async createProduct(productData) {
+    try {
+      const response = await fetch(`${this.baseURL}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(productData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Clear cache to force refresh
+        this.clearCache();
+        console.log('✅ Product created successfully:', data.product);
+        return data.product;
+      } else {
+        throw new Error(data.error || 'Failed to create product');
+      }
+    } catch (error) {
+      console.error('❌ Failed to create product:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing product
+   * @param {string} productId - Product ID
+   * @param {Object} updateData - Update data
+   * @returns {Promise<Object>} Updated product
+   */
+  async updateProduct(productId, updateData) {
+    try {
+      const response = await fetch(`${this.baseURL}/api/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Clear cache to force refresh
+        this.clearCache();
+        console.log('✅ Product updated successfully:', data.product);
+        return data.product;
+      } else {
+        throw new Error(data.error || 'Failed to update product');
+      }
+    } catch (error) {
+      console.error(`❌ Failed to update product ${productId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a product
+   * @param {string} productId - Product ID
+   * @returns {Promise<boolean>} Success status
+   */
+  async deleteProduct(productId) {
+    try {
+      const response = await fetch(`${this.baseURL}/api/products/${productId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Clear cache to force refresh
+        this.clearCache();
+        console.log('✅ Product deleted successfully:', productId);
+        return true;
+      } else {
+        throw new Error(data.error || 'Failed to delete product');
+      }
+    } catch (error) {
+      console.error(`❌ Failed to delete product ${productId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Get inventory statistics
    * @returns {Object} Inventory statistics
    */
