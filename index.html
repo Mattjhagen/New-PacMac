@@ -342,7 +342,37 @@ PacMacProducts.init({
     resize(); requestAnimationFrame(draw);
 
     /***** 2) Dynamic product catalog from API *****/
-    let PRODUCTS = []; // Will be populated from API
+    const PRODUCTS = [
+  {
+    "id": "pm-product_1757546049257_xb4aee4bm",
+    "name": "iPhone 15 Pro Max",
+    "price": 1199,
+    "tags": [
+      "Apple",
+      "iPhone 15 Pro Max",
+      "phone",
+      "6.7\" Super Retina XDR",
+      "A17 Pro",
+      "256GB",
+      "48MP Main Camera with 5x Telephoto"
+    ],
+    "img": "/Products/placeholder.jpg",
+    "description": "Largest Pro iPhone with titanium design and 5x telephoto camera",
+    "brand": "Apple",
+    "model": "iPhone 15 Pro Max",
+    "specs": {
+      "display": "6.7\" Super Retina XDR",
+      "processor": "A17 Pro",
+      "memory": "",
+      "storage": "256GB",
+      "camera": "48MP Main Camera with 5x Telephoto",
+      "battery": "",
+      "os": ""
+    },
+    "inStock": true,
+    "stockCount": 0
+  }
+]; // Will be populated from API
     
     // Initialize products from API
     async function initializeProducts() {
