@@ -19,6 +19,11 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+// Admin sync page
+app.get('/admin-sync', (req, res) => {
+  res.sendFile(__dirname + '/admin-sync.html');
+});
+
 // Payment processing endpoint
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
@@ -461,6 +466,266 @@ app.post('/api/submit-fcc-complaint', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+// Inventory Management API Endpoints
+// Get all products
+app.get('/api/products', async (req, res) => {
+  try {
+    // In production, this would fetch from the backend admin portal
+    // For now, we'll use the existing PRODUCTS data structure
+    const products = [
+      {
+        id: 'pm-iphone15',
+        name: 'iPhone 15',
+        price: 975.00,
+        tags: ['5G', '128GB', 'A16 Bionic'],
+        img: 'products/iPhone-15.jpg',
+        description: 'Latest iPhone with USB-C, Dynamic Island, and 48MP camera',
+        specs: {
+          'Display': '6.1" Super Retina XDR',
+          'Chip': 'A16 Bionic',
+          'Storage': '128GB',
+          'Camera': '48MP Main + 12MP Ultra Wide',
+          'Battery': 'Up to 20 hours video playback',
+          'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.3',
+          'Colors': 'Black, Blue, Green, Yellow, Pink'
+        },
+        inStock: true,
+        stockCount: 15,
+        category: 'main'
+      },
+      {
+        id: 'pm-iphone15plus',
+        name: 'iPhone 15 Plus',
+        price: 1097.00,
+        tags: ['5G', '128GB', '6.7" Display'],
+        img: 'products/iPhone15Plus.jpg',
+        description: 'Larger display with all iPhone 15 features and extended battery life',
+        specs: {
+          'Display': '6.7" Super Retina XDR',
+          'Chip': 'A16 Bionic',
+          'Storage': '128GB',
+          'Camera': '48MP Main + 12MP Ultra Wide',
+          'Battery': 'Up to 26 hours video playback',
+          'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.3',
+          'Colors': 'Black, Blue, Green, Yellow, Pink'
+        },
+        inStock: true,
+        stockCount: 8,
+        category: 'main'
+      },
+      {
+        id: 'pm-ipad-air',
+        name: 'iPad Air 11"',
+        price: 610.00,
+        tags: ['M2 Chip', '11" Display', 'Wi-Fi'],
+        img: 'products/iPadAir11.jpg',
+        description: 'Powerful iPad with M2 chip and Liquid Retina display',
+        specs: {
+          'Display': '11" Liquid Retina',
+          'Chip': 'M2',
+          'Storage': '64GB',
+          'Camera': '12MP Wide',
+          'Battery': 'Up to 10 hours',
+          'Connectivity': 'Wi-Fi 6E, Bluetooth 5.3',
+          'Colors': 'Space Gray, Blue, Pink, Purple'
+        },
+        inStock: true,
+        stockCount: 12,
+        category: 'main'
+      },
+      {
+        id: 'pm-samsung-s25',
+        name: 'Samsung Galaxy S25',
+        price: 800.00,
+        tags: ['5G', '128GB', 'Snapdragon 8 Gen 4'],
+        img: 'products/SamS25.jpg',
+        description: 'Latest Samsung flagship with AI-powered features',
+        specs: {
+          'Display': '6.2" Dynamic AMOLED 2X',
+          'Chip': 'Snapdragon 8 Gen 4',
+          'Storage': '128GB',
+          'Camera': '50MP Main + 12MP Ultra Wide',
+          'Battery': '4000mAh',
+          'Connectivity': '5G, Wi-Fi 7, Bluetooth 5.4',
+          'Colors': 'Black, White, Purple'
+        },
+        inStock: true,
+        stockCount: 6,
+        category: 'main'
+      },
+      {
+        id: 'pm-samsung-s25-plus',
+        name: 'Samsung Galaxy S25 Plus',
+        price: 1000.00,
+        tags: ['5G', '256GB', '6.7" Display'],
+        img: 'products/SamS25Plus.jpg',
+        description: 'Larger Samsung flagship with enhanced features',
+        specs: {
+          'Display': '6.7" Dynamic AMOLED 2X',
+          'Chip': 'Snapdragon 8 Gen 4',
+          'Storage': '256GB',
+          'Camera': '50MP Main + 12MP Ultra Wide + 10MP Telephoto',
+          'Battery': '4900mAh',
+          'Connectivity': '5G, Wi-Fi 7, Bluetooth 5.4',
+          'Colors': 'Black, White, Purple'
+        },
+        inStock: true,
+        stockCount: 4,
+        category: 'main'
+      },
+      {
+        id: 'pm-samsung-s25-ultra',
+        name: 'Samsung Galaxy S25 Ultra',
+        price: 1200.00,
+        tags: ['5G', '512GB', 'S Pen', '6.8" Display'],
+        img: 'products/SamS25Ultra.jpg',
+        description: 'Ultimate Samsung flagship with S Pen and premium features',
+        specs: {
+          'Display': '6.8" Dynamic AMOLED 2X',
+          'Chip': 'Snapdragon 8 Gen 4',
+          'Storage': '512GB',
+          'Camera': '200MP Main + 50MP Periscope + 12MP Ultra Wide',
+          'Battery': '5000mAh',
+          'Connectivity': '5G, Wi-Fi 7, Bluetooth 5.4',
+          'Colors': 'Titanium Black, Titanium Gray, Titanium Violet'
+        },
+        inStock: true,
+        stockCount: 3,
+        category: 'main'
+      },
+      {
+        id: 'pm-apple-watch-10',
+        name: 'Apple Watch Series 10',
+        price: 400.00,
+        tags: ['GPS', '45mm', 'Aluminum'],
+        img: 'products/AppleWatch10.jpg',
+        description: 'Latest Apple Watch with advanced health features',
+        specs: {
+          'Display': '45mm Always-On Retina',
+          'Chip': 'S10',
+          'Storage': '32GB',
+          'Sensors': 'Heart Rate, ECG, Blood Oxygen, Temperature',
+          'Battery': 'Up to 18 hours',
+          'Connectivity': 'GPS, Wi-Fi, Bluetooth 5.3',
+          'Colors': 'Midnight, Starlight, Pink, Blue'
+        },
+        inStock: true,
+        stockCount: 20,
+        category: 'accessory'
+      }
+    ];
+
+    res.json({
+      success: true,
+      products: products,
+      total: products.length
+    });
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch products'
+    });
+  }
+});
+
+// Get single product by ID
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    // In production, this would fetch from the backend admin portal
+    // For now, we'll simulate finding a product
+    const products = [
+      {
+        id: 'pm-iphone15',
+        name: 'iPhone 15',
+        price: 975.00,
+        tags: ['5G', '128GB', 'A16 Bionic'],
+        img: 'products/iPhone-15.jpg',
+        description: 'Latest iPhone with USB-C, Dynamic Island, and 48MP camera',
+        specs: {
+          'Display': '6.1" Super Retina XDR',
+          'Chip': 'A16 Bionic',
+          'Storage': '128GB',
+          'Camera': '48MP Main + 12MP Ultra Wide',
+          'Battery': 'Up to 20 hours video playback',
+          'Connectivity': '5G, Wi-Fi 6, Bluetooth 5.3',
+          'Colors': 'Black, Blue, Green, Yellow, Pink'
+        },
+        inStock: true,
+        stockCount: 15,
+        category: 'main'
+      }
+    ];
+    
+    const product = products.find(p => p.id === productId);
+    
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      product: product
+    });
+  } catch (error) {
+    console.error('Failed to fetch product:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch product'
+    });
+  }
+});
+
+// Update product stock (for order processing)
+app.put('/api/products/:id/stock', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const { quantity } = req.body;
+    
+    // In production, this would update the backend admin portal database
+    console.log(`Updating stock for product ${productId}: ${quantity} units`);
+    
+    res.json({
+      success: true,
+      message: 'Stock updated successfully',
+      productId: productId,
+      newStock: quantity
+    });
+  } catch (error) {
+    console.error('Failed to update stock:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update stock'
+    });
+  }
+});
+
+// Sync with backend admin portal
+app.post('/api/sync-inventory', async (req, res) => {
+  try {
+    // In production, this would sync with the backend admin portal
+    // For now, we'll simulate a successful sync
+    console.log('Syncing inventory with backend admin portal...');
+    
+    res.json({
+      success: true,
+      message: 'Inventory synced successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Failed to sync inventory:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to sync inventory'
     });
   }
 });

@@ -7,6 +7,7 @@
   <meta name="description" content="PacMac Mobile e‑commerce site for trade‑ins, leasing, and Nomad Internet." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📱</text></svg>">
   <script src="config.js" defer></script>
+  <script src="inventory-api.js" defer></script>
   <style>
     :root{
       --bg: #000;
@@ -340,8 +341,101 @@ PacMacProducts.init({
     window.addEventListener('mousemove', e=> { mouse.x = e.clientX; mouse.y=e.clientY; }, {passive:true});
     resize(); requestAnimationFrame(draw);
 
-    /***** 2) Minimal product catalog *****/
-    const PRODUCTS = [
+    /***** 2) Dynamic product catalog from API *****/
+    let PRODUCTS = []; // Will be populated from API
+    
+    // Initialize products from API
+    async function initializeProducts() {
+      try {
+        console.log('🔄 Initializing products from API...');
+        PRODUCTS = await window.inventoryAPI.fetchProducts();
+        console.log(`✅ Loaded ${PRODUCTS.length} products`);
+        
+        // Update the product grid if it exists
+        if (typeof updateProductGrid === 'function') {
+          updateProductGrid();
+        }
+        
+        // Update any product-related UI elements
+        if (typeof updateProductUI === 'function') {
+          updateProductUI();
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize products:', error);
+        // Fallback to static products
+        PRODUCTS = window.inventoryAPI.getStaticProducts();
+        console.log('🔄 Using fallback static products');
+      }
+    }
+    
+    // Function to refresh products from API
+    async function refreshProducts() {
+      try {
+        console.log('🔄 Refreshing products from API...');
+        PRODUCTS = await window.inventoryAPI.fetchProducts();
+        console.log(`✅ Refreshed ${PRODUCTS.length} products`);
+        
+        // Update the product grid if it exists
+        if (typeof updateProductGrid === 'function') {
+          updateProductGrid();
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('❌ Failed to refresh products:', error);
+        return false;
+      }
+    }
+    
+    // Function to get product by ID (with API fallback)
+    async function getProductById(productId) {
+      try {
+        // First try to find in current PRODUCTS array
+        let product = PRODUCTS.find(p => p.id === productId);
+        
+        // If not found, try to fetch from API
+        if (!product) {
+          product = await window.inventoryAPI.fetchProduct(productId);
+        }
+        
+        return product;
+      } catch (error) {
+        console.error(`❌ Failed to get product ${productId}:`, error);
+        return null;
+      }
+    }
+    
+    // Function to update product stock after order
+    async function updateProductStock(productId, quantity) {
+      try {
+        const success = await window.inventoryAPI.updateStock(productId, quantity);
+        if (success) {
+          // Update local PRODUCTS array
+          const product = PRODUCTS.find(p => p.id === productId);
+          if (product) {
+            product.stockCount = quantity;
+            product.inStock = quantity > 0;
+          }
+        }
+        return success;
+      } catch (error) {
+        console.error(`❌ Failed to update stock for ${productId}:`, error);
+        return false;
+      }
+    }
+    
+    // Function to update product grid
+    function updateProductGrid() {
+      if (typeof initializeApp === 'function') {
+        initializeApp();
+      }
+    }
+    
+    // Initialize products when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeProducts);
+    
+    // Static fallback products (will be replaced by API data)
+    const FALLBACK_PRODUCTS = [
       {
         id:'pm-iphone15', 
         name:'iPhone 15', 
@@ -598,7 +692,15 @@ PacMacProducts.init({
 
     function initializeApp() {
       const grid = document.getElementById('product-grid');
-      for(const p of PRODUCTS){
+      if (!grid) return;
+      
+      // Clear existing products
+      grid.innerHTML = '';
+      
+      // Use PRODUCTS array (will be populated by API)
+      const productsToShow = PRODUCTS.length > 0 ? PRODUCTS : FALLBACK_PRODUCTS;
+      
+      for(const p of productsToShow){
       const el = document.createElement('article');
       el.className='card';
       el.setAttribute('role','listitem');
@@ -1128,6 +1230,15 @@ PacMacProducts.init({
           
           // Clear the session storage
           sessionStorage.removeItem('nomadAddon');
+        }
+        
+        // Update stock levels for ordered items
+        for (const item of items) {
+          const product = PRODUCTS.find(p => p.id === item.id);
+          if (product && product.stockCount !== undefined) {
+            const newStock = Math.max(0, product.stockCount - item.qty);
+            await updateProductStock(item.id, newStock);
+          }
         }
         
         // Send order confirmation email
