@@ -165,6 +165,7 @@
       <a href="#internet" class="pill">Unlimited Internet</a>
       <a href="#support" class="pill">Support</a>
       <div class="spacer"></div>
+      <button class="link" id="take-tour" aria-label="Take tour">Take Tour</button>
       <button class="link" id="open-cart" aria-label="Open cart">Cart</button>
     </nav>
   </header>
@@ -1813,7 +1814,23 @@
 
     // Initialize the app
     document.addEventListener('DOMContentLoaded', function() {
+      // Check if user has seen intro splash
+      const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+      if (!hasSeenIntro) {
+        // Show intro splash screen
+        window.location.href = 'intro-splash.html';
+        return;
+      }
+      
       initializeApp();
+      
+      // Add Take Tour button functionality
+      const takeTourBtn = document.getElementById('take-tour');
+      if (takeTourBtn) {
+        takeTourBtn.addEventListener('click', function() {
+          window.location.href = 'intro-splash.html';
+        });
+      }
     });
   </script>
   

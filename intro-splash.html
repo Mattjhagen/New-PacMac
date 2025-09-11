@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome to PacMac Marketplace</title>
+  <meta name="description" content="The ultimate platform for buying and selling phones in your area" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📱</text></svg>">
+  <style>
+    :root {
+      --bg: #000;
+      --fg: #eaeaea;
+      --muted: #9aa0a6;
+      --accent: #6aa7ff;
+      --accent-2: #8affd1;
+      --card: #0b0b0b;
+      --ring: #1f2937;
+      --shadow: 0 10px 25px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.5);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font: 16px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .splash-container {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
+    }
+
+    /* Animated Background */
+    .bg-animation {
+      position: absolute;
+      inset: 0;
+      background: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .floating-elements {
+      position: absolute;
+      inset: 0;
+    }
+
+    .floating-element {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      top: 20%;
+      left: 20%;
+      width: 80px;
+      height: 80px;
+      background: #6aa7ff;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      top: 40%;
+      right: 20%;
+      width: 60px;
+      height: 60px;
+      background: #8affd1;
+      animation-delay: 2s;
+    }
+
+    .floating-element:nth-child(3) {
+      bottom: 30%;
+      left: 30%;
+      width: 100px;
+      height: 100px;
+      background: #ff6b6b;
+      animation-delay: 4s;
+    }
+
+    .floating-element:nth-child(4) {
+      bottom: 20%;
+      right: 30%;
+      width: 70px;
+      height: 70px;
+      background: #ffd93d;
+      animation-delay: 1s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    /* Header */
+    .splash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .skip-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .skip-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Main Content */
+    .splash-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .content-wrapper {
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Step Indicator */
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .step-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .step-dot.active {
+      background: white;
+      transform: scale(1.25);
+    }
+
+    /* Step Content */
+    .step-content {
+      transition: all 0.5s ease;
+    }
+
+    .step-content.fade-out {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .step-icon {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, #6aa7ff, #8affd1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+      font-size: 48px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .step-title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .step-subtitle {
+      font-size: clamp(18px, 3vw, 24px);
+      opacity: 0.9;
+      margin-bottom: 32px;
+      line-height: 1.4;
+    }
+
+    .step-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .feature-item {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .feature-check {
+      width: 24px;
+      height: 24px;
+      background: #4ade80;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-check::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .feature-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Navigation */
+    .navigation {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .next-btn {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Bottom Section */
+    .splash-bottom {
+      padding: 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .testimonial {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .testimonial-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .testimonial-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6aa7ff, #8affd1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .testimonial-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .testimonial-info p {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .testimonial-rating {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 8px;
+    }
+
+    .star {
+      color: #ffd700;
+      font-size: 12px;
+    }
+
+    .testimonial-text {
+      font-size: 14px;
+      font-style: italic;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+
+    /* CTA Buttons */
+    .cta-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .cta-primary {
+      background: linear-gradient(135deg, #6aa7ff, #8affd1);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .cta-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 14px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .cta-secondary:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .splash-header {
+        padding: 16px;
+      }
+
+      .splash-content {
+        padding: 0 16px;
+      }
+
+      .step-features {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .testimonials {
+        grid-template-columns: 1fr;
+      }
+
+      .navigation {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .cta-section {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .cta-primary,
+      .cta-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+    <div class="floating-elements">
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="splash-header">
+      <div class="logo">
+        <div class="logo-icon">📱</div>
+        <span>PacMac Marketplace</span>
+      </div>
+      <button class="skip-btn" onclick="skipIntro()">Skip Intro</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="splash-content">
+      <div class="content-wrapper">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <div class="step-dot active" data-step="0"></div>
+          <div class="step-dot" data-step="1"></div>
+          <div class="step-dot" data-step="2"></div>
+          <div class="step-dot" data-step="3"></div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="step-content" id="stepContent">
+          <div class="step-icon">📱</div>
+          <h1 class="step-title">Welcome to PacMac Marketplace</h1>
+          <p class="step-subtitle">The ultimate platform for buying and selling phones in your area</p>
+          <div class="step-features">
+            <div class="feature-item">
+              <div class="feature-check"></div>
+              <span class="feature-text">Find phones near you</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-check"></div>
+              <span class="feature-text">Sell your devices safely</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-check"></div>
+              <span class="feature-text">Connect with local buyers</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button class="nav-btn" id="prevBtn" onclick="previousStep()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          <button class="next-btn" id="nextBtn" onclick="nextStep()">
+            <span>Next</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="splash-bottom">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number" id="statUsers">0</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="statDevices">0</div>
+          <div class="stat-label">Devices Sold</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="statRating">0</div>
+          <div class="stat-label">Satisfaction Rate</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Support</div>
+        </div>
+      </div>
+
+      <!-- Testimonials -->
+      <div class="testimonials">
+        <div class="testimonial">
+          <div class="testimonial-header">
+            <div class="testimonial-avatar">SJ</div>
+            <div class="testimonial-info">
+              <h4>Sarah Johnson</h4>
+              <p>New York, NY</p>
+            </div>
+          </div>
+          <div class="testimonial-rating">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <p class="testimonial-text">"Found my dream iPhone 15 Pro for $200 less than retail! The seller was just 2 blocks away."</p>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-header">
+            <div class="testimonial-avatar">MC</div>
+            <div class="testimonial-info">
+              <h4>Mike Chen</h4>
+              <p>Los Angeles, CA</p>
+            </div>
+          </div>
+          <div class="testimonial-rating">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <p class="testimonial-text">"Sold 3 old phones in one week. The location feature made it so easy to find local buyers."</p>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-header">
+            <div class="testimonial-avatar">ER</div>
+            <div class="testimonial-info">
+              <h4>Emily Rodriguez</h4>
+              <p>Chicago, IL</p>
+            </div>
+          </div>
+          <div class="testimonial-rating">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+          <p class="testimonial-text">"Love how secure and easy this platform is. No more worrying about online scams!"</p>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="cta-section">
+        <button class="cta-primary" onclick="getStarted()">
+          <span>▶</span>
+          <span>Get Started Now</span>
+        </button>
+        <button class="cta-secondary" onclick="exploreMarketplace()">
+          Explore Marketplace
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Step data
+    const steps = [
+      {
+        title: "Welcome to PacMac Marketplace",
+        subtitle: "The ultimate platform for buying and selling phones in your area",
+        icon: "📱",
+        features: [
+          "Find phones near you",
+          "Sell your devices safely",
+          "Connect with local buyers"
+        ]
+      },
+      {
+        title: "Location-Based Discovery",
+        subtitle: "Discover amazing deals right in your neighborhood",
+        icon: "📍",
+        features: [
+          "GPS-powered location services",
+          "Radius-based search",
+          "Local pickup options"
+        ]
+      },
+      {
+        title: "Secure & Trusted",
+        subtitle: "Buy and sell with confidence using our verified system",
+        icon: "🛡️",
+        features: [
+          "Verified user profiles",
+          "Secure messaging",
+          "Transaction protection"
+        ]
+      },
+      {
+        title: "Easy Communication",
+        subtitle: "Chat directly with buyers and sellers",
+        icon: "💬",
+        features: [
+          "Real-time messaging",
+          "Photo sharing",
+          "Meetup coordination"
+        ]
+      }
+    ];
+
+    let currentStep = 0;
+    let isAnimating = false;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      updateStepContent();
+      animateStats();
+      startAutoAdvance();
+    });
+
+    // Update step content
+    function updateStepContent() {
+      const step = steps[currentStep];
+      const content = document.getElementById('stepContent');
+      
+      content.innerHTML = `
+        <div class="step-icon">${step.icon}</div>
+        <h1 class="step-title">${step.title}</h1>
+        <p class="step-subtitle">${step.subtitle}</p>
+        <div class="step-features">
+          ${step.features.map(feature => `
+            <div class="feature-item">
+              <div class="feature-check"></div>
+              <span class="feature-text">${feature}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Update step indicators
+      document.querySelectorAll('.step-dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentStep);
+      });
+
+      // Update navigation buttons
+      document.getElementById('prevBtn').disabled = currentStep === 0;
+      document.getElementById('nextBtn').innerHTML = currentStep === steps.length - 1 
+        ? '<span>Get Started</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>'
+        : '<span>Next</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
+    }
+
+    // Next step
+    function nextStep() {
+      if (isAnimating) return;
+      
+      if (currentStep === steps.length - 1) {
+        getStarted();
+        return;
+      }
+
+      isAnimating = true;
+      const content = document.getElementById('stepContent');
+      content.classList.add('fade-out');
+      
+      setTimeout(() => {
+        currentStep++;
+        updateStepContent();
+        content.classList.remove('fade-out');
+        isAnimating = false;
+      }, 300);
+    }
+
+    // Previous step
+    function previousStep() {
+      if (isAnimating || currentStep === 0) return;
+      
+      isAnimating = true;
+      const content = document.getElementById('stepContent');
+      content.classList.add('fade-out');
+      
+      setTimeout(() => {
+        currentStep--;
+        updateStepContent();
+        content.classList.remove('fade-out');
+        isAnimating = false;
+      }, 300);
+    }
+
+    // Skip intro
+    function skipIntro() {
+      localStorage.setItem('hasSeenIntro', 'true');
+      window.location.href = 'index.html';
+    }
+
+    // Get started
+    function getStarted() {
+      localStorage.setItem('hasSeenIntro', 'true');
+      window.location.href = 'index.html';
+    }
+
+    // Explore marketplace
+    function exploreMarketplace() {
+      localStorage.setItem('hasSeenIntro', 'true');
+      window.location.href = 'index.html';
+    }
+
+    // Animate stats
+    function animateStats() {
+      const targets = {
+        users: 12450,
+        devices: 8932,
+        rating: 99.8
+      };
+
+      const duration = 2000;
+      const steps = 60;
+      const stepDuration = duration / steps;
+
+      let currentStep = 0;
+      const timer = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+
+        document.getElementById('statUsers').textContent = Math.floor(targets.users * progress).toLocaleString() + '+';
+        document.getElementById('statDevices').textContent = Math.floor(targets.devices * progress).toLocaleString() + '+';
+        document.getElementById('statRating').textContent = (Math.round(targets.rating * progress * 10) / 10) + '%';
+
+        if (currentStep >= steps) {
+          clearInterval(timer);
+          document.getElementById('statUsers').textContent = targets.users.toLocaleString() + '+';
+          document.getElementById('statDevices').textContent = targets.devices.toLocaleString() + '+';
+          document.getElementById('statRating').textContent = targets.rating + '%';
+        }
+      }, stepDuration);
+    }
+
+    // Auto advance
+    function startAutoAdvance() {
+      setInterval(() => {
+        if (!isAnimating) {
+          nextStep();
+        }
+      }, 4000);
+    }
+
+    // Step dot clicks
+    document.querySelectorAll('.step-dot').forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        if (isAnimating) return;
+        
+        isAnimating = true;
+        const content = document.getElementById('stepContent');
+        content.classList.add('fade-out');
+        
+        setTimeout(() => {
+          currentStep = index;
+          updateStepContent();
+          content.classList.remove('fade-out');
+          isAnimating = false;
+        }, 300);
+      });
+    });
+  </script>
+</body>
+</html>
