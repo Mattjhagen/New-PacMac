@@ -377,11 +377,57 @@ PacMacProducts.init({
     // Initialize products from API
     async function initializeProducts() {
       try {
-        console.log('🔄 Initializing products...');
+        console.log('🔄 Initializing products from API...');
         
-        // Check if PRODUCTS array already has data
-        if (PRODUCTS && PRODUCTS.length > 0) {
-          console.log(`✅ Using existing PRODUCTS array with ${PRODUCTS.length} products`);
+        // Check if inventoryAPI is available
+        if (!window.inventoryAPI) {
+          console.error('❌ inventoryAPI not available, using fallback');
+          PRODUCTS = FALLBACK_PRODUCTS || [];
+          return;
+        }
+        
+        // Try to get products using the correct method
+        let products = [];
+        
+        if (typeof window.inventoryAPI.getProducts === 'function') {
+          products = await window.inventoryAPI.getProducts();
+        } else if (typeof window.inventoryAPI.fetchProducts === 'function') {
+          products = await window.inventoryAPI.fetchProducts();
+        } else {
+          console.error('❌ No valid product fetching method found');
+          products = FALLBACK_PRODUCTS || [];
+        }
+        
+        PRODUCTS = products;
+        console.log(`✅ Loaded ${PRODUCTS.length} products`);
+        
+        // Update the product grid if it exists
+        if (typeof updateProductGrid === 'function') {
+          updateProductGrid();
+        }
+        
+        // Update any product-related UI elements
+        if (typeof updateProductUI === 'function') {
+          updateProductUI();
+        }
+        
+        // Show products
+        if (typeof showProducts === 'function') {
+          showProducts();
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize products:', error);
+        // Fallback to static products
+        PRODUCTS = FALLBACK_PRODUCTS || [];
+        console.log('🔄 Using fallback static products');
+        
+        // Still try to show products
+        if (typeof showProducts === 'function') {
+          showProducts();
+        }
+      }
+    } products`);
         } else {
           console.log('⚠️ PRODUCTS array is empty, using fallback');
           PRODUCTS = FALLBACK_PRODUCTS || [];
