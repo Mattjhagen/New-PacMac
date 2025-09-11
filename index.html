@@ -342,7 +342,7 @@ PacMacProducts.init({
     resize(); requestAnimationFrame(draw);
 
     /***** 2) Dynamic product catalog from API *****/
-    const PRODUCTS = [
+    window.PRODUCTS = [
   {
     "id": "pm-product_1757549491148_848mhkcmg",
     "name": "iPhone 15",
@@ -379,11 +379,11 @@ PacMacProducts.init({
       console.log('🔄 Initializing products...');
       
       // Check if PRODUCTS array already has data
-      if (PRODUCTS && PRODUCTS.length > 0) {
+      if (window.PRODUCTS && window.PRODUCTS.length > 0) {
         console.log(`✅ Using existing PRODUCTS array with ${PRODUCTS.length} products`);
       } else {
         console.log('⚠️ PRODUCTS array is empty, using fallback');
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
       }
       
       // Always call initializeApp to render the products
@@ -404,7 +404,7 @@ PacMacProducts.init({
     } products`);
         } else {
           console.log('⚠️ PRODUCTS array is empty, using fallback');
-          PRODUCTS = FALLBACK_PRODUCTS || [];
+          window.PRODUCTS = FALLBACK_PRODUCTS || [];
         }
         
         // Always call initializeApp to render the products
@@ -426,7 +426,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
@@ -451,7 +451,7 @@ PacMacProducts.init({
           products = FALLBACK_PRODUCTS || [];
         }
         
-        PRODUCTS = products;
+        window.PRODUCTS = products;
         console.log(`✅ Loaded ${PRODUCTS.length} products`);
         
         // Update the product grid if it exists
@@ -472,7 +472,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
@@ -483,7 +483,7 @@ PacMacProducts.init({
     } products`);
         } else {
           console.log('⚠️ PRODUCTS array is empty, using fallback');
-          PRODUCTS = FALLBACK_PRODUCTS || [];
+          window.PRODUCTS = FALLBACK_PRODUCTS || [];
         }
         
         // Always call initializeApp to render the products
@@ -505,7 +505,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
@@ -530,7 +530,7 @@ PacMacProducts.init({
           products = FALLBACK_PRODUCTS || [];
         }
         
-        PRODUCTS = products;
+        window.PRODUCTS = products;
         console.log(`✅ Loaded ${PRODUCTS.length} products`);
         
         // Update the product grid if it exists
@@ -551,7 +551,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
@@ -573,7 +573,7 @@ PacMacProducts.init({
           products = FALLBACK_PRODUCTS || [];
         }
         
-        PRODUCTS = products;
+        window.PRODUCTS = products;
         console.log(`✅ Loaded ${PRODUCTS.length} products`);
         
         // Update the product grid if it exists
@@ -594,7 +594,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
@@ -616,7 +616,7 @@ PacMacProducts.init({
           products = FALLBACK_PRODUCTS || [];
         }
         
-        PRODUCTS = products;
+        window.PRODUCTS = products;
         console.log(`✅ Loaded ${PRODUCTS.length} products`);
         
         // Update the product grid if it exists
@@ -637,7 +637,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
@@ -659,7 +659,7 @@ PacMacProducts.init({
           products = FALLBACK_PRODUCTS || [];
         }
         
-        PRODUCTS = products;
+        window.PRODUCTS = products;
         console.log(`✅ Loaded ${PRODUCTS.length} products`);
         
         // Update the product grid if it exists
@@ -680,7 +680,7 @@ PacMacProducts.init({
       } catch (error) {
         console.error('❌ Failed to initialize products:', error);
         // Fallback to static products
-        PRODUCTS = FALLBACK_PRODUCTS || [];
+        window.PRODUCTS = FALLBACK_PRODUCTS || [];
         console.log('🔄 Using fallback static products');
         
         // Still try to show products
