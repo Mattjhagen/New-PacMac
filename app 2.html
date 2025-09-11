@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PacMac Mobile - Find Tech Nearby</title>
+  <meta name="description" content="Find tech nearby with secure escrow protection. Swipe to discover the latest devices in your area." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📱</text></svg>">
+  <script src="config.js" defer></script>
+  <style>
+    :root {
+      --primary: #ff6b6b;
+      --secondary: #4ecdc4;
+      --accent: #45b7d1;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --shadow: 0 10px 25px rgba(0,0,0,0.2);
+      --radius: 15px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gradient);
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* App Container */
+    .app-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .app-header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .logo-icon {
+      width: 35px;
+      height: 35px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: white;
+    }
+
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    /* Main Content */
+    .app-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Auth Screens */
+    .auth-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 200;
+      transition: transform 0.5s ease;
+    }
+
+    .auth-screen.hidden {
+      transform: translateY(-100%);
+    }
+
+    .auth-form {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+    }
+
+    .auth-form h2 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.8rem;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      color: white;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, var(--primary), #ee5a24);
+      color: white;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .auth-switch a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-switch a:hover {
+      text-decoration: underline;
+    }
+
+    /* Tinder Interface */
+    .tinder-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding: 20px;
+    }
+
+    .card-stack {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .product-card {
+      position: absolute;
+      width: 90%;
+      max-width: 350px;
+      height: 70vh;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      cursor: grab;
+      transition: transform 0.3s ease;
+      user-select: none;
+    }
+
+    .product-card:active {
+      cursor: grabbing;
+    }
+
+    .product-card.dragging {
+      transition: none;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 60%;
+      background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      color: #999;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-info {
+      padding: 20px;
+      height: 40%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .product-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .product-description {
+      color: #666;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 15px;
+      flex: 1;
+    }
+
+    .product-specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .spec-tag {
+      background: var(--light);
+      color: var(--dark);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .seller-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .seller-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .seller-details {
+      flex: 1;
+    }
+
+    .seller-name {
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 0.9rem;
+    }
+
+    .seller-location {
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 0 20px 20px;
+    }
+
+    .action-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .action-btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn-pass {
+      background: white;
+      color: #ff6b6b;
+    }
+
+    .btn-like {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-super-like {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .empty-state p {
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: white;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .auth-form {
+        padding: 30px 20px;
+        margin: 0 10px;
+      }
+      
+      .product-card {
+        width: 95%;
+        height: 75vh;
+      }
+      
+      .action-buttons {
+        gap: 15px;
+      }
+      
+      .action-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Swipe animations */
+    .swipe-left {
+      transform: translateX(-100vw) rotate(-30deg);
+      opacity: 0;
+    }
+
+    .swipe-right {
+      transform: translateX(100vw) rotate(30deg);
+      opacity: 0;
+    }
+
+    .swipe-up {
+      transform: translateY(-100vh) rotate(0deg);
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <div class="logo-icon">📱</div>
+        <span>PacMac Mobile</span>
+      </div>
+      <div class="user-info" id="userInfo" style="display: none;">
+        <span id="userName">User</span>
+        <div class="user-avatar" id="userAvatar">U</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="app-content">
+      <!-- Login Screen -->
+      <div class="auth-screen" id="loginScreen">
+        <div class="auth-form">
+          <h2>Welcome Back</h2>
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="loginEmail">Email</label>
+              <input type="email" id="loginEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+          </form>
+          <div class="auth-switch">
+            Don't have an account? <a href="#" id="showRegister">Sign Up</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Register Screen -->
+      <div class="auth-screen hidden" id="registerScreen">
+        <div class="auth-form">
+          <h2>Join PacMac Mobile</h2>
+          <form id="registerForm">
+            <div class="form-group">
+              <label for="registerName">Full Name</label>
+              <input type="text" id="registerName" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+              <label for="registerEmail">Email</label>
+              <input type="email" id="registerEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+              <label for="registerPassword">Password</label>
+              <input type="password" id="registerPassword" placeholder="Create a password" required>
+            </div>
+            <div class="form-group">
+              <label for="registerLocation">Location</label>
+              <input type="text" id="registerLocation" placeholder="City, State" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+          </form>
+          <div class="auth-switch">
+            Already have an account? <a href="#" id="showLogin">Sign In</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tinder Interface -->
+      <div class="tinder-container" id="tinderContainer" style="display: none;">
+        <div class="card-stack" id="cardStack">
+          <!-- Product cards will be dynamically inserted here -->
+        </div>
+        
+        <div class="action-buttons">
+          <button class="action-btn btn-pass" id="passBtn" title="Pass">
+            ✕
+          </button>
+          <button class="action-btn btn-super-like" id="superLikeBtn" title="Super Like">
+            ⭐
+          </button>
+          <button class="action-btn btn-like" id="likeBtn" title="Like">
+            ♥
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p>Loading tech near you...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <h3>No more tech nearby!</h3>
+        <p>Check back later for new devices in your area.</p>
+        <button class="btn btn-primary" onclick="loadProducts()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let currentUser = null;
+    let products = [];
+    let currentCardIndex = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeApp();
+      setupEventListeners();
+    });
+
+    function initializeApp() {
+      // Check if user is already logged in
+      const savedUser = localStorage.getItem('pacmac_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        showTinderInterface();
+        loadProducts();
+      } else {
+        showLoginScreen();
+      }
+    }
+
+    function setupEventListeners() {
+      // Auth form events
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+      document.getElementById('registerForm').addEventListener('submit', handleRegister);
+      document.getElementById('showRegister').addEventListener('click', showRegisterScreen);
+      document.getElementById('showLogin').addEventListener('click', showLoginScreen);
+
+      // Action button events
+      document.getElementById('passBtn').addEventListener('click', () => swipeCard('left'));
+      document.getElementById('likeBtn').addEventListener('click', () => swipeCard('right'));
+      document.getElementById('superLikeBtn').addEventListener('click', () => swipeCard('up'));
+
+      // Touch events for swiping
+      document.addEventListener('touchstart', handleTouchStart, { passive: false });
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+      // Mouse events for desktop
+      document.addEventListener('mousedown', handleMouseDown);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    // Authentication functions
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          currentUser = data.user;
+          localStorage.setItem('pacmac_user', JSON.stringify(currentUser));
+          showTinderInterface();
+          loadProducts();
+        } else {
+          alert('Login failed: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const location = document.getElementById('registerLocation').value;
+
+      try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name, 
+            email, 
+            password, 
+            location: { city: location.split(',')[0], state: location.split(',')[1] || '' }
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          currentUser = data.user;
+          localStorage.setItem('pacmac_user', JSON.stringify(currentUser));
+          showTinderInterface();
+          loadProducts();
+        } else {
+          alert('Registration failed: ' + data.error);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('Registration failed. Please try again.');
+      }
+    }
+
+    function showLoginScreen() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('tinderContainer').style.display = 'none';
+      document.getElementById('userInfo').style.display = 'none';
+    }
+
+    function showRegisterScreen() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.remove('hidden');
+      document.getElementById('tinderContainer').style.display = 'none';
+      document.getElementById('userInfo').style.display = 'none';
+    }
+
+    function showTinderInterface() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('tinderContainer').style.display = 'flex';
+      document.getElementById('userInfo').style.display = 'flex';
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    }
+
+    // Product loading
+    async function loadProducts() {
+      document.getElementById('loadingState').style.display = 'flex';
+      document.getElementById('emptyState').style.display = 'none';
+
+      try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/public/products`);
+        const data = await response.json();
+        
+        if (data.success) {
+          products = data.products;
+          currentCardIndex = 0;
+          renderCards();
+        } else {
+          showEmptyState();
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        showEmptyState();
+      }
+
+      document.getElementById('loadingState').style.display = 'none';
+    }
+
+    function renderCards() {
+      const cardStack = document.getElementById('cardStack');
+      cardStack.innerHTML = '';
+
+      if (products.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      // Show up to 3 cards at once
+      const cardsToShow = Math.min(3, products.length - currentCardIndex);
+      
+      for (let i = 0; i < cardsToShow; i++) {
+        const product = products[currentCardIndex + i];
+        const card = createProductCard(product, i);
+        cardStack.appendChild(card);
+      }
+    }
+
+    function createProductCard(product, index) {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.style.zIndex = 3 - index;
+      card.style.transform = `scale(${1 - index * 0.05}) translateY(${index * 10}px)`;
+      card.dataset.productId = product.id;
+
+      card.innerHTML = `
+        <div class="product-image">
+          ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}">` : '📱'}
+        </div>
+        <div class="product-info">
+          <div class="product-title">${product.name}</div>
+          <div class="product-price">$${product.price}</div>
+          <div class="product-description">${product.description || 'Great condition tech device'}</div>
+          <div class="product-specs">
+            ${product.specs ? Object.entries(product.specs).map(([key, value]) => 
+              `<span class="spec-tag">${key}: ${value}</span>`
+            ).join('') : ''}
+          </div>
+          <div class="seller-info">
+            <div class="seller-avatar">${product.seller?.name?.charAt(0) || 'S'}</div>
+            <div class="seller-details">
+              <div class="seller-name">${product.seller?.name || 'Verified Seller'}</div>
+              <div class="seller-location">${product.seller?.location || 'Nearby'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function showEmptyState() {
+      document.getElementById('emptyState').style.display = 'flex';
+    }
+
+    // Swipe functionality
+    function swipeCard(direction) {
+      const currentCard = document.querySelector('.product-card');
+      if (!currentCard) return;
+
+      const productId = currentCard.dataset.productId;
+      
+      // Add swipe animation
+      currentCard.classList.add(`swipe-${direction}`);
+      
+      // Handle the swipe action
+      setTimeout(() => {
+        handleSwipeAction(productId, direction);
+        currentCard.remove();
+        currentCardIndex++;
+        
+        if (currentCardIndex >= products.length) {
+          showEmptyState();
+        } else {
+          renderCards();
+        }
+      }, 300);
+    }
+
+    async function handleSwipeAction(productId, direction) {
+      try {
+        const action = direction === 'right' ? 'like' : direction === 'up' ? 'super_like' : 'pass';
+        
+        await fetch(`${CONFIG.apiBaseUrl}/products/${productId}/swipe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: currentUser.id, 
+            action: action 
+          })
+        });
+
+        if (action === 'like' || action === 'super_like') {
+          // Show match notification or start chat
+          showMatchNotification(productId);
+        }
+      } catch (error) {
+        console.error('Error handling swipe:', error);
+      }
+    }
+
+    function showMatchNotification(productId) {
+      // Simple match notification
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--success);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        z-index: 1000;
+        font-weight: 600;
+        box-shadow: var(--shadow);
+      `;
+      notification.textContent = 'It\'s a match! 🎉';
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 2000);
+    }
+
+    // Touch and mouse event handlers
+    function handleTouchStart(e) {
+      const card = e.target.closest('.product-card');
+      if (!card) return;
+
+      isDragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      card.classList.add('dragging');
+    }
+
+    function handleTouchMove(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+
+      const card = document.querySelector('.product-card.dragging');
+      if (!card) return;
+
+      currentX = e.touches[0].clientX;
+      currentY = e.touches[0].clientY;
+      
+      const deltaX = currentX - startX;
+      const deltaY = currentY - startY;
+      const rotation = deltaX * 0.1;
+
+      card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
+    }
+
+    function handleTouchEnd(e) {
+      if (!isDragging) return;
+      isDragging = false;
+
+      const card = document.querySelector('.product-card.dragging');
+      if (!card) return;
+
+      card.classList.remove('dragging');
+      
+      const deltaX = currentX - startX;
+      const deltaY = currentY - startY;
+      const threshold = 100;
+
+      if (Math.abs(deltaX) > threshold) {
+        swipeCard(deltaX > 0 ? 'right' : 'left');
+      } else if (deltaY < -threshold) {
+        swipeCard('up');
+      } else {
+        // Snap back
+        card.style.transform = '';
+      }
+    }
+
+    function handleMouseDown(e) {
+      const card = e.target.closest('.product-card');
+      if (!card) return;
+
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      card.classList.add('dragging');
+    }
+
+    function handleMouseMove(e) {
+      if (!isDragging) return;
+
+      const card = document.querySelector('.product-card.dragging');
+      if (!card) return;
+
+      currentX = e.clientX;
+      currentY = e.clientY;
+      
+      const deltaX = currentX - startX;
+      const deltaY = currentY - startY;
+      const rotation = deltaX * 0.1;
+
+      card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
+    }
+
+    function handleMouseUp(e) {
+      if (!isDragging) return;
+      isDragging = false;
+
+      const card = document.querySelector('.product-card.dragging');
+      if (!card) return;
+
+      card.classList.remove('dragging');
+      
+      const deltaX = currentX - startX;
+      const deltaY = currentY - startY;
+      const threshold = 100;
+
+      if (Math.abs(deltaX) > threshold) {
+        swipeCard(deltaX > 0 ? 'right' : 'left');
+      } else if (deltaY < -threshold) {
+        swipeCard('up');
+      } else {
+        // Snap back
+        card.style.transform = '';
+      }
+    }
+  </script>
+</body>
+</html>
