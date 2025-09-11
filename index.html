@@ -469,6 +469,49 @@ PacMacProducts.init({
           showProducts();
         }
       }
+    }
+        
+        // Try to get products using the correct method
+        let products = [];
+        
+        if (typeof window.inventoryAPI.getProducts === 'function') {
+          products = await window.inventoryAPI.getProducts();
+        } else if (typeof window.inventoryAPI.fetchProducts === 'function') {
+          products = await window.inventoryAPI.fetchProducts();
+        } else {
+          console.error('❌ No valid product fetching method found');
+          products = FALLBACK_PRODUCTS || [];
+        }
+        
+        PRODUCTS = products;
+        console.log(`✅ Loaded ${PRODUCTS.length} products`);
+        
+        // Update the product grid if it exists
+        if (typeof updateProductGrid === 'function') {
+          updateProductGrid();
+        }
+        
+        // Update any product-related UI elements
+        if (typeof updateProductUI === 'function') {
+          updateProductUI();
+        }
+        
+        // Show products
+        if (typeof showProducts === 'function') {
+          showProducts();
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize products:', error);
+        // Fallback to static products
+        PRODUCTS = FALLBACK_PRODUCTS || [];
+        console.log('🔄 Using fallback static products');
+        
+        // Still try to show products
+        if (typeof showProducts === 'function') {
+          showProducts();
+        }
+      }
     } products`);
         
         // Update the product grid if it exists
