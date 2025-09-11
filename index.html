@@ -376,14 +376,47 @@ PacMacProducts.init({
     // Initialize products from API
     async function initializeProducts() {
       try {
-        console.log('🔄 Initializing products from API...');
+        console.log('🔄 Initializing products...');
         
-        // Check if inventoryAPI is available
-        if (!window.inventoryAPI) {
-          console.error('❌ inventoryAPI not available, using fallback');
+        // Check if PRODUCTS array already has data
+        if (PRODUCTS && PRODUCTS.length > 0) {
+          console.log(`✅ Using existing PRODUCTS array with ${PRODUCTS.length} products`);
+        } else {
+          console.log('⚠️ PRODUCTS array is empty, using fallback');
           PRODUCTS = FALLBACK_PRODUCTS || [];
-          return;
         }
+        
+        // Always call initializeApp to render the products
+        if (typeof initializeApp === 'function') {
+          initializeApp();
+          console.log('✅ initializeApp called successfully');
+        } else {
+          console.error('❌ initializeApp function not found');
+        }
+        
+        // Show products
+        if (typeof showProducts === 'function') {
+          showProducts();
+          console.log('✅ showProducts called successfully');
+        } else {
+          console.error('❌ showProducts function not found');
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize products:', error);
+        // Fallback to static products
+        PRODUCTS = FALLBACK_PRODUCTS || [];
+        console.log('🔄 Using fallback static products');
+        
+        // Still try to show products
+        if (typeof initializeApp === 'function') {
+          initializeApp();
+        }
+        if (typeof showProducts === 'function') {
+          showProducts();
+        }
+      }
+    }
         
         // Try to get products using the correct method
         let products = [];
