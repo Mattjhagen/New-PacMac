@@ -375,13 +375,33 @@ PacMacProducts.init({
 ]; // Will be populated from API
     
     // Initialize products from API
-    async function initializeProducts() {
-      try {
-        console.log('🔄 Initializing products...');
-        
-        // Check if PRODUCTS array already has data
-        if (PRODUCTS && PRODUCTS.length > 0) {
-          console.log(`✅ Using existing PRODUCTS array with ${PRODUCTS.length} products`);
+    function initializeProducts() {
+      console.log('🔄 Initializing products...');
+      
+      // Check if PRODUCTS array already has data
+      if (PRODUCTS && PRODUCTS.length > 0) {
+        console.log(`✅ Using existing PRODUCTS array with ${PRODUCTS.length} products`);
+      } else {
+        console.log('⚠️ PRODUCTS array is empty, using fallback');
+        PRODUCTS = FALLBACK_PRODUCTS || [];
+      }
+      
+      // Always call initializeApp to render the products
+      if (typeof initializeApp === 'function') {
+        initializeApp();
+        console.log('✅ initializeApp called successfully');
+      } else {
+        console.error('❌ initializeApp function not found');
+      }
+      
+      // Show products
+      if (typeof showProducts === 'function') {
+        showProducts();
+        console.log('✅ showProducts called successfully');
+      } else {
+        console.error('❌ showProducts function not found');
+      }
+    } products`);
         } else {
           console.log('⚠️ PRODUCTS array is empty, using fallback');
           PRODUCTS = FALLBACK_PRODUCTS || [];
@@ -691,7 +711,7 @@ PacMacProducts.init({
     async function refreshProducts() {
       try {
         console.log('🔄 Refreshing products from API...');
-        PRODUCTS = await window.inventoryAPI.fetchProducts();
+        // PRODUCTS = await window.inventoryAPI.getProducts(); // DISABLED - using existing array
         console.log(`✅ Refreshed ${PRODUCTS.length} products`);
         
         // Update the product grid if it exists
