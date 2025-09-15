@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import ProductCard from '@/components/ProductCard'
 import ProductFilters from '@/components/ProductFilters'
 import UserRegistration from '@/components/UserRegistration'
@@ -60,14 +61,13 @@ interface ProductTemplate {
 }
 
 export default function PacMacMarketplace() {
+  const { user, session, loading: authLoading, signOut, updateProfile } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'brand'>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   
-  // User authentication state
-  const [currentUser, setCurrentUser] = useState<{ id: string; name: string; email: string; firstName?: string; lastName?: string; location?: { city: string; state: string } } | null>(null)
-  const [userToken, setUserToken] = useState<string | null>(null)
+  // UI state
   const [showUserLogin, setShowUserLogin] = useState(false)
   const [showUserRegister, setShowUserRegister] = useState(false)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
@@ -102,53 +102,28 @@ export default function PacMacMarketplace() {
   }, [products])
 
   // User authentication handlers
-  const handleUserLogin = (user: { id: string; name: string; email: string; location?: { city: string; state: string } }, token: string) => {
-    setCurrentUser(user)
-    setUserToken(token)
-    setShowUserLogin(false)
-    setShowSplash(false) // Hide splash screen when user logs in
-    localStorage.setItem('userToken', token)
-    localStorage.setItem('currentUser', JSON.stringify(user))
+  const handleUserLogout = async () => {
+    await signOut()
   }
 
-  const handleUserRegister = (user: { id: string; name: string; email: string; location?: { city: string; state: string } }) => {
-    setCurrentUser(user)
-    setShowUserRegister(false)
-    setShowLocationPicker(true)
-  }
-
-  const handleUserLogout = () => {
-    setCurrentUser(null)
-    setUserToken(null)
-    localStorage.removeItem('userToken')
-    localStorage.removeItem('currentUser')
-  }
-
-  const handleLocationSelect = (location: { address: string; coordinates: { lat: number; lng: number } }) => {
-    if (currentUser) {
+  const handleLocationSelect = async (location: { address: string; coordinates: { lat: number; lng: number } }) => {
+    if (user) {
       // Update user location - transform to match expected format
       const locationData = {
         city: location.address.split(',')[0] || '',
         state: location.address.split(',')[1]?.trim() || ''
       }
-      const updatedUser = { ...currentUser, location: locationData }
-      setCurrentUser(updatedUser)
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+      await updateProfile({ location: locationData })
     }
     setShowLocationPicker(false)
   }
 
-  // Check for existing user session on load
+  // Hide splash screen when user is authenticated
   useEffect(() => {
-    const token = localStorage.getItem('userToken')
-    const user = localStorage.getItem('currentUser')
-    
-    if (token && user) {
-      setUserToken(token)
-      setCurrentUser(JSON.parse(user))
-      setShowSplash(false) // Hide splash screen if user is already logged in
+    if (user && !authLoading) {
+      setShowSplash(false)
     }
-  }, [])
+  }, [user, authLoading])
 
   // Cart and checkout functions
   const addToCart = (product: Product) => {
@@ -211,21 +186,21 @@ export default function PacMacMarketplace() {
             </div>
             
             <div className="flex items-center gap-4">
-              {currentUser ? (
+              {user ? (
                 <div className="flex items-center space-x-4">
                   {/* User Location Display */}
-                  {currentUser.location && (
+                  {user.user_metadata?.location && (
                     <div className="text-sm text-gray-600">
-                      📍 {currentUser.location.city}, {currentUser.location.state}
+                      📍 {user.user_metadata.location.city}, {user.user_metadata.location.state}
                     </div>
                   )}
                   
                   {/* User Menu */}
                   <div className="flex items-center space-x-2 text-sm text-gray-700">
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
-                      {currentUser.firstName?.[0]}{currentUser.lastName?.[0]}
+                      {user.user_metadata?.firstName?.[0]}{user.user_metadata?.lastName?.[0] || user.email?.[0]}
                     </div>
-                    <span>{currentUser.firstName} {currentUser.lastName}</span>
+                    <span>{user.user_metadata?.firstName} {user.user_metadata?.lastName || user.email}</span>
                   </div>
                   
                   <button
@@ -376,7 +351,7 @@ export default function PacMacMarketplace() {
         {/* User Authentication Modals */}
         {showUserLogin && (
           <UserLogin
-            onSuccess={handleUserLogin}
+            onSuccess={() => {}} // Handled by auth context
             onCancel={() => setShowUserLogin(false)}
             onSwitchToRegister={() => {
               setShowUserLogin(false)
@@ -387,7 +362,7 @@ export default function PacMacMarketplace() {
 
         {showUserRegister && (
           <UserRegistration
-            onSuccess={handleUserRegister}
+            onSuccess={() => {}} // Handled by auth context
             onCancel={() => setShowUserRegister(false)}
           />
         )}

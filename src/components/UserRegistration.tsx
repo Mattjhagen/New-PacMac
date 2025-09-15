@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import type { UserRegistration } from '@/types/User'
 
 interface UserRegistrationProps {
@@ -9,6 +10,7 @@ interface UserRegistrationProps {
 }
 
 export default function UserRegistration({ onSuccess, onCancel }: UserRegistrationProps) {
+  const { signUp } = useAuth()
   const [formData, setFormData] = useState<UserRegistration>({
     email: '',
     username: '',
@@ -55,20 +57,25 @@ export default function UserRegistration({ onSuccess, onCancel }: UserRegistrati
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        onSuccess(result.user)
+      const { error } = await signUp(
+        formData.email, 
+        formData.password,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          username: formData.username,
+          phone: formData.phone,
+          businessName: formData.businessName,
+          businessType: formData.businessType,
+          location: formData.location
+        }
+      )
+      
+      if (error) {
+        setError(error.message)
       } else {
-        setError(result.error || 'Registration failed')
+        // Success - the auth context will handle the user state
+        onCancel() // Close the modal
       }
     } catch (err) {
       console.error('Registration error:', err)
