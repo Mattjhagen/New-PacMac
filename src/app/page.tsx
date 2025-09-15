@@ -150,8 +150,12 @@ export default function PacMacMarketplace() {
     setShowUserLogin(true)
   }
 
+  // Debug authentication state
+  console.log('Auth Debug:', { user: !!user, authLoading, splashDismissed })
+
   // Show splash screen if not logged in, not loading, and splash hasn't been dismissed
   if (!user && !authLoading && !splashDismissed) {
+    console.log('Showing splash screen')
     return (
       <SplashScreen 
         onGetStarted={handleSplashGetStarted}

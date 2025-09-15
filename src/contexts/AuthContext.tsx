@@ -23,14 +23,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Check if we have valid Supabase credentials
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    // If no valid credentials, assume user is not authenticated
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'placeholder-key') {
+      console.log('No valid Supabase credentials, assuming user is not authenticated')
+      setUser(null)
+      setSession(null)
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      if (error) {
-        console.error('Error getting session:', error)
-      } else {
-        setSession(session)
-        setUser(session?.user ?? null)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          console.error('Error getting session:', error)
+        } else {
+          setSession(session)
+          setUser(session?.user ?? null)
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error)
+        setUser(null)
+        setSession(null)
       }
       setLoading(false)
     }
