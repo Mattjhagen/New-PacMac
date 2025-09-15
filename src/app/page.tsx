@@ -13,6 +13,7 @@ import UserLogin from '@/components/UserLogin'
 import LocationPicker from '@/components/LocationPicker'
 import CheckoutModal from '@/components/CheckoutModal'
 import SplashScreen from '@/components/SplashScreen'
+import OAuthSplashScreen from '@/components/OAuthSplashScreen'
 
 interface Product {
   id: string
@@ -75,6 +76,11 @@ export default function PacMacMarketplace() {
   const [showUserRegister, setShowUserRegister] = useState(false)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [splashDismissed, setSplashDismissed] = useState(false)
+  
+  // OAuth Authentication State
+  const [isOAuthAuthenticated, setIsOAuthAuthenticated] = useState(false)
+  const [oauthUser, setOauthUser] = useState<{ id: string; name: string; email: string; login: string; avatar?: string } | null>(null)
+  const [showOAuthSplash, setShowOAuthSplash] = useState(true)
 
   // Reset splash dismissed state when user logs out
   useEffect(() => {
@@ -82,6 +88,25 @@ export default function PacMacMarketplace() {
       setSplashDismissed(false)
     }
   }, [user, authLoading])
+
+  // Check for existing OAuth authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem('github_token');
+    const user = localStorage.getItem('github_user');
+    
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        setOauthUser(userData);
+        setIsOAuthAuthenticated(true);
+        setShowOAuthSplash(false);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('github_token');
+        localStorage.removeItem('github_user');
+      }
+    }
+  }, []);
   
   // Customer states
   const [showCheckout, setShowCheckout] = useState(false)
@@ -149,6 +174,21 @@ export default function PacMacMarketplace() {
     // You can add success notification here
   }
 
+  // OAuth Authentication Handlers
+  const handleOAuthSuccess = (user: { id: string; name: string; email: string; login: string; avatar?: string }, token: string) => {
+    setOauthUser(user)
+    setIsOAuthAuthenticated(true)
+    setShowOAuthSplash(false)
+    console.log('OAuth authentication successful:', user)
+  }
+
+  const handleOAuthLogout = () => {
+    setOauthUser(null)
+    setIsOAuthAuthenticated(false)
+    setShowOAuthSplash(true)
+    console.log('OAuth logout successful')
+  }
+
   // Splash screen handlers
   const handleSplashGetStarted = () => {
     setSplashDismissed(true)
@@ -161,7 +201,19 @@ export default function PacMacMarketplace() {
   }
 
   // Debug authentication state
-  console.log('Auth Debug:', { user: !!user, authLoading, splashDismissed })
+  console.log('Auth Debug:', { user: !!user, authLoading, splashDismissed, isOAuthAuthenticated, showOAuthSplash })
+
+  // OAuth Splash Screen - Show by default
+  if (showOAuthSplash) {
+    return (
+      <OAuthSplashScreen
+        onAuthSuccess={handleOAuthSuccess}
+        onLogout={handleOAuthLogout}
+        isAuthenticated={isOAuthAuthenticated}
+        currentUser={oauthUser || undefined}
+      />
+    )
+  }
 
   // Show splash screen if not logged in, not loading, and splash hasn't been dismissed
   if (!user && !authLoading && !splashDismissed) {
@@ -215,21 +267,42 @@ export default function PacMacMarketplace() {
             </div>
             
             <div className="flex items-center gap-4">
+              {/* OAuth User Display */}
+              {isOAuthAuthenticated && oauthUser && (
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={oauthUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(oauthUser.name)}&background=3b82f6&color=fff`}
+                    alt={oauthUser.name}
+                    className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+                  />
+                  <div className="text-sm">
+                    <div className="font-medium text-gray-900">{oauthUser.name}</div>
+                    <div className="text-gray-500">@{oauthUser.login}</div>
+                  </div>
+                  <button
+                    onClick={handleOAuthLogout}
+                    className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+              
               {user ? (
                 <div className="flex items-center space-x-4">
                   {/* User Location Display */}
-                  {user.user_metadata?.location && (
+                   {user?.user_metadata?.location && (
                     <div className="text-sm text-gray-600">
-                      📍 {user.user_metadata.location.city}, {user.user_metadata.location.state}
+                      📍 {user?.user_metadata?.location?.city}, {user?.user_metadata?.location?.state}
                     </div>
                   )}
                   
                   {/* User Menu */}
                   <div className="flex items-center space-x-2 text-sm text-gray-700">
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
-                      {user.user_metadata?.firstName?.[0]}{user.user_metadata?.lastName?.[0] || user.email?.[0]}
+                      {user?.user_metadata?.firstName?.[0]}{user?.user_metadata?.lastName?.[0] || user?.email?.[0]}
                     </div>
-                    <span>{user.user_metadata?.firstName} {user.user_metadata?.lastName || user.email}</span>
+                    <span>{user?.user_metadata?.firstName} {user?.user_metadata?.lastName || user?.email}</span>
                   </div>
                   
                   <button

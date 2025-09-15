@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacMac Mobile - OAuth Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+    <div class="max-w-4xl w-full">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6">
+                <span class="text-3xl">📱</span>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-4">
+                Welcome to <span class="text-yellow-300">PacMac Mobile</span>
+            </h1>
+            <p class="text-xl text-white text-opacity-90 max-w-2xl mx-auto">
+                Your premier destination for buying and selling mobile devices. 
+                Connect with GitHub to access our full marketplace experience.
+            </p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+            <!-- Left Side - Features -->
+            <div class="space-y-6">
+                <h2 class="text-2xl font-semibold text-white mb-4">Why Choose PacMac Mobile?</h2>
+                
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-green-300">✓</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white">Verified Sellers</h3>
+                            <p class="text-white text-opacity-80">All sellers are authenticated through GitHub for security and trust</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-blue-300">★</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white">Quality Guaranteed</h3>
+                            <p class="text-white text-opacity-80">Every device is thoroughly tested and comes with our quality promise</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-purple-300">♥</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white">Community Driven</h3>
+                            <p class="text-white text-opacity-80">Built by developers, for developers. Open source and transparent</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Authentication -->
+            <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-white border-opacity-20">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-semibold text-white mb-2">Get Started</h2>
+                    <p class="text-white text-opacity-80">Sign in with GitHub to access the marketplace</p>
+                </div>
+
+                <button
+                    onclick="simulateAuth()"
+                    class="w-full bg-gray-900 text-white px-6 py-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center"
+                >
+                    <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd" />
+                    </svg>
+                    Continue with GitHub
+                </button>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-white text-opacity-70">
+                        By continuing, you agree to our 
+                        <a href="#" class="text-yellow-300 hover:underline">Terms of Service</a>
+                        and 
+                        <a href="#" class="text-yellow-300 hover:underline">Privacy Policy</a>
+                    </p>
+                </div>
+
+                <!-- Demo Mode -->
+                <div class="mt-6 pt-6 border-t border-white border-opacity-20">
+                    <p class="text-sm text-white text-opacity-70 text-center mb-3">Or try our demo mode</p>
+                    <button
+                        onclick="simulateDemo()"
+                        class="w-full bg-white bg-opacity-20 text-white px-6 py-3 rounded-lg font-semibold hover:bg-opacity-30 transition-colors"
+                    >
+                        Try Demo Mode
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 text-white text-opacity-70">
+            <p>Built with ❤️ by the PacMac Mobile team</p>
+            <p class="text-sm mt-1">
+                <a href="https://github.com/Mattjhagen/New-PacMac" target="_blank" class="hover:underline">
+                    View on GitHub
+                </a>
+                • 
+                <a href="mailto:support@pacmacmobile.com" class="hover:underline">
+                    Contact Support
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-green-600 text-2xl">✓</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Authentication Successful!</h2>
+                <p class="text-gray-600 mb-6">You're now ready to explore the PacMac Mobile marketplace.</p>
+                
+                <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <img
+                            id="userAvatar"
+                            src="https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff"
+                            alt="User"
+                            class="w-12 h-12 rounded-full"
+                        />
+                        <div class="text-left">
+                            <h3 id="userName" class="font-semibold text-gray-900">Demo User</h3>
+                            <p id="userLogin" class="text-gray-600">@demo-user</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button
+                        onclick="enterMarketplace()"
+                        class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                        Enter Marketplace
+                    </button>
+                    <button
+                        onclick="logout()"
+                        class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                    >
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function simulateAuth() {
+            // Simulate loading
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>Authenticating...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                showSuccessModal();
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 2000);
+        }
+
+        function simulateDemo() {
+            showSuccessModal();
+        }
+
+        function showSuccessModal() {
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+        }
+
+        function enterMarketplace() {
+            alert('🎉 Welcome to PacMac Mobile Marketplace!\n\nYou would now be redirected to the main application with full access to:\n• Browse mobile devices\n• Add products to cart\n• Complete purchases\n• Manage your account\n\nThis is a demo - in the real app, you would be fully authenticated!');
+            hideSuccessModal();
+        }
+
+        function logout() {
+            hideSuccessModal();
+            // Simulate logout animation
+            document.body.style.opacity = '0.5';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                alert('✅ Successfully logged out!\n\nYou have been returned to the splash screen.');
+            }, 1000);
+        }
+
+        function hideSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+        }
+
+        // Close modal on outside click
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideSuccessModal();
+            }
+        });
+    </script>
+</body>
+</html>

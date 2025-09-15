@@ -27,6 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
+    console.log('AuthContext: Checking Supabase credentials', { 
+      hasUrl: !!supabaseUrl, 
+      hasKey: !!supabaseAnonKey,
+      url: supabaseUrl?.substring(0, 30) + '...',
+      key: supabaseAnonKey?.substring(0, 20) + '...'
+    })
+    
     // If no valid credentials, assume user is not authenticated
     if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'placeholder-key') {
       console.log('No valid Supabase credentials, assuming user is not authenticated')
@@ -39,10 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('AuthContext: Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) {
           console.error('Error getting session:', error)
         } else {
+          console.log('AuthContext: Session result', { 
+            hasSession: !!session, 
+            hasUser: !!session?.user,
+            userEmail: session?.user?.email 
+          })
           setSession(session)
           setUser(session?.user ?? null)
         }
@@ -59,6 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('AuthContext: Auth state changed', { 
+          event, 
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email 
+        })
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
@@ -88,12 +107,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithOAuth = async (provider: 'google' | 'github' | 'apple') => {
+    console.log('Starting OAuth with provider:', provider)
+    console.log('Redirect URL will be:', `${window.location.origin}/auth/callback`)
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback`
       }
     })
+    
+    if (error) {
+      console.error('OAuth error:', error)
+    }
+    
     return { error }
   }
 
