@@ -2,6 +2,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
 import { useAuth } from '@/contexts/AuthContext'
 import ProductCard from '@/components/ProductCard'
 import ProductFilters from '@/components/ProductFilters'
@@ -156,6 +159,17 @@ export default function PacMacMarketplace() {
   // Show splash screen if not logged in, not loading, and splash hasn't been dismissed
   if (!user && !authLoading && !splashDismissed) {
     console.log('Showing splash screen')
+    return (
+      <SplashScreen 
+        onGetStarted={handleSplashGetStarted}
+        onSkip={handleSplashSkip}
+      />
+    )
+  }
+
+  // Fallback: If authentication is taking too long, show splash screen
+  if (authLoading && !splashDismissed) {
+    console.log('Auth loading, showing splash screen as fallback')
     return (
       <SplashScreen 
         onGetStarted={handleSplashGetStarted}
