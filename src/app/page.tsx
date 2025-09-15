@@ -8,6 +8,7 @@ import UserRegistration from '@/components/UserRegistration'
 import UserLogin from '@/components/UserLogin'
 import LocationPicker from '@/components/LocationPicker'
 import CheckoutModal from '@/components/CheckoutModal'
+import SplashScreen from '@/components/SplashScreen'
 
 interface Product {
   id: string
@@ -70,6 +71,7 @@ export default function PacMacMarketplace() {
   const [showUserLogin, setShowUserLogin] = useState(false)
   const [showUserRegister, setShowUserRegister] = useState(false)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
   
   // Customer states
   const [showCheckout, setShowCheckout] = useState(false)
@@ -104,6 +106,7 @@ export default function PacMacMarketplace() {
     setCurrentUser(user)
     setUserToken(token)
     setShowUserLogin(false)
+    setShowSplash(false) // Hide splash screen when user logs in
     localStorage.setItem('userToken', token)
     localStorage.setItem('currentUser', JSON.stringify(user))
   }
@@ -143,6 +146,7 @@ export default function PacMacMarketplace() {
     if (token && user) {
       setUserToken(token)
       setCurrentUser(JSON.parse(user))
+      setShowSplash(false) // Hide splash screen if user is already logged in
     }
   }, [])
 
@@ -167,7 +171,27 @@ export default function PacMacMarketplace() {
     // You can add success notification here
   }
 
+  // Splash screen handlers
+  const handleSplashGetStarted = () => {
+    setShowSplash(false)
+    setShowUserLogin(true)
+  }
 
+  const handleSplashSkip = () => {
+    setShowSplash(false)
+  }
+
+
+
+  // Show splash screen if not logged in
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        onGetStarted={handleSplashGetStarted}
+        onSkip={handleSplashSkip}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
