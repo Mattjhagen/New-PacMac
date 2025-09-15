@@ -155,21 +155,11 @@ export default function PacMacMarketplace() {
 
   // Debug authentication state
   console.log('Auth Debug:', { user: !!user, authLoading, splashDismissed })
+  console.log('Component rendering - should show splash screen')
 
-  // Show splash screen if not logged in, not loading, and splash hasn't been dismissed
-  if (!user && !authLoading && !splashDismissed) {
+  // ALWAYS show splash screen for testing
+  if (!splashDismissed) {
     console.log('Showing splash screen')
-    return (
-      <SplashScreen 
-        onGetStarted={handleSplashGetStarted}
-        onSkip={handleSplashSkip}
-      />
-    )
-  }
-
-  // Fallback: If authentication is taking too long, show splash screen
-  if (authLoading && !splashDismissed) {
-    console.log('Auth loading, showing splash screen as fallback')
     return (
       <SplashScreen 
         onGetStarted={handleSplashGetStarted}
