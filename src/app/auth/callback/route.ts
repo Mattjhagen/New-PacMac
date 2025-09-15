@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       // Get user information from GitHub
       const userResponse = await fetch('https://api.github.com/user', {
         headers: {
-          'Authorization': `token ${accessToken}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/vnd.github.v3+json',
         },
       })
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
         try {
           const emailResponse = await fetch('https://api.github.com/user/emails', {
             headers: {
-              'Authorization': `token ${accessToken}`,
+              'Authorization': `Bearer ${accessToken}`,
               'Accept': 'application/vnd.github.v3+json',
             },
           })
