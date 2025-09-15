@@ -3,1037 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>PacMac Mobile - Inventory Admin</title>
+    <title>PacMac Mobile - Swipe to Shop</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f7;
-            color: #1d1d1f;
-            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            color: #007AFF;
-            margin-bottom: 10px;
-        }
-        
-        .nav-tabs {
+
+        .app-container {
+            height: 100vh;
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            position: relative;
         }
-        
-        .tab-btn {
-            padding: 12px 24px;
-            border: 2px solid #e5e5e7;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-        
-        .tab-btn.active {
-            background: #007AFF;
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
             color: white;
-            border-color: #007AFF;
+            z-index: 100;
         }
-        
-        .tab-content {
-            display: none;
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
-        
-        .tab-content.active {
-            display: block;
+
+        .header p {
+            opacity: 0.8;
+            font-size: 14px;
         }
-        
-        .form-section {
+
+        .swipe-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .product-card {
+            position: absolute;
+            width: 90%;
+            max-width: 350px;
+            height: 70vh;
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            cursor: grab;
+            transition: transform 0.2s ease;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
+
+        .product-card:active {
+            cursor: grabbing;
         }
-        
-        label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #1d1d1f;
+
+        .product-card.swiping {
+            transition: none;
         }
-        
-        input, select, textarea {
-            padding: 12px;
-            border: 2px solid #e5e5e7;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s;
+
+        .product-image {
+            height: 50%;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #007AFF;
-        }
-        
-        .image-upload {
-            border: 2px dashed #007AFF;
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            background: #f8f9ff;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .image-upload:hover {
-            background: #f0f4ff;
-        }
-        
-        .image-upload.dragover {
-            background: #e6f2ff;
-            border-color: #0056b3;
-        }
-        
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        
-        .btn {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn:hover {
-            background: #0056b3;
-        }
-        
-        .btn-secondary {
-            background: #8e8e93;
-        }
-        
-        .btn-secondary:hover {
-            background: #6d6d70;
-        }
-        
-        .btn-danger {
-            background: #ff3b30;
-        }
-        
-        .btn-danger:hover {
-            background: #d70015;
-        }
-        
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .inventory-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        
-        .inventory-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .inventory-card img {
+
+        .product-image img {
             width: 100%;
-            height: 200px;
+            height: 100%;
             object-fit: cover;
-            border-radius: 8px;
+        }
+
+        .product-info {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            font-size: 28px;
+            font-weight: 800;
+            color: #667eea;
             margin-bottom: 15px;
         }
-        
-        .inventory-card h3 {
-            margin-bottom: 10px;
-            color: #1d1d1f;
+
+        .product-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
         }
-        
-        .inventory-card .price {
-            font-size: 18px;
-            font-weight: 600;
-            color: #007AFF;
-            margin-bottom: 10px;
-        }
-        
-        .inventory-card .tags {
+
+        .product-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        
-        .tag {
-            background: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
-        .card-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
+            gap: 8px;
             margin-bottom: 20px;
         }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+
+        .tag {
+            background: #f0f0f0;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
         }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+        .swipe-actions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
             gap: 20px;
-            margin-bottom: 30px;
+            z-index: 10;
         }
-        
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+        .swipe-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-        
-        .stat-number {
-            font-size: 32px;
+
+        .swipe-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .swipe-btn:active {
+            transform: scale(0.95);
+        }
+
+        .pass-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .cart-btn {
+            background: #51cf66;
+            color: white;
+        }
+
+        .swipe-indicators {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            font-size: 60px;
+            font-weight: 900;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .swipe-indicator.pass {
+            color: #ff6b6b;
+            left: -100px;
+        }
+
+        .swipe-indicator.cart {
+            color: #51cf66;
+            right: -100px;
+        }
+
+        .swipe-indicator.show {
+            opacity: 0.8;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #51cf66;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            color: #007AFF;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: #8e8e93;
             font-size: 14px;
+            z-index: 100;
+        }
+
+        .no-more-products {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .cart-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .cart-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .cart-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .cart-item-info {
+            flex: 1;
+            margin-left: 15px;
+            text-align: left;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cart-item-price {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .cart-total {
+            font-size: 20px;
+            font-weight: 800;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .checkout-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .close-cart {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .product-card.new {
+            animation: slideIn 0.3s ease;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Authentication Section -->
-        <div id="auth-section" class="header" style="text-align: center; max-width: 400px; margin: 50px auto;">
-            <h1>📱 PacMac Mobile Admin</h1>
-            <p>Please sign in to access the inventory management system</p>
-            
-            <form id="login-form" style="margin-top: 30px;">
-                <div style="margin-bottom: 20px;">
-                    <input type="text" id="username" placeholder="Username" required style="width: 100%; padding: 12px; border: 2px solid #e5e5e7; border-radius: 8px; font-size: 16px;">
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <input type="password" id="password" placeholder="Password" required style="width: 100%; padding: 12px; border: 2px solid #e5e5e7; border-radius: 8px; font-size: 16px;">
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">🔐 Sign In</button>
-            </form>
-            
-            <div id="user-info" style="margin-top: 15px; display: none;">
-                <p>Welcome, <span id="user-name"></span>!</p>
-                <button id="btn-logout" class="btn btn-secondary" onclick="logout()" style="margin-top: 10px;">🚪 Log out</button>
-            </div>
+    <div class="app-container">
+        <div class="header">
+            <h1>🛒 PacMac Mobile</h1>
+            <p>Swipe right to add to cart, left to pass</p>
         </div>
 
-        <!-- Main Admin Content (hidden until authenticated) -->
-        <div id="admin-content" style="display: none;">
-        
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
-            <button class="tab-btn" onclick="showTab('add-product')">Add Product</button>
-            <button class="tab-btn" onclick="showTab('manage-inventory')">Manage Inventory</button>
-            <button class="tab-btn" onclick="showTab('export-import')">Export/Import</button>
+        <div class="cart-count" id="cart-count">0</div>
+
+        <div class="swipe-container" id="swipe-container">
+            <!-- Product cards will be inserted here -->
         </div>
-        
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="total-products">0</div>
-                    <div class="stat-label">Total Products</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="total-value">$0</div>
-                    <div class="stat-label">Total Inventory Value</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="new-products">0</div>
-                    <div class="stat-label">New This Week</div>
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h2>Quick Actions</h2>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <button class="btn" onclick="showTab('add-product')">Add New Product</button>
-                    <button class="btn btn-secondary" onclick="exportInventory()">Export Inventory</button>
-                    <button class="btn btn-secondary" onclick="importInventory()">Import Inventory</button>
-                    <button class="btn btn-secondary" onclick="syncToMainSite()">Sync to Main Site</button>
-                </div>
-            </div>
+
+        <div class="swipe-actions">
+            <button class="swipe-btn pass-btn" id="pass-btn">❌</button>
+            <button class="swipe-btn cart-btn" id="cart-btn">🛒</button>
         </div>
-        
-        <!-- Add Product Tab -->
-        <div id="add-product" class="tab-content">
-            <div class="form-section">
-                <h2>Add New Product</h2>
-                <form id="product-form">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="product-name">Product Name *</label>
-                            <input type="text" id="product-name" required placeholder="e.g., iPhone 15 Pro Max">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="product-id">Product ID *</label>
-                            <input type="text" id="product-id" required placeholder="e.g., pm-iphone15promax">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="product-price">Price *</label>
-                            <input type="number" id="product-price" step="0.01" required placeholder="999.00">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="product-category">Category</label>
-                            <select id="product-category">
-                                <option value="main">Main Product</option>
-                                <option value="refurbished">Refurbished</option>
-                                <option value="accessory">Accessory</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group full-width">
-                            <label for="product-description">Description</label>
-                            <textarea id="product-description" rows="3" placeholder="Brief product description"></textarea>
-                        </div>
-                        
-                        <div class="form-group full-width">
-                            <label for="product-specs">Specifications (JSON format)</label>
-                            <textarea id="product-specs" rows="4" placeholder='{"storage": "128GB", "color": "Space Black", "condition": "Like New"}'></textarea>
-                        </div>
-                        
-                        <div class="form-group full-width">
-                            <label for="product-tags">Tags (comma-separated)</label>
-                            <input type="text" id="product-tags" placeholder="iPhone, 128GB, Space Black, Like New">
-                        </div>
-                        
-                        <div class="form-group full-width">
-                            <label>Product Image</label>
-                            <div class="image-upload" id="image-upload" onclick="document.getElementById('image-input').click()">
-                                <div id="upload-text">
-                                    <p>📷 Click to upload image or drag & drop</p>
-                                    <p style="font-size: 14px; color: #8e8e93;">Recommended: 400x400px, JPG/PNG</p>
-                                </div>
-                                <img id="image-preview" class="image-preview" style="display: none;">
-                                <input type="file" id="image-input" accept="image/*" style="display: none;">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 20px;">
-                        <button type="submit" class="btn">Add Product</button>
-                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
-                    </div>
-                </form>
-            </div>
+
+        <div class="swipe-indicators">
+            <div class="swipe-indicator pass">PASS</div>
+            <div class="swipe-indicator cart">CART</div>
         </div>
-        
-        <!-- Manage Inventory Tab -->
-        <div id="manage-inventory" class="tab-content">
-            <div class="form-section">
-                <h2>Current Inventory</h2>
-                <div id="inventory-grid" class="inventory-grid">
-                    <!-- Inventory items will be loaded here -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- Export/Import Tab -->
-        <div id="export-import" class="tab-content">
-            <div class="form-section">
-                <h2>Export/Import Inventory</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                    <div>
-                        <h3>Export Inventory</h3>
-                        <p>Download your current inventory as a JSON file for backup or sharing.</p>
-                        <button class="btn" onclick="exportInventory()">Export to JSON</button>
-                    </div>
-                    <div>
-                        <h3>Import Inventory</h3>
-                        <p>Upload a JSON file to restore or update your inventory.</p>
-                        <input type="file" id="import-file" accept=".json" style="margin-bottom: 15px;">
-                        <br>
-                        <button class="btn btn-secondary" onclick="importInventory()">Import from JSON</button>
-                    </div>
-                </div>
-                <div class="export-section">
-                    <h3>Import from Wholesaler XLSX</h3>
-                    <p>Upload your wholesaler's Excel file to automatically import inventory.</p>
-                    <input type="file" id="xlsx-file" accept=".xlsx,.xls" style="margin-bottom: 15px;">
-                    <br>
-                    <button class="btn" onclick="importFromXLSX()">Import from XLSX</button>
-                    <div id="xlsx-preview" class="hidden"></div>
-                </div>
-            </div>
-        </div>
-        </div> <!-- End admin-content -->
     </div>
-    
-    <!-- Simple Authentication System -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <div class="cart-modal" id="cart-modal">
+        <div class="cart-content">
+            <button class="close-cart" id="close-cart">×</button>
+            <h2>Your Cart</h2>
+            <div id="cart-items"></div>
+            <div class="cart-total" id="cart-total">Total: $0</div>
+            <button class="checkout-btn" id="checkout-btn">Checkout</button>
+        </div>
+    </div>
+
     <script>
-        // Simple Secure Authentication System
-        class AuthManager {
-            constructor() {
-                this.isAuthenticated = false;
-                this.user = null;
-                this.validCredentials = {
-                    username: 'admin',
-                    password: 'pacmac2024' // Change this to your desired password
-                };
-                this.initializeAuth();
-            }
-
-            initializeAuth() {
-                // Check if user is already authenticated
-                const savedUser = localStorage.getItem('pmm-user');
-                if (savedUser) {
-                    this.user = JSON.parse(savedUser);
-                    this.isAuthenticated = true;
-                    this.showAuthenticatedState();
-                } else {
-                    this.showUnauthenticatedState();
-                }
-            }
-
-            authenticate(username, password) {
-                // Simple credential check (you can make this more secure)
-                if (username === this.validCredentials.username && password === this.validCredentials.password) {
-                    this.user = {
-                        name: username,
-                        loginTime: new Date().toISOString()
-                    };
-                    this.isAuthenticated = true;
-                    localStorage.setItem('pmm-user', JSON.stringify(this.user));
-                    this.showAuthenticatedState();
-                    return true;
-                }
-                return false;
-            }
-
-            showAuthenticatedState() {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('user-info').style.display = 'block';
-                document.getElementById('admin-content').style.display = 'block';
-                document.getElementById('user-name').textContent = this.user.name;
-                
-                // Initialize inventory manager if not already done
-                if (typeof inventoryManager === 'undefined') {
-                    window.inventoryManager = new InventoryManager();
-                } else {
-                    // Update dashboard and inventory grid
-                    inventoryManager.updateDashboard();
-                    inventoryManager.loadInventoryGrid();
-                }
-            }
-
-            showUnauthenticatedState() {
-                document.getElementById('login-form').style.display = 'block';
-                document.getElementById('user-info').style.display = 'none';
-                document.getElementById('admin-content').style.display = 'none';
-            }
-
-            logout() {
-                this.isAuthenticated = false;
-                this.user = null;
-                localStorage.removeItem('pmm-user');
-                this.showUnauthenticatedState();
-            }
-        }
-
-        // Global authentication functions
-        function handleLogin(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            if (authManager.authenticate(username, password)) {
-                // Clear form
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '';
-            } else {
-                alert('Invalid username or password. Please try again.');
-            }
-        }
-
-        function logout() {
-            authManager.logout();
-        }
-
-        // Initialize authentication
-        const authManager = new AuthManager();
+        // Product data
+        const PRODUCTS = [];
         
-        // Add form event listener
-        document.getElementById('login-form').addEventListener('submit', handleLogin);
+        let currentIndex = 0;
+        let cart = [];
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        let currentCard = null;
 
-        // Inventory Management System
-        class InventoryManager {
-            constructor() {
-                this.inventory = this.loadInventory();
-                this.initializeEventListeners();
-                // Only update UI if user is authenticated
-                if (authManager.isAuthenticated) {
-                    this.updateDashboard();
-                    this.loadInventoryGrid();
-                }
-            }
-            
-            loadInventory() {
-                const saved = localStorage.getItem('pmm-inventory');
-                if (saved) {
-                    return JSON.parse(saved);
-                }
-                return [];
-            }
-            
-            saveInventory() {
-                localStorage.setItem('pmm-inventory', JSON.stringify(this.inventory));
-                this.updateDashboard();
-                this.loadInventoryGrid();
-            }
-            
-            addProduct(productData) {
-                const product = {
-                    id: productData.id,
-                    name: productData.name,
-                    price: parseFloat(productData.price),
-                    category: productData.category || 'main',
-                    description: productData.description || '',
-                    specs: this.parseSpecs(productData.specs),
-                    tags: productData.tags ? productData.tags.split(',').map(t => t.trim()) : [],
-                    img: productData.imageData || 'products/placeholder.jpg',
-                    dateAdded: new Date().toISOString()
-                };
-                
-                this.inventory.push(product);
-                this.saveInventory();
-                return product;
-            }
-            
-            parseSpecs(specsString) {
-                if (!specsString) return {};
-                try {
-                    return JSON.parse(specsString);
-                } catch (e) {
-                    // If not valid JSON, create a simple object
-                    return { note: specsString };
-                }
-            }
-            
-            updateProduct(id, updates) {
-                const index = this.inventory.findIndex(p => p.id === id);
-                if (index !== -1) {
-                    this.inventory[index] = { ...this.inventory[index], ...updates };
-                    this.saveInventory();
-                }
-            }
-            
-            deleteProduct(id) {
-                this.inventory = this.inventory.filter(p => p.id !== id);
-                this.saveInventory();
-            }
-            
-            updateDashboard() {
-                const totalProducts = this.inventory.length;
-                const totalValue = this.inventory.reduce((sum, p) => sum + p.price, 0);
-                const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const newProducts = this.inventory.filter(p => new Date(p.dateAdded) > weekAgo).length;
-                
-                document.getElementById('total-products').textContent = totalProducts;
-                document.getElementById('total-value').textContent = `$${totalValue.toLocaleString()}`;
-                document.getElementById('new-products').textContent = newProducts;
-            }
-            
-            loadInventoryGrid() {
-                const grid = document.getElementById('inventory-grid');
-                grid.innerHTML = '';
-                
-                this.inventory.forEach(product => {
-                    const card = document.createElement('div');
-                    card.className = 'inventory-card';
-                    card.innerHTML = `
-                        <img src="${product.img}" alt="${product.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23f0f0f0\'/><text x=\'50\' y=\'50\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'>No Image</text></svg>'">
-                        <h3>${product.name}</h3>
-                        <div class="price">$${product.price.toFixed(2)}</div>
-                        <div class="tags">
-                            ${product.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn btn-secondary" onclick="inventoryManager.editProduct('${product.id}')">Edit</button>
-                            <button class="btn btn-danger" onclick="inventoryManager.deleteProduct('${product.id}')">Delete</button>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-            }
-            
-            editProduct(id) {
-                const product = this.inventory.find(p => p.id === id);
-                if (product) {
-                    // Populate form with product data
-                    document.getElementById('product-name').value = product.name;
-                    document.getElementById('product-id').value = product.id;
-                    document.getElementById('product-price').value = product.price;
-                    document.getElementById('product-category').value = product.category;
-                    document.getElementById('product-description').value = product.description;
-                    document.getElementById('product-specs').value = JSON.stringify(product.specs, null, 2);
-                    document.getElementById('product-tags').value = product.tags.join(', ');
-                    
-                    if (product.img && product.img.startsWith('data:')) {
-                        document.getElementById('image-preview').src = product.img;
-                        document.getElementById('image-preview').style.display = 'block';
-                        document.getElementById('upload-text').style.display = 'none';
-                    }
-                    
-                    showTab('add-product');
-                }
-            }
-            
-            initializeEventListeners() {
-                // Form submission
-                document.getElementById('product-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.handleFormSubmit();
-                });
-                
-                // Image upload
-                const imageInput = document.getElementById('image-input');
-                const imageUpload = document.getElementById('image-upload');
-                
-                imageInput.addEventListener('change', (e) => {
-                    this.handleImageUpload(e.target.files[0]);
-                });
-                
-                // Drag and drop
-                imageUpload.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    imageUpload.classList.add('dragover');
-                });
-                
-                imageUpload.addEventListener('dragleave', () => {
-                    imageUpload.classList.remove('dragover');
-                });
-                
-                imageUpload.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    imageUpload.classList.remove('dragover');
-                    this.handleImageUpload(e.dataTransfer.files[0]);
-                });
-            }
-            
-            handleFormSubmit() {
-                const formData = {
-                    name: document.getElementById('product-name').value,
-                    id: document.getElementById('product-id').value,
-                    price: document.getElementById('product-price').value,
-                    category: document.getElementById('product-category').value,
-                    description: document.getElementById('product-description').value,
-                    specs: document.getElementById('product-specs').value,
-                    tags: document.getElementById('product-tags').value,
-                    imageData: document.getElementById('image-preview').src
-                };
-                
-                // Check if editing existing product
-                const existingIndex = this.inventory.findIndex(p => p.id === formData.id);
-                
-                if (existingIndex !== -1) {
-                    this.updateProduct(formData.id, {
-                        name: formData.name,
-                        price: parseFloat(formData.price),
-                        category: formData.category,
-                        description: formData.description,
-                        specs: this.parseSpecs(formData.specs),
-                        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
-                        img: formData.imageData
-                    });
-                    this.showAlert('Product updated successfully!', 'success');
-                } else {
-                    this.addProduct(formData);
-                    this.showAlert('Product added successfully!', 'success');
-                }
-                
-                this.clearForm();
-            }
-            
-            handleImageUpload(file) {
-                if (!file) return;
-                
-                if (!file.type.startsWith('image/')) {
-                    this.showAlert('Please select a valid image file.', 'error');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('image-preview').src = e.target.result;
-                    document.getElementById('image-preview').style.display = 'block';
-                    document.getElementById('upload-text').style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            }
-            
-            clearForm() {
-                document.getElementById('product-form').reset();
-                document.getElementById('image-preview').style.display = 'none';
-                document.getElementById('upload-text').style.display = 'block';
-            }
-            
-            showAlert(message, type) {
-                const alert = document.createElement('div');
-                alert.className = `alert alert-${type}`;
-                alert.textContent = message;
-                
-                const container = document.querySelector('.container');
-                container.insertBefore(alert, container.firstChild);
-                
-                setTimeout(() => {
-                    alert.remove();
-                }, 3000);
-            }
-            
-            exportInventory() {
-                const dataStr = JSON.stringify(this.inventory, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-                
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `pmm-inventory-${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                
-                URL.revokeObjectURL(url);
-            }
-            
-            importInventory() {
-                const fileInput = document.getElementById('import-file');
-                const file = fileInput.files[0];
-                
-                if (!file) {
-                    this.showAlert('Please select a file to import.', 'error');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (Array.isArray(importedData)) {
-                            this.inventory = importedData;
-                            this.saveInventory();
-                            this.showAlert('Inventory imported successfully!', 'success');
-                        } else {
-                            this.showAlert('Invalid file format.', 'error');
-                        }
-                    } catch (error) {
-                        this.showAlert('Error reading file: ' + error.message, 'error');
-                    }
-                };
-                reader.readAsText(file);
-            }
-            
-            syncToMainSite() {
-                // Generate JavaScript code for main site
-                const jsCode = this.generateProductsArrayCode();
-                
-                // Create a new window with the generated code
-                const newWindow = window.open('', '_blank', 'width=800,height=600');
-                newWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Generated PRODUCTS Array</title>
-                        <style>
-                            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; background: #f5f5f7; }
-                            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                            pre { background: #f8f9fa; padding: 20px; border-radius: 8px; overflow-x: auto; border: 1px solid #e5e5e7; }
-                            .copy-btn { background: #007AFF; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin: 15px 0; font-weight: 600; }
-                            .copy-btn:hover { background: #0056b3; }
-                            .instructions { background: #e6f2ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>📱 Generated PRODUCTS Array</h1>
-                            <div class="instructions">
-                                <strong>Instructions:</strong><br>
-                                1. Click "Copy to Clipboard" below<br>
-                                2. Open your index.html file<br>
-                                3. Find the PRODUCTS array (around line 400)<br>
-                                4. Replace the entire PRODUCTS array with the copied code<br>
-                                5. Save and deploy your site
-                            </div>
-                            
-                            <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
-                            
-                            <pre id="code-block">${jsCode}</pre>
-                        </div>
-                        
-                        <scr' + 'ipt>
-                            function copyToClipboard() {
-                                const codeBlock = document.getElementById('code-block');
-                                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
-                                    alert('✅ Code copied to clipboard!\\n\\nNow paste it into your index.html file to replace the PRODUCTS array.');
-                                }).catch(err => {
-                                    // Fallback for older browsers
-                                    const textArea = document.createElement('textarea');
-                                    textArea.value = codeBlock.textContent;
-                                    document.body.appendChild(textArea);
-                                    textArea.select();
-                                    document.execCommand('copy');
-                                    document.body.removeChild(textArea);
-                                    alert('✅ Code copied to clipboard!');
-                                });
-                            }
-                        </scr' + 'ipt>
-                    </body>
-                    </html>
-                `);
-            }
-            
-            generateProductsArrayCode() {
-                const markupPercentage = 22; // 22% markup
-                
-                const products = this.inventory.map(item => {
-                    const priceWithMarkup = (item.price * (1 + markupPercentage / 100)).toFixed(2);
-                    
-                    return {
-                        id: item.id,
-                        name: item.name,
-                        price: parseFloat(priceWithMarkup),
-                        tags: item.tags || [],
-                        img: item.img,
-                        description: item.description || '',
-                        specs: item.specs || {}
-                    };
-                });
-                
-                let jsCode = `const PRODUCTS = [\n`;
-                
-                products.forEach((product, index) => {
-                    jsCode += `  {\n`;
-                    jsCode += `    id: '${product.id}',\n`;
-                    jsCode += `    name: '${product.name.replace(/'/g, "\\'")}',\n`;
-                    jsCode += `    price: ${product.price},\n`;
-                    jsCode += `    tags: [${product.tags.map(tag => `'${tag.replace(/'/g, "\\'")}'`).join(', ')}],\n`;
-                    jsCode += `    img: '${product.img}',\n`;
-                    jsCode += `    description: '${product.description.replace(/'/g, "\\'")}',\n`;
-                    jsCode += `    specs: ${JSON.stringify(product.specs, null, 4).replace(/^/gm, '    ')}\n`;
-                    jsCode += `  }${index < products.length - 1 ? ',' : ''}\n`;
-                });
-                
-                jsCode += `];\n\n`;
-                jsCode += `// Generated on ${new Date().toISOString()}\n`;
-                jsCode += `// Total products: ${products.length}\n`;
-                jsCode += `// Markup applied: ${markupPercentage}%\n`;
-                
-                return jsCode;
-            }
-        }
-        
-        // Global functions
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from all buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
-        }
-        
-        function clearForm() {
-            inventoryManager.clearForm();
-        }
-        
-        function exportInventory() {
-            inventoryManager.exportInventory();
-        }
-        
-        function importInventory() {
-            inventoryManager.importInventory();
-        }
-        
-        function syncToMainSite() {
-            inventoryManager.syncToMainSite();
+        // Initialize the app
+        function init() {
+            showNextProduct();
+            setupEventListeners();
+            updateCartCount();
         }
 
-        function importFromXLSX() {
-            const fileInput = document.getElementById('xlsx-file');
-            const file = fileInput.files[0];
+        // Show the next product
+        function showNextProduct() {
+            const container = document.getElementById('swipe-container');
             
-            if (!file) {
-                alert('Please select an XLSX file first.');
+            if (currentIndex >= PRODUCTS.length) {
+                container.innerHTML = '<div class="no-more-products">🎉 No more products! Check your cart!</div>';
                 return;
             }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    // Get the first worksheet
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Convert to JSON
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
-                    // Process the data
-                    processWholesalerData(jsonData);
-                    
-                } catch (error) {
-                    console.error('Error reading XLSX file:', error);
-                    alert('Error reading XLSX file. Please check the format.');
-                }
-            };
-            reader.readAsArrayBuffer(file);
+
+            const product = PRODUCTS[currentIndex];
+            const card = createProductCard(product);
+            container.innerHTML = '';
+            container.appendChild(card);
+            currentCard = card;
         }
 
-        function processWholesalerData(data) {
-            // Preview the data first
-            const preview = document.getElementById('xlsx-preview');
-            preview.innerHTML = `
-                <h4>Preview (First 5 rows):</h4>
-                <table border="1" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            ${Object.keys(data[0] || {}).map(key => `<th>${key}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.slice(0, 5).map(row => `
-                            <tr>
-                                ${Object.values(row).map(value => `<td>${value}</td>`).join('')}
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                <p><strong>Total rows:</strong> ${data.length}</p>
-                <button class="btn" onclick="confirmImport(${JSON.stringify(data).replace(/"/g, '&quot;')})">Confirm Import</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('xlsx-preview').classList.add('hidden')">Cancel</button>
+        // Create a product card
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card new';
+            card.innerHTML = `
+                <div class="product-image">
+                    <img src="${product.img || '/images/no-image.png'}" alt="${product.name}" onerror="this.style.display='none'">
+                </div>
+                <div class="product-info">
+                    <div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">$${product.price}</div>
+                        <div class="product-description">${product.description || ''}</div>
+                        <div class="product-tags">
+                            ${(product.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
             `;
-            preview.classList.remove('hidden');
+
+            // Add swipe functionality
+            addSwipeListeners(card);
+            return card;
         }
 
-        function confirmImport(data) {
-            const products = data.map((row, index) => {
-                // Map your wholesaler's columns to your product structure
-                // Adjust these field mappings based on your XLSX structure
-                return {
-                    id: `pm-${row['Product ID'] || row['SKU'] || `item-${index}`}`,
-                    name: row['Product Name'] || row['Name'] || row['Title'] || 'Unknown Product',
-                    price: parseFloat(row['Price'] || row['Cost'] || row['Wholesale Price'] || 0),
-                    category: 'main',
-                    description: row['Description'] || row['Details'],
-                    brand: row['Brand'] || row['Manufacturer'],
-                    model: row['Model'] || row['Model Number'],
-                    color: row['Color'] || row['Finish'],
-                    storage: row['Storage'] || row['Capacity'],
-                    condition: row['Condition'] || row['Grade']
-                };
-            });
-            
-            // Apply 22% markup
-            products.forEach(product => {
-                product.price = parseFloat((product.price * 1.22).toFixed(2));
-            });
-            
-            // Replace current inventory
-            inventoryManager.inventory = products;
-            inventoryManager.saveInventory();
-            
-            // Hide preview and show success
-            document.getElementById('xlsx-preview').classList.add('hidden');
-            inventoryManager.showAlert(`Successfully imported ${products.length} products!`, 'success');
-            
-            // Refresh the display
-            inventoryManager.updateDashboard();
-            inventoryManager.loadInventoryGrid();
+        // Add swipe event listeners
+        function addSwipeListeners(card) {
+            card.addEventListener('mousedown', startDrag);
+            card.addEventListener('touchstart', startDrag);
+            card.addEventListener('mousemove', drag);
+            card.addEventListener('touchmove', drag);
+            card.addEventListener('mouseup', endDrag);
+            card.addEventListener('touchend', endDrag);
         }
-        
-        // Initialize the inventory manager (will be created when user authenticates)
-        let inventoryManager;
+
+        // Start dragging
+        function startDrag(e) {
+            isDragging = true;
+            currentCard.classList.add('swiping');
+            startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+        }
+
+        // Drag
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+            const deltaX = currentX - startX;
+            const rotation = deltaX * 0.1;
+            
+            currentCard.style.transform = `translateX(${deltaX}px) rotate(${rotation}deg)`;
+            
+            // Show indicators
+            const passIndicator = document.querySelector('.swipe-indicator.pass');
+            const cartIndicator = document.querySelector('.swipe-indicator.cart');
+            
+            if (deltaX < -50) {
+                passIndicator.classList.add('show');
+                cartIndicator.classList.remove('show');
+            } else if (deltaX > 50) {
+                cartIndicator.classList.add('show');
+                passIndicator.classList.remove('show');
+            } else {
+                passIndicator.classList.remove('show');
+                cartIndicator.classList.remove('show');
+            }
+        }
+
+        // End dragging
+        function endDrag(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const deltaX = currentX - startX;
+            const threshold = 100;
+            
+            // Hide indicators
+            document.querySelectorAll('.swipe-indicator').forEach(indicator => {
+                indicator.classList.remove('show');
+            });
+            
+            if (Math.abs(deltaX) > threshold) {
+                if (deltaX < 0) {
+                    // Swipe left - pass
+                    swipeLeft();
+                } else {
+                    // Swipe right - add to cart
+                    swipeRight();
+                }
+            } else {
+                // Return to center
+                currentCard.style.transform = 'translateX(0) rotate(0deg)';
+                currentCard.classList.remove('swiping');
+            }
+        }
+
+        // Swipe left (pass)
+        function swipeLeft() {
+            currentCard.style.transform = 'translateX(-100vw) rotate(-30deg)';
+            currentCard.style.opacity = '0';
+            
+            setTimeout(() => {
+                currentIndex++;
+                showNextProduct();
+            }, 300);
+        }
+
+        // Swipe right (add to cart)
+        function swipeRight() {
+            const product = PRODUCTS[currentIndex];
+            cart.push(product);
+            updateCartCount();
+            
+            currentCard.style.transform = 'translateX(100vw) rotate(30deg)';
+            currentCard.style.opacity = '0';
+            
+            setTimeout(() => {
+                currentIndex++;
+                showNextProduct();
+            }, 300);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('pass-btn').addEventListener('click', swipeLeft);
+            document.getElementById('cart-btn').addEventListener('click', swipeRight);
+            document.getElementById('cart-count').addEventListener('click', showCart);
+            document.getElementById('close-cart').addEventListener('click', hideCart);
+            document.getElementById('checkout-btn').addEventListener('click', checkout);
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        // Show cart
+        function showCart() {
+            const modal = document.getElementById('cart-modal');
+            const itemsContainer = document.getElementById('cart-items');
+            const totalElement = document.getElementById('cart-total');
+            
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '<p>Your cart is empty</p>';
+                totalElement.textContent = 'Total: $0';
+            } else {
+                itemsContainer.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <img src="${item.img || '/images/no-image.png'}" alt="${item.name}">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">$${item.price}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                totalElement.textContent = `Total: $${total.toFixed(2)}`;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Hide cart
+        function hideCart() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+
+        // Checkout
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            alert(`Checkout complete! Total: $${total.toFixed(2)}\n\nThank you for shopping with PacMac Mobile! 🎉`);
+            
+            // Clear cart
+            cart = [];
+            updateCartCount();
+            hideCart();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
