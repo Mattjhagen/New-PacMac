@@ -71,6 +71,7 @@ export default function PacMacMarketplace() {
   const [showUserLogin, setShowUserLogin] = useState(false)
   const [showUserRegister, setShowUserRegister] = useState(false)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [splashDismissed, setSplashDismissed] = useState(false)
   
   // Customer states
   const [showCheckout, setShowCheckout] = useState(false)
@@ -140,15 +141,17 @@ export default function PacMacMarketplace() {
 
   // Splash screen handlers
   const handleSplashGetStarted = () => {
+    setSplashDismissed(true)
     setShowUserLogin(true)
   }
 
   const handleSplashSkip = () => {
-    // Allow browsing without login
+    setSplashDismissed(true)
+    setShowUserLogin(true)
   }
 
-  // Show splash screen if not logged in and not loading
-  if (!user && !authLoading) {
+  // Show splash screen if not logged in, not loading, and splash hasn't been dismissed
+  if (!user && !authLoading && !splashDismissed) {
     return (
       <SplashScreen 
         onGetStarted={handleSplashGetStarted}
@@ -243,6 +246,34 @@ export default function PacMacMarketplace() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* Call to Action for Unauthenticated Users */}
+        {!user && splashDismissed && (
+          <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Welcome to PacMac Mobile! 🚀
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Sign in to browse our premium mobile devices and start shopping
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => setShowUserLogin(true)}
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => setShowUserRegister(true)}
+                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Create Account
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         {products.length > 0 && (
