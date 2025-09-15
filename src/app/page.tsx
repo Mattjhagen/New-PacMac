@@ -71,7 +71,6 @@ export default function PacMacMarketplace() {
   const [showUserLogin, setShowUserLogin] = useState(false)
   const [showUserRegister, setShowUserRegister] = useState(false)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
-  const [showSplash, setShowSplash] = useState(true)
   
   // Customer states
   const [showCheckout, setShowCheckout] = useState(false)
@@ -118,13 +117,6 @@ export default function PacMacMarketplace() {
     setShowLocationPicker(false)
   }
 
-  // Hide splash screen when user is authenticated
-  useEffect(() => {
-    if (user && !authLoading) {
-      setShowSplash(false)
-    }
-  }, [user, authLoading])
-
   // Cart and checkout functions
   const addToCart = (product: Product) => {
     const cartItem = {
@@ -148,23 +140,32 @@ export default function PacMacMarketplace() {
 
   // Splash screen handlers
   const handleSplashGetStarted = () => {
-    setShowSplash(false)
     setShowUserLogin(true)
   }
 
   const handleSplashSkip = () => {
-    setShowSplash(false)
+    // Allow browsing without login
   }
 
-
-
-  // Show splash screen if not logged in
-  if (showSplash) {
+  // Show splash screen if not logged in and not loading
+  if (!user && !authLoading) {
     return (
       <SplashScreen 
         onGetStarted={handleSplashGetStarted}
         onSkip={handleSplashSkip}
       />
+    )
+  }
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
     )
   }
 
