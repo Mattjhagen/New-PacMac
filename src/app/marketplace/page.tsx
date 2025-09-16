@@ -291,6 +291,7 @@ export default function MarketplacePage() {
             winnerId={user?.id || 'user_123'}
             currentUserId={user?.id || 'user_123'}
             productName={products.find(p => p.id === currentAuction?.productId)?.name || ''}
+            winningBid={currentAuction?.currentBid || 0.99}
             sellerInfo={{
               name: 'Jane Smith',
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100',
@@ -302,7 +303,10 @@ export default function MarketplacePage() {
               coordinates: { lat: 37.7749, lng: -122.4194 },
               instructions: 'Meet at the coffee shop on the corner. Look for the blue jacket.'
             }}
-            onPaymentComplete={handlePaymentComplete}
+            onPaymentComplete={(escrowId) => {
+              console.log('Escrow payment completed:', escrowId);
+              handlePaymentComplete();
+            }}
           />
         );
       case 'points':

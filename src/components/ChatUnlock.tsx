@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { LockClosedIcon, ChatBubbleLeftRightIcon, MapPinIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import EscrowSystem from './EscrowSystem';
 
 interface ChatUnlockProps {
   auctionId: string;
   winnerId: string;
   currentUserId: string;
   productName: string;
+  winningBid: number;
   sellerInfo: {
     name: string;
     avatar?: string;
@@ -22,7 +24,7 @@ interface ChatUnlockProps {
     };
     instructions: string;
   };
-  onPaymentComplete: () => void;
+  onPaymentComplete: (escrowId: string) => void;
 }
 
 export default function ChatUnlock({
@@ -30,6 +32,7 @@ export default function ChatUnlock({
   winnerId,
   currentUserId,
   productName,
+  winningBid,
   sellerInfo,
   meetupLocation,
   onPaymentComplete
@@ -37,6 +40,7 @@ export default function ChatUnlock({
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [escrowId, setEscrowId] = useState<string | null>(null);
 
   const isWinner = currentUserId === winnerId;
 
@@ -50,13 +54,22 @@ export default function ChatUnlock({
     );
   }
 
+  const handleEscrowPaymentComplete = (newEscrowId: string) => {
+    setEscrowId(newEscrowId);
+    setPaymentComplete(true);
+    onPaymentComplete(newEscrowId);
+  };
+
   if (paymentComplete) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="text-center mb-6">
           <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Payment Complete!</h3>
-          <p className="text-gray-600">You can now contact the seller and arrange pickup.</p>
+          <p className="text-gray-600">Your payment is secured in escrow. You can now contact the seller and arrange pickup.</p>
+          {escrowId && (
+            <p className="text-sm text-gray-500 mt-2">Escrow ID: {escrowId}</p>
+          )}
         </div>
 
         {/* Seller Info */}
@@ -111,45 +124,22 @@ export default function ChatUnlock({
         <div className="text-center mb-6">
           <LockClosedIcon className="h-16 w-16 text-blue-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Complete Your Purchase</h3>
-          <p className="text-gray-600">Pay the winning bid to unlock chat and meetup details.</p>
+          <p className="text-gray-600">Pay the winning bid with escrow protection to unlock chat and meetup details.</p>
         </div>
 
-        {/* Payment Summary */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-gray-900 mb-3">Order Summary</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-600">{productName}</span>
-              <span className="font-medium">$0.99</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Winning Bid</span>
-              <span className="font-medium">$2.50</span>
-            </div>
-            <div className="border-t pt-2">
-              <div className="flex justify-between font-semibold">
-                <span>Total</span>
-                <span>$3.49</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Escrow Payment System */}
+        <EscrowSystem
+          itemPrice={winningBid}
+          onFeeCalculated={(fee) => console.log('Escrow fee calculated:', fee)}
+          onPaymentComplete={handleEscrowPaymentComplete}
+        />
 
-        {/* Payment Options */}
-        <div className="space-y-3">
-          <button
-            onClick={() => setPaymentComplete(true)}
-            className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700"
-          >
-            Pay with Stripe ($3.49)
-          </button>
-          <button
-            onClick={() => setShowPayment(false)}
-            className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-        </div>
+        <button
+          onClick={() => setShowPayment(false)}
+          className="w-full mt-4 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-50"
+        >
+          Cancel
+        </button>
       </div>
     );
   }

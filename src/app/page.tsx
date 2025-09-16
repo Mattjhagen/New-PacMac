@@ -344,6 +344,15 @@ export default function PacMacMarketplace() {
                     Tinder Marketplace
                   </Link>
                   
+                  {/* Escrow Dashboard Button */}
+                  <Link
+                    href="/escrow-dashboard"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="mr-2">🛡️</span>
+                    Escrow Dashboard
+                  </Link>
+                  
                   {/* User Menu */}
                   <div className="flex items-center space-x-2 text-sm text-gray-700">
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
