@@ -128,7 +128,11 @@
 <body>
     <div class="demo-card">
         <h1>🛒 PacMac Marketplace - Complete Demo Flow</h1>
-        <p>This demo shows the complete flow: Purchase → Chat → Proximity → Completion</p>
+        <p><strong>This demo simulates the complete marketplace experience:</strong></p>
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <p style="margin: 0;"><strong>🔄 Full Flow:</strong> Login → Add to Cart → Checkout → Payment → Chat → Meetup → Completion</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Each step is simulated - no real payments or external services required!</p>
+        </div>
         
         <div class="auth-controls" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
             <button onclick="signOut()" id="signoutBtn" class="btn-secondary" style="background: #6c757d; display: none;">🚪 Sign Out</button>
@@ -137,6 +141,16 @@
         
         <div class="status info" id="serverStatus">
             ⏳ Checking server connection...
+        </div>
+        
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+            <h4 style="margin: 0 0 10px 0; color: #856404;">📋 How to Use This Demo:</h4>
+            <ol style="margin: 0; padding-left: 20px; color: #856404;">
+                <li>Click "🚀 Start Complete Demo" below</li>
+                <li>Follow each step in order (they unlock automatically)</li>
+                <li>Each button simulates the real marketplace experience</li>
+                <li>No real payments or external services are used</li>
+            </ol>
         </div>
         
         <button onclick="startDemo()">🚀 Start Complete Demo</button>
@@ -156,12 +170,18 @@
     <!-- Step 2: Purchase Item -->
     <div class="demo-card">
         <div class="step" id="step2">
-            <h3>Step 2: Purchase Item</h3>
-            <p>Simulate a purchase with Stripe payment (using test data)</p>
-            <div>
-                <strong>Item:</strong> iPhone 15 Pro - $0.99 (+ $3.03 fees = $4.02 total)
+            <h3>Step 2: Complete Purchase Flow</h3>
+            <p><strong>This simulates the entire purchase process:</strong></p>
+            <ul style="text-align: left; margin: 15px 0;">
+                <li>✅ Add iPhone 15 Pro to cart</li>
+                <li>✅ Proceed to checkout</li>
+                <li>✅ Process Stripe payment</li>
+                <li>✅ Create transaction record</li>
+            </ul>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <strong>Demo Item:</strong> iPhone 15 Pro - $0.99 (+ $3.03 fees = $4.02 total)
             </div>
-            <button onclick="simulatePurchase()" id="purchaseBtn" disabled>💳 Simulate Purchase</button>
+            <button onclick="simulatePurchase()" id="purchaseBtn" disabled>🛒 Complete Purchase (Cart + Checkout + Payment)</button>
             <div id="purchaseStatus"></div>
             <div id="transactionData" class="json-display" style="display: none;"></div>
         </div>
@@ -398,7 +418,7 @@
                 
                 if (result.success) {
                     demoState.transaction = result.transaction;
-                    setStatus('purchaseStatus', '✅ Purchase successful! Transaction ID: ' + result.transaction.id, 'success');
+                    setStatus('purchaseStatus', '✅ Complete purchase flow successful! Cart → Checkout → Payment → Transaction ID: ' + result.transaction.id, 'success');
                     document.getElementById('transactionData').textContent = JSON.stringify(result.transaction, null, 2);
                     document.getElementById('transactionData').style.display = 'block';
                     
