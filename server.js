@@ -12,7 +12,9 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 'https://new-pacmac.onrender.com' : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://new-pacmac.onrender.com' 
+    : ['http://localhost:3000', 'http://192.168.1.39:3000'],
   credentials: true
 }));
 app.use(express.json());
@@ -2239,7 +2241,7 @@ function initializeMarketplaceData() {
 initializeMarketplaceData();
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 PacMac Marketplace server running on port ${PORT}`);
   console.log(`📱 Marketplace: http://localhost:${PORT}/marketplace`);
   console.log(`🔐 OAuth: http://localhost:${PORT}/auth/google`);
@@ -2248,6 +2250,8 @@ app.listen(PORT, () => {
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 CORS Origin: ${process.env.NODE_ENV === 'production' ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') : 'http://localhost:3000'}`);
   console.log(`💚 Health check available at http://localhost:${PORT}/health`);
+  console.log(`📱 Network access: http://192.168.1.39:${PORT}/demo-flow.html`);
+  console.log(`📱 Network access: http://192.168.1.39:${PORT}/marketplace.html`);
 }).on('error', (err) => {
   console.error('❌ Failed to start server:', err);
   process.exit(1);
