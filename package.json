@@ -4,9 +4,9 @@
   "description": "PacMac Mobile e-commerce platform with trade-ins, leasing, and internet services",
   "main": "server.js",
   "scripts": {
-    "start": "node server-minimal.js",
+    "start": "node server.js",
+    "start-minimal": "node server-minimal.js",
     "start-simple": "node server-simple.js",
-    "start-full": "node server.js",
     "dev": "nodemon server.js",
     "dev-simple": "nodemon server-simple.js",
     "dev-minimal": "nodemon server-minimal.js",

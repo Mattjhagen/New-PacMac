@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com' : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' ? 'https://pacmacmobile.com' : 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
@@ -34,7 +34,7 @@ app.use(passport.session());
 
 // Google OAuth Strategy
 const callbackURL = process.env.NODE_ENV === 'production' 
-  ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') + '/auth/google/callback'
+  ? 'https://pacmacmobile.com/auth/google/callback'
   : 'http://localhost:3000/auth/google/callback';
 
 console.log('🔐 OAuth Configuration:');
