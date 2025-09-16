@@ -9,7 +9,16 @@ import {
   CogIcon,
   ShoppingBagIcon,
   HeartIcon,
-  StarIcon
+  StarIcon,
+  MapPinIcon,
+  DevicePhoneMobileIcon,
+  ShieldCheckIcon,
+  ChatBubbleLeftRightIcon,
+  PlayIcon,
+  CheckIcon,
+  LocationMarkerIcon,
+  GiftIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 
 interface User {
@@ -41,7 +50,57 @@ export default function OAuthSplashScreen({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFeatures, setShowFeatures] = useState(false);
-  const [authStep, setAuthStep] = useState<'welcome' | 'authenticating' | 'success' | 'logout'>('welcome');
+  const [authStep, setAuthStep] = useState<'welcome' | 'authenticating' | 'success' | 'logout' | 'account-creation' | 'location-setup'>('welcome');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ address: string; coordinates: { lat: number; lng: number } } | null>(null);
+
+  const steps = [
+    {
+      title: "Welcome to PacMac Mobile",
+      subtitle: "Premium mobile devices at unbeatable prices",
+      icon: DevicePhoneMobileIcon,
+      color: "from-blue-500 to-purple-600",
+      features: [
+        "Latest iPhone & Android devices",
+        "Certified pre-owned phones",
+        "Unbeatable prices & warranties"
+      ]
+    },
+    {
+      title: "Quality Guaranteed",
+      subtitle: "Every device is thoroughly tested and certified",
+      icon: ShieldCheckIcon,
+      color: "from-green-500 to-teal-600",
+      features: [
+        "30-day return policy",
+        "1-year warranty included",
+        "Free shipping nationwide"
+      ]
+    },
+    {
+      title: "Location-Based Deals",
+      subtitle: "Find amazing deals near you",
+      icon: MapPinIcon,
+      color: "from-orange-500 to-red-600",
+      features: [
+        "Local pickup options",
+        "Area-specific discounts",
+        "Meet sellers in person"
+      ]
+    },
+    {
+      title: "Community Support",
+      subtitle: "We're here to help you every step of the way",
+      icon: ChatBubbleLeftRightIcon,
+      color: "from-purple-500 to-pink-600",
+      features: [
+        "24/7 customer support",
+        "Expert device advice",
+        "Quick order processing"
+      ]
+    }
+  ];
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -60,6 +119,21 @@ export default function OAuthSplashScreen({
       }
     }
   }, [onAuthSuccess]);
+
+  // Auto-advance steps
+  useEffect(() => {
+    if (authStep === 'welcome') {
+      const timer = setInterval(() => {
+        setIsAnimating(true);
+        setTimeout(() => {
+          setCurrentStep((prev) => (prev + 1) % steps.length);
+          setIsAnimating(false);
+        }, 300);
+      }, 4000);
+
+      return () => clearInterval(timer);
+    }
+  }, [authStep, steps.length]);
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
@@ -114,7 +188,7 @@ export default function OAuthSplashScreen({
           localStorage.setItem('google_user', JSON.stringify(user));
           
           onAuthSuccess(user, token);
-          setAuthStep('success');
+          setAuthStep('account-creation');
           setIsLoading(false);
           
           window.removeEventListener('message', messageHandler);
@@ -156,6 +230,119 @@ export default function OAuthSplashScreen({
     // This will be handled by the parent component
     // The splash screen will be hidden and the main app will show
   };
+
+  const handleNext = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentStep((prev) => (prev + 1) % steps.length);
+      setIsAnimating(false);
+    }, 300);
+  };
+
+  const handlePrev = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentStep((prev) => (prev - 1 + steps.length) % steps.length);
+      setIsAnimating(false);
+    }, 300);
+  };
+
+  const handleLocationRequest = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // Reverse geocoding would be done here in a real app
+          setUserLocation({
+            address: "Your Location",
+            coordinates: { lat: latitude, lng: longitude }
+          });
+          setAuthStep('success');
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          // Continue without location
+          setAuthStep('success');
+        }
+      );
+    } else {
+      // Geolocation not supported, continue without location
+      setAuthStep('success');
+    }
+  };
+
+  // Account creation step
+  if (authStep === 'account-creation' && currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <SparklesIcon className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {currentUser.name}!</h2>
+              <p className="text-gray-600">Let's set up your account to get the best experience</p>
+            </div>
+
+            {/* User Profile Card */}
+            <div className="bg-gray-50 rounded-xl p-6 mb-6">
+              <div className="flex items-center space-x-4">
+                <img
+                  src={currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=3b82f6&color=fff`}
+                  alt={currentUser.name}
+                  className="w-16 h-16 rounded-full border-2 border-white shadow-md"
+                />
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900">{currentUser.name}</h3>
+                  <p className="text-gray-600">{currentUser.email}</p>
+                  <div className="flex items-center mt-2">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-1" />
+                    <span className="text-sm text-green-600 font-medium">Google Account Verified</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Features */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
+                <GiftIcon className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Welcome Bonus</h4>
+                  <p className="text-sm text-gray-600">Get $10 off your first purchase</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg">
+                <LocationMarkerIcon className="h-6 w-6 text-green-600" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Local Deals</h4>
+                  <p className="text-sm text-gray-600">Find deals near you</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleLocationRequest}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl"
+              >
+                <LocationMarkerIcon className="h-5 w-5 mr-2" />
+                Enable Location & Continue
+              </button>
+              <button
+                onClick={() => setAuthStep('success')}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Skip Location
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Logout confirmation screen
   if (authStep === 'logout') {
@@ -204,14 +391,8 @@ export default function OAuthSplashScreen({
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-900">{currentUser.name}</h3>
                   <p className="text-gray-600">{currentUser.email}</p>
-                  {currentUser.login && (
-                    <p className="text-sm text-gray-500">@{currentUser.login}</p>
-                  )}
-                  {currentUser.location && (
-                    <p className="text-sm text-gray-500">📍 {currentUser.location}</p>
-                  )}
-                  {currentUser.bio && (
-                    <p className="text-sm text-gray-600 mt-1">{currentUser.bio}</p>
+                  {userLocation && (
+                    <p className="text-sm text-gray-500">📍 {userLocation.address}</p>
                   )}
                 </div>
               </div>
@@ -309,6 +490,16 @@ export default function OAuthSplashScreen({
                   <p className="text-gray-600">Built by developers, for developers. Open source and transparent</p>
                 </div>
               </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <LocationMarkerIcon className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Location-Based Deals</h3>
+                  <p className="text-gray-600">Find amazing deals near you with local pickup options</p>
+                </div>
+              </div>
             </div>
 
             <button
@@ -327,6 +518,8 @@ export default function OAuthSplashScreen({
                   <li>• Device condition verification</li>
                   <li>• Local pickup and shipping options</li>
                   <li>• 30-day return guarantee</li>
+                  <li>• Location-based discounts</li>
+                  <li>• Meet sellers in person</li>
                 </ul>
               </div>
             )}
@@ -392,7 +585,7 @@ export default function OAuthSplashScreen({
                     avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff'
                   };
                   onAuthSuccess(demoUser, 'demo-token');
-                  setAuthStep('success');
+                  setAuthStep('account-creation');
                 }}
                 className="w-full bg-blue-100 text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-200 transition-colors"
               >
