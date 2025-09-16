@@ -841,11 +841,25 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Simple health check endpoint for deployment platforms
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 PacMac Mobile server running on port ${PORT}`);
   console.log(`📱 Open http://localhost:${PORT} to view the application`);
   console.log(`🔧 API endpoints available at http://localhost:${PORT}/api/`);
+  console.log(`💚 Health check available at http://localhost:${PORT}/health`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+}).on('error', (err) => {
+  console.error('❌ Failed to start server:', err);
+  process.exit(1);
 });
 
 module.exports = app;
