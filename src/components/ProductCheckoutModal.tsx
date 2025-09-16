@@ -3,11 +3,15 @@
 import { useState } from 'react';
 import StripePayment from './StripePayment';
 
-interface CartItem {
+interface Product {
   id: string;
   name: string;
   price: number;
-  qty: number;
+  image?: string;
+  description?: string;
+  condition?: string;
+  storage?: string;
+  color?: string;
 }
 
 interface ProductCheckoutModalProps {
