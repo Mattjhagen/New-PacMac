@@ -43,6 +43,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+    // Additional check for production environment
+    if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+      console.log('Running on Render, checking if auth is properly configured...')
+      // If we're on Render and auth is disabled, handle gracefully
+      try {
+        fetch('/api/auth/session')
+          .then(response => response.json())
+          .then(data => {
+            if (data.message === 'Auth temporarily disabled') {
+              console.log('Auth is disabled on server, setting loading to false')
+              setUser(null)
+              setSession(null)
+              setLoading(false)
+              return
+            }
+          })
+          .catch(() => {
+            // If API call fails, continue with normal auth flow
+            console.log('Auth API call failed, continuing with normal flow')
+          })
+      } catch (error) {
+        console.log('Error checking auth status:', error)
+      }
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {

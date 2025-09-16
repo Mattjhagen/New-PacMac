@@ -15,6 +15,7 @@ import CheckoutModal from '@/components/CheckoutModal'
 import ProductCheckoutModal from '@/components/ProductCheckoutModal'
 import SplashScreen from '@/components/SplashScreen'
 import OAuthSplashScreen from '@/components/OAuthSplashScreen'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Link from 'next/link'
 
 interface Product {
@@ -66,7 +67,7 @@ interface ProductTemplate {
   basePrice: number
 }
 
-export default function PacMacMarketplace() {
+function PacMacMarketplace() {
   const { user, session, loading: authLoading, signOut, updateProfile } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
@@ -581,5 +582,13 @@ export default function PacMacMarketplace() {
         />
       </main>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <ErrorBoundary>
+      <PacMacMarketplace />
+    </ErrorBoundary>
   )
 }
