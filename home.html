@@ -65,6 +65,44 @@
       background-clip: text;
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      padding: 0.5rem;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .header-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      transform: scale(1.1);
+    }
+
+    .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
     .user-info {
       display: flex;
       align-items: center;
@@ -546,6 +584,130 @@
       color: #333;
     }
 
+    /* Cart and Saved Items Styles */
+    .cart-content, .saved-items-content {
+      padding: 1.5rem;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .cart-item, .saved-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      background: #f9f9f9;
+    }
+
+    .cart-item-image, .saved-item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .cart-item-details, .saved-item-details {
+      flex: 1;
+    }
+
+    .cart-item-details h3, .saved-item-details h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .cart-item-price, .saved-item-price {
+      font-weight: bold;
+      color: var(--primary);
+      margin: 0.25rem 0;
+    }
+
+    .cart-item-distance, .saved-item-distance {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 0.25rem 0;
+    }
+
+    .remove-btn {
+      background: #ff4757;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .remove-btn:hover {
+      background: #ff3742;
+    }
+
+    .cart-footer {
+      border-top: 1px solid #eee;
+      padding: 1.5rem;
+      background: #f9f9f9;
+    }
+
+    .cart-total {
+      margin-bottom: 1rem;
+    }
+
+    .cart-total p {
+      margin: 0.5rem 0;
+      font-weight: bold;
+    }
+
+    .btn-checkout {
+      width: 100%;
+      background: var(--gradient-1);
+      color: white;
+      border: none;
+      padding: 1rem;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-checkout:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .saved-item-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-bid, .btn-bid-small {
+      background: var(--gradient-2);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .btn-bid:hover, .btn-bid-small:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .empty-cart, .empty-saved {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 2rem;
+    }
+
     /* Upload Form Styles */
     .upload-form {
       padding: 1.5rem;
@@ -817,6 +979,16 @@
   <header class="header">
     <div class="header-content">
       <div class="logo">🛒 PacMac</div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="showCartModal()" title="Cart">
+          🛒
+          <span class="badge" id="cartCount" style="display: none;">0</span>
+        </button>
+        <button class="header-btn" onclick="showSavedItems()" title="Saved Items">
+          💾
+          <span class="badge" id="savedCount" style="display: none;">0</span>
+        </button>
+      </div>
       <div class="user-info">
         <div class="user-dropdown">
           <button class="user-menu-btn" onclick="toggleUserMenu()">
@@ -960,6 +1132,46 @@
     </div>
   </div>
 
+  <!-- Cart Modal -->
+  <div id="cartModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🛒 Your Cart</h2>
+        <button class="close-btn" onclick="closeCartModal()">&times;</button>
+      </div>
+      
+      <div class="cart-content">
+        <div id="cartItems" class="cart-items">
+          <!-- Cart items will be rendered here -->
+        </div>
+        
+        <div class="cart-footer">
+          <div class="cart-total">
+            <p>Total Items: <span id="cartTotalItems">0</span></p>
+            <p>Total: $<span id="cartTotalAmount">0.00</span></p>
+          </div>
+          <button class="btn-checkout" onclick="checkout()">💳 Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved Items Modal -->
+  <div id="savedItemsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>💾 Saved for Later</h2>
+        <button class="close-btn" onclick="closeSavedItemsModal()">&times;</button>
+      </div>
+      
+      <div class="saved-items-content">
+        <div id="savedItemsList" class="saved-items-list">
+          <!-- Saved items will be rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Real product data with 24-hour countdowns and scraped information
     const sampleItems = [
@@ -1096,6 +1308,8 @@
     let currentFilter = 'all';
     let userLocation = null;
     let userCredits = 5; // Starting credits for new users
+    let cart = []; // Shopping cart for won items
+    let savedItems = []; // Save for later items
 
     // Initialize the app
     async function initApp() {
@@ -1450,6 +1664,14 @@
       const totalFee = flatFee + percentageFee;
       const totalAmount = bidAmount + totalFee;
       
+      // Simulate winning the item (for demo purposes)
+      const item = sampleItems.find(i => i.id === itemId);
+      if (item) {
+        // Add to cart as won item
+        addToCart(item, bidAmount);
+        showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
+      }
+      
       alert(`Bid placed! $${bidAmount.toFixed(2)} bid added to this item.\n\nStripe fees:\n- Flat fee: $${flatFee.toFixed(2)}\n- 3% of bid: $${percentageFee.toFixed(2)}\n- Total charged: $${totalAmount.toFixed(2)}`);
     }
 
@@ -1461,6 +1683,14 @@
       const percentageFee = bidAmount * 0.03;
       const totalFee = flatFee + percentageFee;
       const totalAmount = bidAmount + totalFee;
+      
+      // Simulate winning the item (for demo purposes)
+      const item = sampleItems.find(i => i.id === itemId);
+      if (item) {
+        // Add to cart as won item
+        addToCart(item, bidAmount);
+        showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
+      }
       
       alert(`Bid placed! $${bidAmount.toFixed(2)} bid added to this item.\n\nStripe fees:\n- Flat fee: $${flatFee.toFixed(2)}\n- 3% of bid: $${percentageFee.toFixed(2)}\n- Total charged: $${totalAmount.toFixed(2)}`);
     }
@@ -1707,22 +1937,31 @@
       const deltaY = touchEndY - touchStartY;
       const minSwipeDistance = 50;
 
-      // Only process horizontal swipes (ignore vertical scrolling)
+      const currentItem = document.querySelector('.item-card:not([style*="display: none"])');
+      if (!currentItem) return;
+
+      const itemId = parseInt(currentItem.dataset.itemId) || 1;
+
+      // Check for vertical swipes first (swipe up for save for later)
+      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
+        if (deltaY < 0) {
+          // Swipe up - save for later
+          console.log('Swipe up detected - saving for later');
+          saveForLater(itemId);
+        }
+        return;
+      }
+
+      // Process horizontal swipes
       if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-        const currentItem = document.querySelector('.item-card:not([style*="display: none"])');
-        if (currentItem) {
-          // Get item ID from data attribute
-          const itemId = parseInt(currentItem.dataset.itemId) || 1;
-          
-          if (deltaX > 0) {
-            // Swipe right - bid 5 cents
-            console.log('Swipe right detected - bidding 5 cents');
-            bidFiveCents(itemId);
-          } else {
-            // Swipe left - pass
-            console.log('Swipe left detected - passing');
-            passItem(itemId);
-          }
+        if (deltaX > 0) {
+          // Swipe right - bid 5 cents
+          console.log('Swipe right detected - bidding 5 cents');
+          bidFiveCents(itemId);
+        } else {
+          // Swipe left - pass
+          console.log('Swipe left detected - passing');
+          passItem(itemId);
         }
       }
     }
@@ -1731,6 +1970,171 @@
     function addSwipeListeners() {
       document.addEventListener('touchstart', handleTouchStart, { passive: true });
       document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
+
+    // Cart Functions
+    function addToCart(item, winningBid) {
+      const cartItem = {
+        ...item,
+        winningBid: winningBid,
+        addedAt: new Date().toISOString(),
+        status: 'won'
+      };
+      
+      cart.push(cartItem);
+      updateCartDisplay();
+      showCartModal();
+    }
+
+    function saveForLater(itemId) {
+      const item = sampleItems.find(i => i.id === itemId);
+      if (item) {
+        const savedItem = {
+          ...item,
+          savedAt: new Date().toISOString()
+        };
+        
+        savedItems.push(savedItem);
+        updateSavedItemsDisplay();
+        showNotification(`💾 "${item.title}" saved for later!`, 'info');
+      }
+    }
+
+    function updateCartDisplay() {
+      const cartCount = document.getElementById('cartCount');
+      if (cartCount) {
+        cartCount.textContent = cart.length;
+        cartCount.style.display = cart.length > 0 ? 'block' : 'none';
+      }
+    }
+
+    function updateSavedItemsDisplay() {
+      const savedCount = document.getElementById('savedCount');
+      if (savedCount) {
+        savedCount.textContent = savedItems.length;
+        savedCount.style.display = savedItems.length > 0 ? 'block' : 'none';
+      }
+    }
+
+    function showCartModal() {
+      const modal = document.getElementById('cartModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderCartItems();
+      }
+    }
+
+    function closeCartModal() {
+      const modal = document.getElementById('cartModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    function renderCartItems() {
+      const cartItems = document.getElementById('cartItems');
+      if (!cartItems) return;
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+        document.getElementById('cartTotalItems').textContent = '0';
+        document.getElementById('cartTotalAmount').textContent = '0.00';
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.title}" class="cart-item-image">
+          <div class="cart-item-details">
+            <h3>${item.title}</h3>
+            <p class="cart-item-price">Winning Bid: $${item.winningBid.toFixed(2)}</p>
+            <p class="cart-item-distance">${item.distance}</p>
+            <button onclick="removeFromCart(${item.id})" class="remove-btn">Remove</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Update totals
+      const total = cart.reduce((sum, item) => sum + item.winningBid, 0);
+      document.getElementById('cartTotalItems').textContent = cart.length;
+      document.getElementById('cartTotalAmount').textContent = total.toFixed(2);
+    }
+
+    function removeFromCart(itemId) {
+      cart = cart.filter(item => item.id !== itemId);
+      updateCartDisplay();
+      renderCartItems();
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        showNotification('Your cart is empty!', 'warning');
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.winningBid, 0);
+      const flatFee = 3.00;
+      const percentageFee = total * 0.03;
+      const totalFee = flatFee + percentageFee;
+      const grandTotal = total + totalFee;
+
+      showNotification(`🛒 Checkout initiated! Total: $${grandTotal.toFixed(2)} (including $${totalFee.toFixed(2)} in fees)`, 'success');
+      
+      // In a real app, this would redirect to Stripe checkout
+      setTimeout(() => {
+        cart = [];
+        updateCartDisplay();
+        closeCartModal();
+        showNotification('✅ Payment processed! Items will be delivered soon.', 'success');
+      }, 2000);
+    }
+
+    // Saved Items Functions
+    function showSavedItems() {
+      const modal = document.getElementById('savedItemsModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderSavedItems();
+      }
+    }
+
+    function closeSavedItemsModal() {
+      const modal = document.getElementById('savedItemsModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    function renderSavedItems() {
+      const savedItemsList = document.getElementById('savedItemsList');
+      if (!savedItemsList) return;
+
+      if (savedItems.length === 0) {
+        savedItemsList.innerHTML = '<p class="empty-saved">No items saved for later</p>';
+        return;
+      }
+
+      savedItemsList.innerHTML = savedItems.map(item => `
+        <div class="saved-item">
+          <img src="${item.image}" alt="${item.title}" class="saved-item-image">
+          <div class="saved-item-details">
+            <h3>${item.title}</h3>
+            <p class="saved-item-price">$${item.price.toFixed(2)}</p>
+            <p class="saved-item-distance">${item.distance}</p>
+            <div class="saved-item-actions">
+              <button onclick="bidOnItem(${item.id})" class="btn-bid">❤️ Bid $1.00</button>
+              <button onclick="bidFiveCents(${item.id})" class="btn-bid-small">✅ Bid $0.05</button>
+              <button onclick="removeFromSaved(${item.id})" class="remove-btn">Remove</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function removeFromSaved(itemId) {
+      savedItems = savedItems.filter(item => item.id !== itemId);
+      updateSavedItemsDisplay();
+      renderSavedItems();
     }
 
     // User Dropdown Functions
