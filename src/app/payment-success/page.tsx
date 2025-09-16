@@ -91,7 +91,7 @@ export default function PaymentSuccessPage() {
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="text-sm font-medium text-blue-900 mb-2">
-            What's Next?
+            What&apos;s Next?
           </h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• You will receive a confirmation email shortly</li>
