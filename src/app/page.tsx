@@ -210,7 +210,7 @@ export default function PacMacMarketplace() {
         onAuthSuccess={handleOAuthSuccess}
         onLogout={handleOAuthLogout}
         isAuthenticated={isOAuthAuthenticated}
-        currentUser={oauthUser || undefined}
+        currentUser={oauthUser ?? undefined}
       />
     )
   }
