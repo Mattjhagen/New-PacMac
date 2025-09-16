@@ -63,36 +63,42 @@ export default function OAuthSplashScreen({
     }
   }, [onAuthSuccess]);
 
-  // Check for OAuth callback parameters
+  // Check for Supabase OAuth callback parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const type = urlParams.get('type');
+    const auth = urlParams.get('auth');
+    const error = urlParams.get('error');
     
-    if (type === 'GITHUB_AUTH_SUCCESS') {
-      const userParam = urlParams.get('user');
-      const token = urlParams.get('token');
-      
-      if (userParam && token) {
-        try {
-          const userData = JSON.parse(userParam);
+    if (auth === 'success') {
+      // Supabase OAuth was successful
+      // Get the current user from Supabase
+      supabase.auth.getUser().then(({ data: { user }, error }) => {
+        if (user && !error) {
+          // Format user data for compatibility
+          const userData = {
+            id: user.id,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
+            email: user.email || '',
+            login: user.user_metadata?.user_name || user.email?.split('@')[0],
+            avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture
+          };
           
-          // Store in localStorage
-          localStorage.setItem('github_token', token);
-          localStorage.setItem('github_user', userParam);
+          // Store in localStorage for compatibility
+          localStorage.setItem('github_token', 'supabase_session');
+          localStorage.setItem('github_user', JSON.stringify(userData));
           
-          onAuthSuccess(userData, token);
+          onAuthSuccess(userData, 'supabase_session');
           setAuthStep('success');
           
           // Clean up URL
           window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (error) {
-          console.error('Error parsing OAuth callback data:', error);
+        } else {
+          console.error('Error getting user from Supabase:', error);
           setError('Authentication failed. Please try again.');
         }
-      }
-    } else if (urlParams.get('error')) {
-      const errorParam = urlParams.get('error');
-      setError(`Authentication failed: ${errorParam}`);
+      });
+    } else if (error) {
+      setError(`Authentication failed: ${error}`);
       
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -129,9 +135,14 @@ export default function OAuthSplashScreen({
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Sign out from Supabase
+    await supabase.auth.signOut();
+    
+    // Clear localStorage
     localStorage.removeItem('github_token');
     localStorage.removeItem('github_user');
+    
     onLogout();
     setAuthStep('logout');
     
