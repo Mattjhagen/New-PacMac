@@ -1092,6 +1092,24 @@
       // Initialize starfield
       initStarfield();
       
+      // Check for OAuth success in URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const authStatus = urlParams.get('auth');
+      const authCode = urlParams.get('code');
+      
+      if (authStatus === 'success' && authCode) {
+        console.log('✅ OAuth authentication successful, code received:', authCode);
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showNotification('Successfully signed in with Google!', 'success');
+      } else if (authStatus === 'error') {
+        const errorMessage = urlParams.get('message') || 'Authentication failed';
+        console.error('❌ OAuth authentication failed:', errorMessage);
+        showNotification('Authentication failed: ' + errorMessage, 'error');
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
       // Check authentication status
       await checkAuthStatus();
       

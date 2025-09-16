@@ -37,8 +37,24 @@ app.get('/auth/google', (req, res) => {
 });
 
 app.get('/auth/google/callback', (req, res) => {
-  // Simple callback - redirect to marketplace with success
-  res.redirect('/marketplace.html?auth=success');
+  // Handle OAuth callback
+  const { code, error } = req.query;
+  
+  if (error) {
+    console.log('OAuth error:', error);
+    return res.redirect('/marketplace.html?auth=error&message=' + encodeURIComponent(error));
+  }
+  
+  if (!code) {
+    console.log('No authorization code received');
+    return res.redirect('/marketplace.html?auth=error&message=No authorization code');
+  }
+  
+  console.log('OAuth callback received code:', code);
+  
+  // For now, redirect to marketplace with success
+  // In a full implementation, we'd exchange the code for tokens
+  res.redirect('/marketplace.html?auth=success&code=' + code);
 });
 
 app.get('/auth/user', (req, res) => {
