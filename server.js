@@ -1433,8 +1433,11 @@ app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
       });
     }
     
-    // Create escrow payment intent for bid amount + 3% fee
-    const totalAmount = Math.round((amount + (amount * 0.03)) * 100); // Convert to cents
+    // Create escrow payment intent for bid amount + $3 flat fee + 3% fee
+    const flatFee = 3.00; // $3 flat fee
+    const percentageFee = amount * 0.03; // 3% of bid amount
+    const totalFee = flatFee + percentageFee;
+    const totalAmount = Math.round((amount + totalFee) * 100); // Convert to cents
     
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
@@ -1444,7 +1447,10 @@ app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
         type: 'marketplace_bid',
         itemId: itemId,
         bidderId: bidderId,
-        bidAmount: amount.toString()
+        bidAmount: amount.toString(),
+        flatFee: flatFee.toString(),
+        percentageFee: percentageFee.toString(),
+        totalFee: totalFee.toString()
       },
       automatic_payment_methods: {
         enabled: true,
@@ -1462,8 +1468,10 @@ app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
       sellerId: item.seller.id,
       sellerName: item.seller.name,
       amount: amount,
-      fee: amount * 0.03,
-      totalAmount: amount + (amount * 0.03),
+      flatFee: flatFee,
+      percentageFee: percentageFee,
+      totalFee: totalFee,
+      totalAmount: amount + totalFee,
       status: 'pending_payment',
       paymentIntentId: paymentIntent.id,
       createdAt: new Date().toISOString(),
@@ -1515,8 +1523,11 @@ app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
       });
     }
     
-    // Create escrow payment intent for purchase amount + 3% fee
-    const totalAmount = Math.round((amount + (amount * 0.03)) * 100); // Convert to cents
+    // Create escrow payment intent for purchase amount + $3 flat fee + 3% fee
+    const flatFee = 3.00; // $3 flat fee
+    const percentageFee = amount * 0.03; // 3% of purchase amount
+    const totalFee = flatFee + percentageFee;
+    const totalAmount = Math.round((amount + totalFee) * 100); // Convert to cents
     
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
@@ -1526,7 +1537,10 @@ app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
         type: 'marketplace_purchase',
         itemId: itemId,
         buyerId: buyerId,
-        purchaseAmount: amount.toString()
+        purchaseAmount: amount.toString(),
+        flatFee: flatFee.toString(),
+        percentageFee: percentageFee.toString(),
+        totalFee: totalFee.toString()
       },
       automatic_payment_methods: {
         enabled: true,
@@ -1544,8 +1558,10 @@ app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
       sellerId: item.seller.id,
       sellerName: item.seller.name,
       amount: amount,
-      fee: amount * 0.03,
-      totalAmount: amount + (amount * 0.03),
+      flatFee: flatFee,
+      percentageFee: percentageFee,
+      totalFee: totalFee,
+      totalAmount: amount + totalFee,
       status: 'pending_payment',
       paymentIntentId: paymentIntent.id,
       createdAt: new Date().toISOString(),
