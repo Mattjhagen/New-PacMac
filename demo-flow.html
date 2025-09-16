@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacMac Demo - Complete Flow Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .step {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+        }
+        .step.completed {
+            border-color: #28a745;
+            opacity: 0.7;
+        }
+        .step.active {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .success {
+            background: #28a745;
+        }
+        .warning {
+            background: #ffc107;
+            color: #000;
+        }
+        .danger {
+            background: #dc3545;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .json-display {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+        .chat-message.buyer {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+        .chat-message.seller {
+            background: #e9ecef;
+            color: #333;
+        }
+        .location-display {
+            display: inline-block;
+            background: #e3f2fd;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 12px;
+        }
+        .proximity-indicator {
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+        }
+        .proximity-indicator.far { color: #dc3545; }
+        .proximity-indicator.close { color: #ffc107; }
+        .proximity-indicator.ready { color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="demo-card">
+        <h1>🛒 PacMac Marketplace - Complete Demo Flow</h1>
+        <p>This demo shows the complete flow: Purchase → Chat → Proximity → Completion</p>
+        
+        <div class="auth-controls" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+            <button onclick="signOut()" id="signoutBtn" class="btn-secondary" style="background: #6c757d; display: none;">🚪 Sign Out</button>
+            <span id="userStatus" style="margin-left: 15px; font-weight: 600;">Not signed in</span>
+        </div>
+        
+        <div class="status info" id="serverStatus">
+            ⏳ Checking server connection...
+        </div>
+        
+        <button onclick="startDemo()">🚀 Start Complete Demo</button>
+        <button onclick="resetDemo()" class="warning">🔄 Reset Demo</button>
+    </div>
+
+    <!-- Step 1: Authentication -->
+    <div class="demo-card">
+        <div class="step" id="step1">
+            <h3>Step 1: Authentication</h3>
+            <p>First, let's simulate user authentication</p>
+            <button onclick="simulateAuth()" id="authBtn">🔐 Simulate Login</button>
+            <div id="authStatus"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Purchase Item -->
+    <div class="demo-card">
+        <div class="step" id="step2">
+            <h3>Step 2: Purchase Item</h3>
+            <p>Simulate a purchase with Stripe payment (using test data)</p>
+            <div>
+                <strong>Item:</strong> iPhone 15 Pro - $0.99 (+ $3.03 fees = $4.02 total)
+            </div>
+            <button onclick="simulatePurchase()" id="purchaseBtn" disabled>💳 Simulate Purchase</button>
+            <div id="purchaseStatus"></div>
+            <div id="transactionData" class="json-display" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Step 3: Chat -->
+    <div class="demo-card">
+        <div class="step" id="step3">
+            <h3>Step 3: Chat Communication</h3>
+            <p>Chat with the seller to arrange meetup</p>
+            <div class="chat-container" id="chatContainer">
+                <div class="chat-message seller">
+                    <strong>Seller:</strong> Hi! Thanks for purchasing. When would you like to meet?
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <input type="text" id="chatInput" placeholder="Type your message..." style="width: 70%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" disabled>
+                <button onclick="sendMessage()" id="chatBtn" disabled>Send</button>
+            </div>
+            <div id="chatStatus"></div>
+        </div>
+    </div>
+
+    <!-- Step 4: Proximity Detection -->
+    <div class="demo-card">
+        <div class="step" id="step4">
+            <h3>Step 4: Proximity Detection</h3>
+            <p>Simulate location tracking and proximity detection</p>
+            
+            <div style="display: flex; gap: 20px; margin: 20px 0;">
+                <div>
+                    <h4>Buyer Location</h4>
+                    <div class="location-display" id="buyerLocation">📍 Not set</div>
+                    <br>
+                    <button onclick="setBuyerLocation()" id="buyerLocBtn" disabled>📍 Set Buyer Location</button>
+                </div>
+                <div>
+                    <h4>Seller Location</h4>
+                    <div class="location-display" id="sellerLocation">📍 Coffee Shop Downtown</div>
+                </div>
+            </div>
+            
+            <div class="proximity-indicator far" id="proximityIndicator">
+                🔴 Too far apart (>50m)
+            </div>
+            
+            <button onclick="simulateMoving()" id="moveBtn" disabled>🚶 Simulate Moving Closer</button>
+            <button onclick="checkProximity()" id="proximityBtn" disabled>📡 Check Proximity</button>
+            
+            <div id="proximityStatus"></div>
+        </div>
+    </div>
+
+    <!-- Step 5: Transaction Completion -->
+    <div class="demo-card">
+        <div class="step" id="step5">
+            <h3>Step 5: Transaction Completion</h3>
+            <p>Both parties confirm the exchange when in proximity</p>
+            
+            <div style="display: flex; gap: 20px; margin: 20px 0;">
+                <div>
+                    <h4>Buyer Confirmation</h4>
+                    <button onclick="confirmAsBuyer()" id="buyerConfirmBtn" disabled>✅ Buyer Confirms</button>
+                    <div id="buyerConfirmStatus"></div>
+                </div>
+                <div>
+                    <h4>Seller Confirmation</h4>
+                    <button onclick="confirmAsSeller()" id="sellerConfirmBtn" disabled>✅ Seller Confirms</button>
+                    <div id="sellerConfirmStatus"></div>
+                </div>
+            </div>
+            
+            <div id="completionStatus"></div>
+            <div id="finalStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        // Demo state
+        let demoState = {
+            user: null,
+            transaction: null,
+            chatMessages: [],
+            buyerLocation: null,
+            sellerLocation: { lat: 37.7749, lng: -122.4194 }, // San Francisco
+            proximityThreshold: 50 // meters
+        };
+
+        // Check server status on load
+        async function checkServer() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    setStatus('serverStatus', '✅ Server is running and healthy', 'success');
+                } else {
+                    setStatus('serverStatus', '⚠️ Server status unknown', 'warning');
+                }
+            } catch (error) {
+                setStatus('serverStatus', '❌ Server is not responding. Please start the server with: npm start', 'error');
+            }
+        }
+
+        function startDemo() {
+            resetDemo();
+            setStatus('serverStatus', '🚀 Demo started! Follow the steps below.', 'info');
+            document.getElementById('step1').classList.add('active');
+        }
+
+        function resetDemo() {
+            demoState = {
+                user: null,
+                transaction: null,
+                chatMessages: [],
+                buyerLocation: null,
+                sellerLocation: { lat: 37.7749, lng: -122.4194 },
+                proximityThreshold: 50
+            };
+            
+            // Reset UI
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            document.querySelectorAll('button').forEach(btn => {
+                if (btn.id !== 'authBtn') btn.disabled = true;
+            });
+            
+            // Clear status displays
+            document.querySelectorAll('[id$="Status"]').forEach(el => {
+                if (el.id !== 'serverStatus') el.innerHTML = '';
+            });
+            
+            // Reset displays
+            document.getElementById('chatContainer').innerHTML = '<div class="chat-message seller"><strong>Seller:</strong> Hi! Thanks for purchasing. When would you like to meet?</div>';
+            document.getElementById('buyerLocation').textContent = '📍 Not set';
+            document.getElementById('proximityIndicator').className = 'proximity-indicator far';
+            document.getElementById('proximityIndicator').textContent = '🔴 Too far apart (>50m)';
+        }
+
+        async function simulateAuth() {
+            setStatus('authStatus', '⏳ Authenticating...', 'info');
+            
+            try {
+                // Create a demo user
+                demoState.user = {
+                    id: 'demo-buyer-' + Date.now(),
+                    name: 'Demo Buyer',
+                    email: 'demo@pacmacmobile.com'
+                };
+                
+                setStatus('authStatus', '✅ Authenticated as: ' + demoState.user.name, 'success');
+                updateUserStatus();
+                completeStep('step1', 'step2');
+                document.getElementById('purchaseBtn').disabled = false;
+            } catch (error) {
+                setStatus('authStatus', '❌ Authentication failed: ' + error.message, 'error');
+            }
+        }
+
+        async function signOut() {
+            try {
+                // Call server logout endpoint if user was authenticated via OAuth
+                if (demoState.user && demoState.user.provider) {
+                    const response = await fetch('/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ Server logout successful');
+                    } else {
+                        console.warn('⚠️ Server logout failed, but continuing with local logout');
+                    }
+                }
+                
+                // Clear user data
+                demoState.user = null;
+                
+                // Update UI
+                updateUserStatus();
+                
+                // Reset demo state
+                resetDemo();
+                
+                // Show sign out message
+                setStatus('authStatus', '👋 Signed out successfully', 'info');
+            } catch (error) {
+                console.error('❌ Logout error:', error);
+                // Still proceed with local logout even if server call fails
+                demoState.user = null;
+                updateUserStatus();
+                resetDemo();
+                setStatus('authStatus', '👋 Signed out locally (server error)', 'warning');
+            }
+        }
+
+        function updateUserStatus() {
+            const userStatus = document.getElementById('userStatus');
+            const signoutBtn = document.getElementById('signoutBtn');
+            
+            if (demoState.user) {
+                userStatus.textContent = `Signed in as: ${demoState.user.name}`;
+                userStatus.style.color = '#28a745';
+                signoutBtn.style.display = 'inline-block';
+            } else {
+                userStatus.textContent = 'Not signed in';
+                userStatus.style.color = '#6c757d';
+                signoutBtn.style.display = 'none';
+            }
+        }
+
+        async function simulatePurchase() {
+            setStatus('purchaseStatus', '⏳ Processing purchase...', 'info');
+            
+            try {
+                // Create transaction
+                const transactionData = {
+                    itemId: 'demo-iphone-15',
+                    buyerId: demoState.user.id,
+                    buyerName: demoState.user.name,
+                    amount: 0.99
+                };
+                
+                const response = await fetch('/api/marketplace/purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(transactionData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    demoState.transaction = result.transaction;
+                    setStatus('purchaseStatus', '✅ Purchase successful! Transaction ID: ' + result.transaction.id, 'success');
+                    document.getElementById('transactionData').textContent = JSON.stringify(result.transaction, null, 2);
+                    document.getElementById('transactionData').style.display = 'block';
+                    
+                    completeStep('step2', 'step3');
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('chatBtn').disabled = false;
+                } else {
+                    setStatus('purchaseStatus', '❌ Purchase failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                setStatus('purchaseStatus', '❌ Purchase error: ' + error.message, 'error');
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            try {
+                const chatData = {
+                    transactionId: demoState.transaction.id,
+                    senderId: demoState.user.id,
+                    senderName: demoState.user.name,
+                    message: message
+                };
+                
+                const response = await fetch('/api/marketplace/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(chatData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addChatMessage('buyer', message);
+                    input.value = '';
+                    
+                    // Simulate seller response
+                    setTimeout(() => {
+                        if (message.toLowerCase().includes('meet') || message.toLowerCase().includes('where')) {
+                            addChatMessage('seller', 'Let\'s meet at the coffee shop downtown. I\'ll be there in 10 minutes!');
+                            setStatus('chatStatus', '✅ Chat active - Ready to arrange meetup', 'success');
+                            completeStep('step3', 'step4');
+                            document.getElementById('buyerLocBtn').disabled = false;
+                        } else {
+                            addChatMessage('seller', 'Sounds good! Just let me know when you want to meet up.');
+                        }
+                    }, 1000);
+                } else {
+                    setStatus('chatStatus', '❌ Failed to send message: ' + result.error, 'error');
+                }
+            } catch (error) {
+                setStatus('chatStatus', '❌ Chat error: ' + error.message, 'error');
+            }
+        }
+
+        function addChatMessage(sender, message) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = `<strong>${sender === 'buyer' ? 'You' : 'Seller'}:</strong> ${message}`;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function setBuyerLocation() {
+            // Simulate getting user location
+            demoState.buyerLocation = { lat: 37.7849, lng: -122.4094 }; // ~1km away initially
+            document.getElementById('buyerLocation').textContent = '📍 Your Location Set';
+            setStatus('proximityStatus', '📍 Location set - You are ~1km away from seller', 'info');
+            document.getElementById('moveBtn').disabled = false;
+            document.getElementById('proximityBtn').disabled = false;
+        }
+
+        function simulateMoving() {
+            // Simulate moving closer to seller
+            const steps = [
+                { lat: 37.7799, lng: -122.4144, distance: 500, text: '🟡 500m away' },
+                { lat: 37.7769, lng: -122.4204, distance: 100, text: '🟡 100m away' },
+                { lat: 37.7751, lng: -122.4196, distance: 25, text: '🟢 25m away - In range!' }
+            ];
+            
+            let currentStep = 0;
+            const interval = setInterval(() => {
+                if (currentStep >= steps.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                const step = steps[currentStep];
+                demoState.buyerLocation = { lat: step.lat, lng: step.lng };
+                
+                const indicator = document.getElementById('proximityIndicator');
+                if (step.distance <= 50) {
+                    indicator.className = 'proximity-indicator ready';
+                    indicator.textContent = step.text;
+                } else if (step.distance <= 200) {
+                    indicator.className = 'proximity-indicator close';
+                    indicator.textContent = step.text;
+                } else {
+                    indicator.className = 'proximity-indicator far';
+                    indicator.textContent = step.text;
+                }
+                
+                setStatus('proximityStatus', `📍 Moved closer: ${step.text}`, 'info');
+                currentStep++;
+            }, 2000);
+        }
+
+        async function checkProximity() {
+            if (!demoState.buyerLocation) {
+                setStatus('proximityStatus', '❌ Please set your location first', 'error');
+                return;
+            }
+            
+            try {
+                const proximityData = {
+                    transactionId: demoState.transaction.id,
+                    buyerLocation: demoState.buyerLocation,
+                    sellerLocation: demoState.sellerLocation,
+                    threshold: demoState.proximityThreshold
+                };
+                
+                const response = await fetch('/api/marketplace/proximity-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(proximityData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const distance = result.distance;
+                    const inProximity = result.inProximity;
+                    
+                    if (inProximity) {
+                        setStatus('proximityStatus', `✅ In proximity! Distance: ${distance}m - Ready to complete transaction`, 'success');
+                        completeStep('step4', 'step5');
+                        document.getElementById('buyerConfirmBtn').disabled = false;
+                        document.getElementById('sellerConfirmBtn').disabled = false;
+                    } else {
+                        setStatus('proximityStatus', `⚠️ Not in range. Distance: ${distance}m (need <${demoState.proximityThreshold}m)`, 'error');
+                    }
+                } else {
+                    setStatus('proximityStatus', '❌ Proximity check failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                setStatus('proximityStatus', '❌ Proximity error: ' + error.message, 'error');
+            }
+        }
+
+        async function confirmAsBuyer() {
+            await confirmTransaction('buyer', demoState.user.id);
+        }
+
+        async function confirmAsSeller() {
+            await confirmTransaction('seller', 'demo-seller-123');
+        }
+
+        async function confirmTransaction(role, userId) {
+            try {
+                const confirmData = {
+                    transactionId: demoState.transaction.id,
+                    completedBy: userId,
+                    confirmationCode: Math.random().toString(36).substr(2, 8).toUpperCase()
+                };
+                
+                const response = await fetch('/api/marketplace/complete-transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(confirmData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (role === 'buyer') {
+                        setStatus('buyerConfirmStatus', '✅ Buyer confirmed exchange', 'success');
+                        document.getElementById('buyerConfirmBtn').disabled = true;
+                    } else {
+                        setStatus('sellerConfirmStatus', '✅ Seller confirmed exchange', 'success');
+                        document.getElementById('sellerConfirmBtn').disabled = true;
+                    }
+                    
+                    if (result.completed) {
+                        setStatus('completionStatus', '🎉 Transaction completed successfully!', 'success');
+                        setStatus('finalStatus', '✅ Funds released to seller. Transaction complete!', 'success');
+                        completeStep('step5', null);
+                        
+                        // Show final celebration
+                        setTimeout(() => {
+                            alert('🎉 Demo Complete!\n\nYou have successfully tested:\n✅ Purchase with Stripe\n✅ Chat communication\n✅ Proximity detection\n✅ Transaction completion\n\nThe marketplace is fully functional!');
+                        }, 1000);
+                    } else {
+                        const pending = result.pendingConfirmations;
+                        if (pending.buyer) {
+                            setStatus('completionStatus', '⏳ Waiting for buyer confirmation...', 'info');
+                        } else if (pending.seller) {
+                            setStatus('completionStatus', '⏳ Waiting for seller confirmation...', 'info');
+                        }
+                    }
+                } else {
+                    setStatus('completionStatus', '❌ Confirmation failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                setStatus('completionStatus', '❌ Confirmation error: ' + error.message, 'error');
+            }
+        }
+
+        function setStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `status ${type}`;
+        }
+
+        function completeStep(currentStepId, nextStepId) {
+            document.getElementById(currentStepId).classList.remove('active');
+            document.getElementById(currentStepId).classList.add('completed');
+            
+            if (nextStepId) {
+                document.getElementById(nextStepId).classList.add('active');
+            }
+        }
+
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/auth/status');
+                if (response.ok) {
+                    const authData = await response.json();
+                    if (authData.authenticated) {
+                        demoState.user = {
+                            id: authData.user.id,
+                            name: authData.user.name,
+                            email: authData.user.email,
+                            provider: authData.user.provider
+                        };
+                        updateUserStatus();
+                        setStatus('authStatus', '✅ Already authenticated as: ' + demoState.user.name, 'success');
+                        document.getElementById('step1').classList.add('completed');
+                        document.getElementById('purchaseBtn').disabled = false;
+                    }
+                }
+            } catch (error) {
+                console.log('Auth status check failed (expected for demo mode):', error.message);
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', function() {
+            checkServer();
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>

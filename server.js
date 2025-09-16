@@ -208,6 +208,44 @@ app.get('/auth/google/callback',
   }
 );
 
+// Logout route
+app.post('/auth/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error('❌ Logout error:', err);
+      return res.status(500).json({ success: false, error: 'Logout failed' });
+    }
+    
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('❌ Session destroy error:', err);
+        return res.status(500).json({ success: false, error: 'Session cleanup failed' });
+      }
+      
+      res.clearCookie('connect.sid');
+      console.log('✅ User logged out successfully');
+      res.json({ success: true, message: 'Logged out successfully' });
+    });
+  });
+});
+
+// Get current user status
+app.get('/auth/status', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ 
+      authenticated: true, 
+      user: {
+        id: req.user.id,
+        name: req.user.displayName,
+        email: req.user.email,
+        provider: req.user.provider
+      }
+    });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
+
 // X (Twitter) OAuth Routes - Temporarily disabled until package is installed
 /*
 app.get('/auth/x', passport.authenticate('twitter', {
@@ -1875,6 +1913,168 @@ app.post('/api/marketplace/chat', (req, res) => {
     });
   }
 });
+
+// Proximity completion endpoint
+app.post('/api/marketplace/proximity-check', (req, res) => {
+  try {
+    const { transactionId, buyerLocation, sellerLocation, threshold = 50 } = req.body;
+    
+    if (!transactionId || !buyerLocation || !sellerLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: transactionId, buyerLocation, sellerLocation'
+      });
+    }
+    
+    // Find the transaction
+    const transaction = marketplaceData.transactions.find(t => t.id === transactionId);
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        error: 'Transaction not found'
+      });
+    }
+    
+    // Calculate distance using Haversine formula
+    const distance = calculateDistance(
+      buyerLocation.lat, buyerLocation.lng,
+      sellerLocation.lat, sellerLocation.lng
+    );
+    
+    const isInProximity = distance <= threshold; // threshold in meters
+    
+    // If in proximity and payment is complete, mark transaction as ready for completion
+    if (isInProximity && transaction.status === 'paid') {
+      transaction.status = 'in_proximity';
+      transaction.proximityDetectedAt = new Date().toISOString();
+      transaction.distance = distance;
+      
+      // Start countdown for transaction completion (5 minutes)
+      const completionDeadline = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      transaction.completionDeadline = completionDeadline;
+    }
+    
+    res.json({
+      success: true,
+      inProximity: isInProximity,
+      distance: Math.round(distance),
+      threshold: threshold,
+      canComplete: isInProximity && transaction.status === 'paid',
+      transaction: transaction
+    });
+  } catch (error) {
+    console.error('Error checking proximity:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Complete transaction endpoint (when both parties confirm)
+app.post('/api/marketplace/complete-transaction', (req, res) => {
+  try {
+    const { transactionId, completedBy, confirmationCode } = req.body;
+    
+    if (!transactionId || !completedBy) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const transaction = marketplaceData.transactions.find(t => t.id === transactionId);
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        error: 'Transaction not found'
+      });
+    }
+    
+    // Check if transaction is in valid state for completion
+    if (transaction.status !== 'in_proximity' && transaction.status !== 'paid') {
+      return res.status(400).json({
+        success: false,
+        error: 'Transaction not ready for completion'
+      });
+    }
+    
+    // Track completion confirmations
+    if (!transaction.completionConfirmations) {
+      transaction.completionConfirmations = [];
+    }
+    
+    // Add confirmation if not already confirmed by this user
+    const existingConfirmation = transaction.completionConfirmations.find(c => c.userId === completedBy);
+    if (!existingConfirmation) {
+      transaction.completionConfirmations.push({
+        userId: completedBy,
+        confirmedAt: new Date().toISOString(),
+        confirmationCode: confirmationCode
+      });
+    }
+    
+    // Check if both parties have confirmed
+    const buyerConfirmed = transaction.completionConfirmations.some(c => c.userId === transaction.buyerId);
+    const sellerConfirmed = transaction.completionConfirmations.some(c => c.userId === transaction.sellerId);
+    
+    if (buyerConfirmed && sellerConfirmed) {
+      // Complete the transaction
+      transaction.status = 'completed';
+      transaction.completedAt = new Date().toISOString();
+      
+      // Release funds to seller (in a real app, this would trigger Stripe transfer)
+      const seller = marketplaceData.users.find(u => u.id === transaction.sellerId);
+      if (seller) {
+        seller.totalEarnings += transaction.amount;
+      }
+      
+      // Update buyer stats
+      const buyer = marketplaceData.users.find(u => u.id === transaction.buyerId);
+      if (buyer) {
+        buyer.stats.totalPurchases++;
+      }
+      
+      // Update seller stats
+      if (seller) {
+        seller.stats.totalSales++;
+      }
+    }
+    
+    res.json({
+      success: true,
+      transaction: transaction,
+      completed: transaction.status === 'completed',
+      pendingConfirmations: {
+        buyer: !buyerConfirmed,
+        seller: !sellerConfirmed
+      }
+    });
+  } catch (error) {
+    console.error('Error completing transaction:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Helper function to calculate distance between two coordinates (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth's radius in meters
+  const φ1 = lat1 * Math.PI/180; // φ, λ in radians
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  const d = R * c; // in metres
+  return d;
+}
 
 // Dispute system
 app.post('/api/marketplace/dispute', (req, res) => {
