@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { HeartIcon, CurrencyDollarIcon, TrophyIcon, GiftIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
+import { TrophyIcon, GiftIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 
 interface User {
@@ -32,7 +32,7 @@ interface PointsSystemProps {
   onPointsUpdate: (newPoints: number) => void;
 }
 
-export default function PointsSystem({ user, transactions, onPointsUpdate }: PointsSystemProps) {
+export default function PointsSystem({ user, transactions }: PointsSystemProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
 
@@ -41,7 +41,7 @@ export default function PointsSystem({ user, transactions, onPointsUpdate }: Poi
     return user.successfulTransactions * 10; // 10 points per successful transaction
   };
 
-  const recentTransactions = transactions.slice(0, 5);
+  // const recentTransactions = transactions.slice(0, 5);
   const totalEarned = calculateEarnedPoints();
 
   return (

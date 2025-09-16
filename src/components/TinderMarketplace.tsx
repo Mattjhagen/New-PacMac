@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { HeartIcon, XMarkIcon, CheckIcon, ClockIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, XMarkIcon, CheckIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 
 interface Product {
@@ -227,7 +227,7 @@ export default function TinderMarketplace({
         <div className="text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">All Caught Up!</h2>
-          <p className="text-gray-600 mb-6">You've seen all available products.</p>
+          <p className="text-gray-600 mb-6">You&apos;ve seen all available products.</p>
           <button 
             onClick={() => setCurrentIndex(0)}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700"

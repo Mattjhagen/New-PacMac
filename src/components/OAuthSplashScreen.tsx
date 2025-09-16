@@ -6,8 +6,6 @@ import {
   CheckCircleIcon, 
   XCircleIcon, 
   ArrowRightIcon,
-  UserIcon,
-  CogIcon,
   ShoppingBagIcon,
   HeartIcon,
   StarIcon
@@ -37,7 +35,6 @@ interface OAuthSplashScreenProps {
 export default function OAuthSplashScreen({ 
   onAuthSuccess, 
   onLogout, 
-  isAuthenticated, 
   currentUser 
 }: OAuthSplashScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -112,7 +109,7 @@ export default function OAuthSplashScreen({
 
     try {
       // Use Supabase GitHub OAuth
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
