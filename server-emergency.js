@@ -24,6 +24,40 @@ app.get('/', (req, res) => {
   });
 });
 
+// OAuth routes (minimal implementation)
+app.get('/auth/google', (req, res) => {
+  // Redirect to Google OAuth with your new credentials
+  const clientId = '1053950032683-igseosamup9cej3bn1o8lj5kqdok1t1b.apps.googleusercontent.com';
+  const redirectUri = encodeURIComponent('https://new-pacmac.onrender.com/auth/google/callback');
+  const scope = encodeURIComponent('profile email');
+  
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+  
+  res.redirect(googleAuthUrl);
+});
+
+app.get('/auth/google/callback', (req, res) => {
+  // Simple callback - redirect to marketplace with success
+  res.redirect('/marketplace.html?auth=success');
+});
+
+app.get('/auth/user', (req, res) => {
+  // Return demo user for testing
+  res.json({
+    success: true,
+    user: {
+      id: 'demo-user',
+      name: 'Demo User',
+      email: 'demo@pacmacmobile.com',
+      avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff'
+    }
+  });
+});
+
+app.get('/auth/logout', (req, res) => {
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Emergency server running on port ${PORT}`);
