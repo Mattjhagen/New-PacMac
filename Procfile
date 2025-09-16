@@ -1,1 +1,1 @@
-web: node server-verification-fix.js
+web: node server-minimal-verification.js
