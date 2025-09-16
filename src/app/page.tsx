@@ -334,6 +334,15 @@ function PacMacMarketplace() {
                     Bank Setup
                   </Link>
                   
+                  {/* Disputes Button for OAuth Users */}
+                  <Link
+                    href="/disputes"
+                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 transition-all duration-200"
+                  >
+                    <span className="mr-1">⚖️</span>
+                    Disputes
+                  </Link>
+                  
                   <button
                     onClick={handleOAuthLogout}
                     className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -377,6 +386,15 @@ function PacMacMarketplace() {
                   >
                     <span className="mr-2">🏦</span>
                     Bank Setup
+                  </Link>
+                  
+                  {/* Disputes Button */}
+                  <Link
+                    href="/disputes"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="mr-2">⚖️</span>
+                    Disputes
                   </Link>
                   
                   {/* User Menu */}
