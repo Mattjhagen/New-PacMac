@@ -10,7 +10,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: 'minimal-verification-1.0.0',
+    version: 'minimal-verification-1.0.1',
     verification: 'enabled'
   });
 });
