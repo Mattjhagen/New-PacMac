@@ -2,9 +2,6 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files
-app.use(express.static('.'));
-
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -14,10 +11,13 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root endpoint
+// Root endpoint - must be before static files
 app.get('/', (req, res) => {
   res.redirect('/home.html');
 });
+
+// Serve static files
+app.use(express.static('.'));
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
