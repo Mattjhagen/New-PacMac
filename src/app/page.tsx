@@ -15,6 +15,7 @@ import CheckoutModal from '@/components/CheckoutModal'
 import ProductCheckoutModal from '@/components/ProductCheckoutModal'
 import SplashScreen from '@/components/SplashScreen'
 import OAuthSplashScreen from '@/components/OAuthSplashScreen'
+import Link from 'next/link'
 
 interface Product {
   id: string
@@ -306,6 +307,16 @@ export default function PacMacMarketplace() {
                     <div className="font-medium text-gray-900">{oauthUser.name}</div>
                     <div className="text-gray-500">@{oauthUser.login}</div>
                   </div>
+                  
+                  {/* Marketplace Button for OAuth Users */}
+                  <Link
+                    href="/marketplace"
+                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-200"
+                  >
+                    <span className="mr-1">💖</span>
+                    Marketplace
+                  </Link>
+                  
                   <button
                     onClick={handleOAuthLogout}
                     className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -323,6 +334,15 @@ export default function PacMacMarketplace() {
                       📍 {user?.user_metadata?.location?.city}, {user?.user_metadata?.location?.state}
                     </div>
                   )}
+                  
+                  {/* Marketplace Button */}
+                  <Link
+                    href="/marketplace"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="mr-2">💖</span>
+                    Tinder Marketplace
+                  </Link>
                   
                   {/* User Menu */}
                   <div className="flex items-center space-x-2 text-sm text-gray-700">
