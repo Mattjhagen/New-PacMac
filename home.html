@@ -71,6 +71,105 @@
       gap: 0.5rem;
     }
 
+    /* User Dropdown */
+    .user-dropdown {
+      position: relative;
+    }
+
+    .user-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+    }
+
+    .user-menu-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .dropdown-arrow {
+      font-size: 0.8rem;
+      color: #666;
+      transition: transform 0.3s ease;
+    }
+
+    .user-menu-btn.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 15px;
+      box-shadow: var(--shadow-hover);
+      min-width: 250px;
+      padding: 1rem;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .user-dropdown-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-section {
+      margin-bottom: 1rem;
+    }
+
+    .dropdown-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .dropdown-section h4 {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .dropdown-section a {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: #333;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .dropdown-section a:hover {
+      background: var(--gradient-1);
+      color: white;
+      transform: translateX(5px);
+    }
+
+    .credit-display {
+      padding: 0.75rem 1rem;
+      background: var(--gradient-2);
+      color: white;
+      border-radius: 10px;
+      font-weight: 600;
+      text-align: center;
+    }
+
     .credit-balance {
       background: var(--gradient-2);
       color: white;
@@ -699,12 +798,31 @@
     <div class="header-content">
       <div class="logo">🛒 PacMac</div>
       <div class="user-info">
-        <div class="credit-balance">
-          <span class="credit-icon">⭐</span>
-          <span id="creditBalance">5</span>
+        <div class="user-dropdown">
+          <button class="user-menu-btn" onclick="toggleUserMenu()">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span class="user-name" id="userDisplayName">Hello, User</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <div class="dropdown-section">
+              <h4>Verification</h4>
+              <a href="#" onclick="showAddressVerification()">📍 Address Verification</a>
+              <a href="#" onclick="showIdentityVerification()">🆔 Identity Verification</a>
+              <a href="#" onclick="showBankVerification()">🏦 Bank Verification</a>
+            </div>
+            <div class="dropdown-section">
+              <h4>Account</h4>
+              <a href="#" onclick="showOrderHistory()">📋 Order History</a>
+              <a href="#" onclick="showChangeUsername()">✏️ Change Username</a>
+              <a href="#" onclick="showUploadAvatar()">🖼️ Upload Avatar</a>
+            </div>
+            <div class="dropdown-section">
+              <h4>Credits</h4>
+              <div class="credit-display">Credits: <span id="creditBalance">5</span></div>
+            </div>
+          </div>
         </div>
-        <div class="user-avatar" id="userAvatar">U</div>
-        <span id="userName">User</span>
       </div>
     </div>
   </header>
@@ -1091,10 +1209,10 @@
     // Update user info in header
     function updateUserInfo(user) {
       const userAvatar = document.getElementById('userAvatar');
-      const userName = document.getElementById('userName');
+      const userDisplayName = document.getElementById('userDisplayName');
       
       if (user.name) {
-        userName.textContent = user.name;
+        userDisplayName.textContent = `Hello, ${user.name}`;
         userAvatar.textContent = user.name.charAt(0).toUpperCase();
       }
       
@@ -1102,6 +1220,7 @@
         userAvatar.style.backgroundImage = `url(${user.avatar})`;
         userAvatar.style.backgroundSize = 'cover';
         userAvatar.style.backgroundPosition = 'center';
+        userAvatar.textContent = '';
       }
 
       // Update credit balance
@@ -1576,6 +1695,73 @@
     function addSwipeListeners() {
       document.addEventListener('touchstart', handleTouchStart, { passive: true });
       document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
+
+    // User Dropdown Functions
+    function toggleUserMenu() {
+      const menu = document.getElementById('userDropdownMenu');
+      const btn = document.querySelector('.user-menu-btn');
+      
+      menu.classList.toggle('show');
+      btn.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.querySelector('.user-dropdown');
+      if (!dropdown.contains(e.target)) {
+        const menu = document.getElementById('userDropdownMenu');
+        const btn = document.querySelector('.user-menu-btn');
+        menu.classList.remove('show');
+        btn.classList.remove('active');
+      }
+    });
+
+    // Verification Modal Functions
+    function showAddressVerification() {
+      alert('📍 Address Verification\n\nPlease provide:\n• Full address\n• Proof of residence (utility bill, lease, etc.)\n• Verification will be processed within 24-48 hours');
+    }
+
+    function showIdentityVerification() {
+      alert('🆔 Identity Verification\n\nPlease provide:\n• Government-issued photo ID\n• Selfie with ID\n• Last 4 digits of SSN\n• Verification required for $50+ payouts');
+    }
+
+    function showBankVerification() {
+      alert('🏦 Bank Verification\n\nPlease provide:\n• Bank account details\n• Routing number\n• Account number\n• Verification for secure payouts');
+    }
+
+    function showOrderHistory() {
+      alert('📋 Order History\n\nYour transaction history will be displayed here:\n• Completed purchases\n• Active bids\n• Payment history\n• Dispute records');
+    }
+
+    function showChangeUsername() {
+      const newUsername = prompt('✏️ Change Username\n\nEnter your new username:');
+      if (newUsername && newUsername.trim()) {
+        document.getElementById('userDisplayName').textContent = `Hello, ${newUsername.trim()}`;
+        showNotification(`Username updated to: ${newUsername.trim()}`, 'success');
+      }
+    }
+
+    function showUploadAvatar() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const avatar = document.getElementById('userAvatar');
+            avatar.style.backgroundImage = `url(${e.target.result})`;
+            avatar.style.backgroundSize = 'cover';
+            avatar.style.backgroundPosition = 'center';
+            avatar.textContent = '';
+            showNotification('Avatar uploaded successfully!', 'success');
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
     }
 
     // Initialize when page loads
