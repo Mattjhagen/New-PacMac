@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PacMac Marketplace - Local Trading Platform</title>
+  <meta name="description" content="Proximity-based marketplace for local trading with escrow protection." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🛒</text></svg>">
+  <script src="config.js" defer></script>
+  <style>
+    :root{
+      --bg: #000;
+      --fg: #eaeaea;
+      --muted:#9aa0a6;
+      --accent:#6aa7ff;
+      --accent-2:#8affd1;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --error:#ef4444;
+      --card:#0b0b0b;
+      --ring:#1f2937;
+      --shadow: 0 10px 25px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.5);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--fg); background:var(--bg);
+      font: 16px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      overflow-x:hidden;
+    }
+
+    /* Starfield canvas sits behind everything */
+    #stars{position:fixed; inset:0; z-index:-1; display:block; background:#000}
+
+    header{
+      position:sticky; top:0; backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,0,0,.3));
+      border-bottom:1px solid #111; z-index:20;
+    }
+    .nav{max-width:1200px;margin:0 auto;display:flex;gap:18px;align-items:center; padding:12px 16px}
+    .brand{display:flex;gap:10px;align-items:center; font-weight:600; letter-spacing:.2px}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 20px var(--accent)}
+    .spacer{flex:1}
+    .nav a, .nav button.link{color:var(--fg); text-decoration:none; opacity:.9}
+    .nav a:hover, .nav button.link:hover{opacity:1}
+    .nav .pill{padding:8px 14px; border:1px solid #1a1a1a; border-radius:9999px; background:#0b0b0b}
+
+    .hero{max-width:1200px;margin:40px auto 10px; padding:0 16px; display:grid; gap:18px}
+    .hero h1{font-size:clamp(28px, 4vw, 48px); margin:0; letter-spacing:-.02em}
+    .hero p{color:var(--muted); margin:0}
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+
+    .main-content{max-width:1200px; margin:0 auto; padding:0 16px}
+
+    /* Marketplace specific styles */
+    .marketplace-container {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+      margin: 24px 0;
+    }
+
+    .swipe-area {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      min-height: 600px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .item-card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--card) 0%, #1a1a1a 100%);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .item-card.dragging {
+      cursor: grabbing;
+      transform: rotate(5deg);
+    }
+
+    .item-card.swiped-left {
+      transform: translateX(-100%) rotate(-30deg);
+      opacity: 0;
+    }
+
+    .item-card.swiped-right {
+      transform: translateX(100%) rotate(30deg);
+      opacity: 0;
+    }
+
+    .item-image {
+      width: 100%;
+      height: 200px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: var(--muted);
+    }
+
+    .item-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .item-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .item-description {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .item-location {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .swipe-actions {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 16px;
+    }
+
+    .swipe-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .swipe-btn.dislike {
+      background: var(--error);
+      color: white;
+    }
+
+    .swipe-btn.bid {
+      background: var(--accent);
+      color: white;
+    }
+
+    .swipe-btn.heart {
+      background: var(--success);
+      color: white;
+    }
+
+    .swipe-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-card h3 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .user-info h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .user-info p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: #1a1a1a;
+      border-radius: 8px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .transaction-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .transaction-status.pending {
+      background: var(--warning);
+    }
+
+    .transaction-status.disputed {
+      background: var(--error);
+    }
+
+    .transaction-details h5 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .transaction-details p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .countdown-timer {
+      background: var(--warning);
+      color: #000;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      margin: 8px 0;
+    }
+
+    .chat-bubble {
+      background: var(--accent);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 12px;
+      margin: 4px 0;
+      max-width: 80%;
+    }
+
+    .chat-bubble.other {
+      background: #1a1a1a;
+      color: var(--fg);
+    }
+
+    .location-input {
+      width: 100%;
+      padding: 12px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: var(--fg);
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #1a1a1a;
+      color: var(--fg);
+      border: 1px solid #333;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      margin: 0 0 16px 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      .marketplace-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Starfield background -->
+  <canvas id="stars"></canvas>
+
+  <header>
+    <nav class="nav">
+      <div class="brand">
+        <div class="dot"></div>
+        <span>PacMac Marketplace</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="link" onclick="showProfile()">Profile</button>
+      <button class="link" onclick="showTransactions()">Transactions</button>
+      <button class="link" onclick="showListings()">My Listings</button>
+      <button class="pill" onclick="showAddItem()">+ Add Item</button>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <div class="hero">
+      <h1>Discover Local Treasures</h1>
+      <p>Swipe to bid, heart to buy, or pass on items near you</p>
+      <div class="cta-row">
+        <input type="text" class="location-input" placeholder="Enter your location or ZIP code" id="locationInput">
+        <button class="btn btn-primary" onclick="updateLocation()">Update Location</button>
+      </div>
+    </div>
+
+    <div class="marketplace-container">
+      <div class="swipe-area" id="swipeArea">
+        <div class="item-card" id="currentItem">
+          <div class="item-image" id="itemImage">📱</div>
+          <div class="item-title" id="itemTitle">Loading...</div>
+          <div class="item-price" id="itemPrice">$0.00</div>
+          <div class="item-description" id="itemDescription">Finding items near you...</div>
+          <div class="item-location">
+            <span>📍</span>
+            <span id="itemLocation">Loading location...</span>
+          </div>
+        </div>
+        
+        <div class="swipe-actions">
+          <button class="swipe-btn dislike" onclick="swipeLeft()" title="Pass (Swipe Left)">
+            ❌
+          </button>
+          <button class="swipe-btn bid" onclick="swipeRight()" title="Bid $0.05 (Swipe Right)">
+            💰
+          </button>
+          <button class="swipe-btn heart" onclick="heartItem()" title="Buy $1.00 (Heart)">
+            ❤️
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="sidebar-card">
+          <h3>Your Profile</h3>
+          <div class="user-profile">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div class="user-info">
+              <h4 id="userName">Guest User</h4>
+              <p id="userLocation">Location not set</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="totalBids">0</div>
+              <div class="stat-label">Total Bids</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="totalPurchases">0</div>
+              <div class="stat-label">Purchases</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="totalSales">0</div>
+              <div class="stat-label">Sales</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="rating">5.0</div>
+              <div class="stat-label">Rating</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Active Transactions</h3>
+          <div id="activeTransactions">
+            <p style="color: var(--muted); text-align: center;">No active transactions</p>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Recent Activity</h3>
+          <div id="recentActivity">
+            <p style="color: var(--muted); text-align: center;">No recent activity</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <div class="modal hidden" id="addItemModal">
+    <div class="modal-content">
+      <h2>Add New Item</h2>
+      <form id="addItemForm">
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">Item Title</label>
+          <input type="text" id="itemTitleInput" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">Description</label>
+          <textarea id="itemDescriptionInput" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg); height: 100px; resize: vertical;"></textarea>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">Starting Price</label>
+          <input type="number" id="itemPriceInput" step="0.01" min="0.05" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">Category</label>
+          <select id="itemCategoryInput" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+            <option value="">Select Category</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="furniture">Furniture</option>
+            <option value="books">Books</option>
+            <option value="sports">Sports & Recreation</option>
+            <option value="tools">Tools</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">Upload Image</label>
+          <input type="file" id="itemImageInput" accept="image/*" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="hideAddItem()">Cancel</button>
+          <button type="submit" class="btn btn-primary">List Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="chatModal">
+    <div class="modal-content">
+      <h2>Chat with Seller</h2>
+      <div id="chatMessages" style="height: 300px; overflow-y: auto; border: 1px solid #333; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #1a1a1a;">
+        <!-- Chat messages will appear here -->
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="chatInput" placeholder="Type your message..." style="flex: 1; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="hideChat()">Close</button>
+        <button class="btn btn-primary" onclick="arrangeMeetup()">Arrange Meetup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Marketplace Application State
+    const MARKETPLACE_STATE = {
+      currentUser: {
+        id: 'user_' + Date.now(),
+        name: 'Guest User',
+        location: null,
+        stats: {
+          totalBids: 0,
+          totalPurchases: 0,
+          totalSales: 0,
+          rating: 5.0
+        }
+      },
+      currentItem: null,
+      items: [],
+      transactions: [],
+      chatMessages: [],
+      location: null
+    };
+
+    // Initialize the marketplace
+    async function initMarketplace() {
+      console.log('🚀 Initializing PacMac Marketplace...');
+      
+      // Initialize starfield
+      initStarfield();
+      
+      // Load user data from localStorage
+      loadUserData();
+      
+      // Load items from API
+      await loadItems();
+      
+      // Show first item
+      showNextItem();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      console.log('✅ Marketplace initialized successfully');
+    }
+
+    // Initialize starfield background
+    function initStarfield() {
+      const canvas = document.getElementById('stars');
+      const ctx = canvas.getContext('2d');
+      
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      const stars = [];
+      const numStars = 100;
+      
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 2,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5
+        });
+      }
+      
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        stars.forEach(star => {
+          star.x += star.vx;
+          star.y += star.vy;
+          
+          if (star.x < 0) star.x = canvas.width;
+          if (star.x > canvas.width) star.x = 0;
+          if (star.y < 0) star.y = canvas.height;
+          if (star.y > canvas.height) star.y = 0;
+          
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+        });
+        
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    }
+
+    // Load user data from localStorage
+    function loadUserData() {
+      const savedUser = localStorage.getItem('marketplace_user');
+      if (savedUser) {
+        MARKETPLACE_STATE.currentUser = { ...MARKETPLACE_STATE.currentUser, ...JSON.parse(savedUser) };
+      }
+      
+      updateUserProfile();
+    }
+
+    // Save user data to localStorage
+    function saveUserData() {
+      localStorage.setItem('marketplace_user', JSON.stringify(MARKETPLACE_STATE.currentUser));
+    }
+
+    // Update user profile display
+    function updateUserProfile() {
+      document.getElementById('userName').textContent = MARKETPLACE_STATE.currentUser.name;
+      document.getElementById('userLocation').textContent = MARKETPLACE_STATE.currentUser.location || 'Location not set';
+      document.getElementById('userAvatar').textContent = MARKETPLACE_STATE.currentUser.name.charAt(0).toUpperCase();
+      
+      document.getElementById('totalBids').textContent = MARKETPLACE_STATE.currentUser.stats.totalBids;
+      document.getElementById('totalPurchases').textContent = MARKETPLACE_STATE.currentUser.stats.totalPurchases;
+      document.getElementById('totalSales').textContent = MARKETPLACE_STATE.currentUser.stats.totalSales;
+      document.getElementById('rating').textContent = MARKETPLACE_STATE.currentUser.stats.rating.toFixed(1);
+    }
+
+    // Load items from API
+    async function loadItems() {
+      try {
+        const response = await fetch('/api/marketplace/items');
+        const data = await response.json();
+        
+        if (data.success) {
+          MARKETPLACE_STATE.items = data.items;
+          console.log(`📦 Loaded ${data.items.length} items from API`);
+        } else {
+          console.error('Failed to load items:', data.error);
+          loadSampleItems(); // Fallback to sample data
+        }
+      } catch (error) {
+        console.error('Error loading items:', error);
+        loadSampleItems(); // Fallback to sample data
+      }
+    }
+
+    // Load sample items (fallback)
+    function loadSampleItems() {
+      MARKETPLACE_STATE.items = [
+        {
+          id: 'item_1',
+          title: 'iPhone 13 Pro',
+          description: 'Excellent condition, 128GB, space gray. Includes original box and charger.',
+          price: 650.00,
+          category: 'electronics',
+          location: 'Downtown Omaha',
+          distance: '2.3 miles',
+          image: '📱',
+          seller: {
+            id: 'seller_1',
+            name: 'TechTrader',
+            rating: 4.8
+          },
+          bids: [],
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'item_2',
+          title: 'Vintage Leather Jacket',
+          description: 'Classic brown leather jacket, size M. Great condition with minimal wear.',
+          price: 85.00,
+          category: 'clothing',
+          location: 'Midtown',
+          distance: '1.8 miles',
+          image: '🧥',
+          seller: {
+            id: 'seller_2',
+            name: 'StyleCollector',
+            rating: 4.9
+          },
+          bids: [],
+          createdAt: new Date().toISOString()
+        }
+      ];
+    }
+
+    // Show next item in the swipe area
+    function showNextItem() {
+      if (MARKETPLACE_STATE.items.length === 0) {
+        showNoMoreItems();
+        return;
+      }
+      
+      // Get random item
+      const randomIndex = Math.floor(Math.random() * MARKETPLACE_STATE.items.length);
+      MARKETPLACE_STATE.currentItem = MARKETPLACE_STATE.items[randomIndex];
+      
+      // Update UI
+      document.getElementById('itemImage').textContent = MARKETPLACE_STATE.currentItem.image;
+      document.getElementById('itemTitle').textContent = MARKETPLACE_STATE.currentItem.title;
+      document.getElementById('itemPrice').textContent = `$${MARKETPLACE_STATE.currentItem.price.toFixed(2)}`;
+      document.getElementById('itemDescription').textContent = MARKETPLACE_STATE.currentItem.description;
+      document.getElementById('itemLocation').textContent = `${MARKETPLACE_STATE.currentItem.location} (${MARKETPLACE_STATE.currentItem.distance})`;
+      
+      // Reset card position
+      const card = document.getElementById('currentItem');
+      card.className = 'item-card';
+    }
+
+    // Show no more items message
+    function showNoMoreItems() {
+      document.getElementById('itemImage').textContent = '🎉';
+      document.getElementById('itemTitle').textContent = 'No More Items';
+      document.getElementById('itemPrice').textContent = 'Check back later!';
+      document.getElementById('itemDescription').textContent = 'You\'ve seen all available items in your area. New items are added regularly!';
+      document.getElementById('itemLocation').textContent = 'Refresh to see new items';
+    }
+
+    // Swipe left (dislike/pass)
+    function swipeLeft() {
+      const card = document.getElementById('currentItem');
+      card.classList.add('swiped-left');
+      
+      setTimeout(() => {
+        // Remove item from list
+        if (MARKETPLACE_STATE.currentItem) {
+          MARKETPLACE_STATE.items = MARKETPLACE_STATE.items.filter(item => item.id !== MARKETPLACE_STATE.currentItem.id);
+        }
+        showNextItem();
+      }, 300);
+    }
+
+    // Swipe right (bid $0.05)
+    async function swipeRight() {
+      if (!MARKETPLACE_STATE.currentItem) return;
+      
+      const card = document.getElementById('currentItem');
+      card.classList.add('swiped-right');
+      
+      try {
+        // Call API to place bid
+        const response = await fetch('/api/marketplace/bid', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            itemId: MARKETPLACE_STATE.currentItem.id,
+            bidderId: MARKETPLACE_STATE.currentUser.id,
+            bidderName: MARKETPLACE_STATE.currentUser.name,
+            amount: 0.05
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Add transaction to local state
+          MARKETPLACE_STATE.transactions.push(data.transaction);
+          MARKETPLACE_STATE.currentUser.stats.totalBids++;
+          
+          // Update UI
+          updateUserProfile();
+          updateTransactionsDisplay();
+          saveUserData();
+          
+          // Show success message
+          showNotification('Bid placed! $0.05 will be held in escrow.', 'success');
+        } else {
+          showNotification('Failed to place bid: ' + data.error, 'error');
+        }
+      } catch (error) {
+        console.error('Error placing bid:', error);
+        showNotification('Failed to place bid. Please try again.', 'error');
+      }
+      
+      setTimeout(() => {
+        showNextItem();
+      }, 300);
+    }
+
+    // Heart item (buy for $1.00)
+    async function heartItem() {
+      if (!MARKETPLACE_STATE.currentItem) return;
+      
+      const card = document.getElementById('currentItem');
+      card.classList.add('swiped-right');
+      
+      try {
+        // Call API to purchase item
+        const response = await fetch('/api/marketplace/purchase', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            itemId: MARKETPLACE_STATE.currentItem.id,
+            buyerId: MARKETPLACE_STATE.currentUser.id,
+            buyerName: MARKETPLACE_STATE.currentUser.name,
+            amount: 1.00
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Add transaction to local state
+          MARKETPLACE_STATE.transactions.push(data.transaction);
+          MARKETPLACE_STATE.currentUser.stats.totalPurchases++;
+          
+          // Update UI
+          updateUserProfile();
+          updateTransactionsDisplay();
+          saveUserData();
+          
+          // Show success message and open chat
+          showNotification('Purchase successful! Chat and meetup options are now available.', 'success');
+          setTimeout(() => {
+            showChat(data.transaction.id);
+          }, 1000);
+        } else {
+          showNotification('Failed to purchase item: ' + data.error, 'error');
+        }
+      } catch (error) {
+        console.error('Error purchasing item:', error);
+        showNotification('Failed to purchase item. Please try again.', 'error');
+      }
+      
+      setTimeout(() => {
+        showNextItem();
+      }, 300);
+    }
+
+    // Update location
+    function updateLocation() {
+      const locationInput = document.getElementById('locationInput');
+      const location = locationInput.value.trim();
+      
+      if (location) {
+        MARKETPLACE_STATE.currentUser.location = location;
+        MARKETPLACE_STATE.location = location;
+        updateUserProfile();
+        saveUserData();
+        showNotification('Location updated successfully!', 'success');
+        
+        // Reload items with new location
+        loadSampleItems();
+        showNextItem();
+      }
+    }
+
+    // Show add item modal
+    function showAddItem() {
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+
+    // Hide add item modal
+    function hideAddItem() {
+      document.getElementById('addItemModal').classList.add('hidden');
+    }
+
+    // Show chat modal
+    function showChat(transactionId) {
+      document.getElementById('chatModal').classList.remove('hidden');
+      // Load chat messages for this transaction
+      loadChatMessages(transactionId);
+    }
+
+    // Hide chat modal
+    function hideChat() {
+      document.getElementById('chatModal').classList.add('hidden');
+    }
+
+    // Send chat message
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      
+      if (message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-bubble';
+        messageDiv.textContent = message;
+        chatMessages.appendChild(messageDiv);
+        
+        input.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Add to state
+        MARKETPLACE_STATE.chatMessages.push({
+          id: 'msg_' + Date.now(),
+          transactionId: 'current',
+          sender: 'buyer',
+          message: message,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    // Load chat messages
+    function loadChatMessages(transactionId) {
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML = '';
+      
+      // Add welcome message
+      const welcomeDiv = document.createElement('div');
+      welcomeDiv.className = 'chat-bubble other';
+      welcomeDiv.textContent = 'Hello! Thanks for your interest in my item. How can I help you?';
+      chatMessages.appendChild(welcomeDiv);
+    }
+
+    // Arrange meetup
+    function arrangeMeetup() {
+      showNotification('Meetup arrangement feature coming soon!', 'info');
+    }
+
+    // Update transactions display
+    function updateTransactionsDisplay() {
+      const container = document.getElementById('activeTransactions');
+      const activeTransactions = MARKETPLACE_STATE.transactions.filter(t => t.status === 'pending');
+      
+      if (activeTransactions.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted); text-align: center;">No active transactions</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      activeTransactions.forEach(transaction => {
+        const div = document.createElement('div');
+        div.className = 'transaction-item';
+        
+        const statusClass = transaction.status === 'pending' ? 'pending' : 'completed';
+        const statusText = transaction.status === 'pending' ? 'Pending' : 'Completed';
+        
+        div.innerHTML = `
+          <div class="transaction-status ${statusClass}"></div>
+          <div class="transaction-details">
+            <h5>${transaction.itemTitle}</h5>
+            <p>$${transaction.amount.toFixed(2)} - ${statusText}</p>
+            ${transaction.countdownEnd ? `<div class="countdown-timer">24h countdown active</div>` : ''}
+          </div>
+        `;
+        
+        container.appendChild(div);
+      });
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--accent)'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1001;
+        font-weight: 600;
+        box-shadow: var(--shadow);
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Add item form submission
+      document.getElementById('addItemForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('itemTitleInput').value;
+        const description = document.getElementById('itemDescriptionInput').value;
+        const price = parseFloat(document.getElementById('itemPriceInput').value);
+        const category = document.getElementById('itemCategoryInput').value;
+        
+        try {
+          // Call API to create item
+          const response = await fetch('/api/marketplace/items', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              title: title,
+              description: description,
+              price: price,
+              category: category,
+              location: MARKETPLACE_STATE.currentUser.location || 'Unknown',
+              sellerId: MARKETPLACE_STATE.currentUser.id,
+              sellerName: MARKETPLACE_STATE.currentUser.name
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Add item to local state
+            MARKETPLACE_STATE.items.unshift(data.item);
+            MARKETPLACE_STATE.currentUser.stats.totalSales++;
+            
+            // Update UI
+            updateUserProfile();
+            saveUserData();
+            hideAddItem();
+            
+            // Reset form
+            document.getElementById('addItemForm').reset();
+            
+            showNotification('Item listed successfully!', 'success');
+          } else {
+            showNotification('Failed to list item: ' + data.error, 'error');
+          }
+        } catch (error) {
+          console.error('Error creating item:', error);
+          showNotification('Failed to list item. Please try again.', 'error');
+        }
+      });
+      
+      // Chat input enter key
+      document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+    }
+
+    // Placeholder functions for future implementation
+    function showProfile() {
+      showNotification('Profile management coming soon!', 'info');
+    }
+
+    function showTransactions() {
+      showNotification('Transaction history coming soon!', 'info');
+    }
+
+    function showListings() {
+      showNotification('My listings management coming soon!', 'info');
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initMarketplace);
+  </script>
+</body>
+</html>

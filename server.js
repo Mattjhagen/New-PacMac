@@ -850,6 +850,506 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ============================================================================
+// MARKETPLACE API ENDPOINTS
+// ============================================================================
+
+// In-memory storage for marketplace data (in production, use a database)
+const marketplaceData = {
+  items: [],
+  transactions: [],
+  users: [],
+  chats: []
+};
+
+// Marketplace routes
+app.get('/marketplace', (req, res) => {
+  res.sendFile(__dirname + '/marketplace.html');
+});
+
+// Get items near location
+app.get('/api/marketplace/items', (req, res) => {
+  try {
+    const { location, category, limit = 20 } = req.query;
+    
+    let items = marketplaceData.items.filter(item => {
+      // Filter by location if provided
+      if (location && !item.location.toLowerCase().includes(location.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by category if provided
+      if (category && item.category !== category) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Sort by newest first
+    items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // Limit results
+    items = items.slice(0, parseInt(limit));
+    
+    res.json({
+      success: true,
+      items: items,
+      total: items.length
+    });
+  } catch (error) {
+    console.error('Error fetching items:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Create new item listing
+app.post('/api/marketplace/items', (req, res) => {
+  try {
+    const { title, description, price, category, location, sellerId, sellerName } = req.body;
+    
+    if (!title || !description || !price || !category || !sellerId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const newItem = {
+      id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      title,
+      description,
+      price: parseFloat(price),
+      category,
+      location: location || 'Unknown',
+      distance: '0.0 miles',
+      image: '📦', // Default image, in production would handle file uploads
+      seller: {
+        id: sellerId,
+        name: sellerName || 'Anonymous',
+        rating: 5.0
+      },
+      bids: [],
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    marketplaceData.items.push(newItem);
+    
+    res.json({
+      success: true,
+      item: newItem
+    });
+  } catch (error) {
+    console.error('Error creating item:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Place bid on item
+app.post('/api/marketplace/bid', async (req, res) => {
+  try {
+    const { itemId, bidderId, bidderName, amount = 0.05 } = req.body;
+    
+    if (!itemId || !bidderId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const item = marketplaceData.items.find(i => i.id === itemId);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+    
+    // Create escrow payment intent for bid amount + 3% fee
+    const totalAmount = Math.round((amount + (amount * 0.03)) * 100); // Convert to cents
+    
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalAmount,
+      currency: 'usd',
+      description: `Bid on ${item.title}`,
+      metadata: {
+        type: 'marketplace_bid',
+        itemId: itemId,
+        bidderId: bidderId,
+        bidAmount: amount.toString()
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+    
+    // Create transaction record
+    const transaction = {
+      id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      type: 'bid',
+      itemId: itemId,
+      itemTitle: item.title,
+      bidderId: bidderId,
+      bidderName: bidderName || 'Anonymous',
+      sellerId: item.seller.id,
+      sellerName: item.seller.name,
+      amount: amount,
+      fee: amount * 0.03,
+      totalAmount: amount + (amount * 0.03),
+      status: 'pending_payment',
+      paymentIntentId: paymentIntent.id,
+      createdAt: new Date().toISOString(),
+      countdownEnd: null
+    };
+    
+    marketplaceData.transactions.push(transaction);
+    
+    // Add bid to item
+    item.bids.push({
+      id: transaction.id,
+      bidderId: bidderId,
+      bidderName: bidderName || 'Anonymous',
+      amount: amount,
+      createdAt: new Date().toISOString()
+    });
+    
+    res.json({
+      success: true,
+      transaction: transaction,
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.error('Error placing bid:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Purchase item (heart action)
+app.post('/api/marketplace/purchase', async (req, res) => {
+  try {
+    const { itemId, buyerId, buyerName, amount = 1.00 } = req.body;
+    
+    if (!itemId || !buyerId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const item = marketplaceData.items.find(i => i.id === itemId);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+    
+    // Create escrow payment intent for purchase amount + 3% fee
+    const totalAmount = Math.round((amount + (amount * 0.03)) * 100); // Convert to cents
+    
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalAmount,
+      currency: 'usd',
+      description: `Purchase ${item.title}`,
+      metadata: {
+        type: 'marketplace_purchase',
+        itemId: itemId,
+        buyerId: buyerId,
+        purchaseAmount: amount.toString()
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+    
+    // Create transaction record
+    const transaction = {
+      id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      type: 'purchase',
+      itemId: itemId,
+      itemTitle: item.title,
+      buyerId: buyerId,
+      buyerName: buyerName || 'Anonymous',
+      sellerId: item.seller.id,
+      sellerName: item.seller.name,
+      amount: amount,
+      fee: amount * 0.03,
+      totalAmount: amount + (amount * 0.03),
+      status: 'pending_payment',
+      paymentIntentId: paymentIntent.id,
+      createdAt: new Date().toISOString(),
+      countdownEnd: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+      chatEnabled: true,
+      meetupEnabled: true
+    };
+    
+    marketplaceData.transactions.push(transaction);
+    
+    // Mark item as sold
+    item.status = 'sold';
+    item.soldTo = buyerId;
+    item.soldAt = new Date().toISOString();
+    
+    res.json({
+      success: true,
+      transaction: transaction,
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.error('Error processing purchase:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Confirm payment and release escrow
+app.post('/api/marketplace/confirm-payment', async (req, res) => {
+  try {
+    const { transactionId, paymentIntentId } = req.body;
+    
+    if (!transactionId || !paymentIntentId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const transaction = marketplaceData.transactions.find(t => t.id === transactionId);
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        error: 'Transaction not found'
+      });
+    }
+    
+    // Verify payment intent with Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({
+        success: false,
+        error: 'Payment not completed'
+      });
+    }
+    
+    // Update transaction status
+    transaction.status = 'paid';
+    transaction.paidAt = new Date().toISOString();
+    
+    // Determine fund holding period based on user transaction history
+    const userTransactions = marketplaceData.transactions.filter(t => 
+      (t.buyerId === transaction.buyerId || t.bidderId === transaction.buyerId) && 
+      t.status === 'paid'
+    );
+    
+    const isFirstFiveTransactions = userTransactions.length <= 5;
+    const holdPeriod = isFirstFiveTransactions ? 24 * 60 * 60 * 1000 : 15 * 60 * 1000; // 24 hours or 15 minutes
+    
+    transaction.fundReleaseAt = new Date(Date.now() + holdPeriod).toISOString();
+    
+    res.json({
+      success: true,
+      transaction: transaction,
+      fundReleaseAt: transaction.fundReleaseAt,
+      holdPeriod: isFirstFiveTransactions ? '24 hours' : '15 minutes'
+    });
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user transactions
+app.get('/api/marketplace/transactions/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const userTransactions = marketplaceData.transactions.filter(t => 
+      t.buyerId === userId || t.bidderId === userId || t.sellerId === userId
+    );
+    
+    res.json({
+      success: true,
+      transactions: userTransactions
+    });
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Chat endpoints
+app.get('/api/marketplace/chat/:transactionId', (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    
+    const messages = marketplaceData.chats.filter(c => c.transactionId === transactionId);
+    
+    res.json({
+      success: true,
+      messages: messages
+    });
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/marketplace/chat', (req, res) => {
+  try {
+    const { transactionId, senderId, senderName, message } = req.body;
+    
+    if (!transactionId || !senderId || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const chatMessage = {
+      id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      transactionId: transactionId,
+      senderId: senderId,
+      senderName: senderName || 'Anonymous',
+      message: message,
+      createdAt: new Date().toISOString()
+    };
+    
+    marketplaceData.chats.push(chatMessage);
+    
+    res.json({
+      success: true,
+      message: chatMessage
+    });
+  } catch (error) {
+    console.error('Error sending chat message:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Dispute system
+app.post('/api/marketplace/dispute', (req, res) => {
+  try {
+    const { transactionId, disputerId, reason, description } = req.body;
+    
+    if (!transactionId || !disputerId || !reason) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    const transaction = marketplaceData.transactions.find(t => t.id === transactionId);
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        error: 'Transaction not found'
+      });
+    }
+    
+    // Create dispute
+    const dispute = {
+      id: 'dispute_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      transactionId: transactionId,
+      disputerId: disputerId,
+      reason: reason,
+      description: description,
+      status: 'open',
+      createdAt: new Date().toISOString()
+    };
+    
+    // Update transaction status
+    transaction.status = 'disputed';
+    transaction.disputeId = dispute.id;
+    
+    res.json({
+      success: true,
+      dispute: dispute
+    });
+  } catch (error) {
+    console.error('Error creating dispute:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Initialize sample data
+function initializeMarketplaceData() {
+  // Add some sample items
+  marketplaceData.items = [
+    {
+      id: 'item_sample_1',
+      title: 'iPhone 13 Pro',
+      description: 'Excellent condition, 128GB, space gray. Includes original box and charger.',
+      price: 650.00,
+      category: 'electronics',
+      location: 'Downtown Omaha',
+      distance: '2.3 miles',
+      image: '📱',
+      seller: {
+        id: 'seller_sample_1',
+        name: 'TechTrader',
+        rating: 4.8
+      },
+      bids: [],
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 'item_sample_2',
+      title: 'Vintage Leather Jacket',
+      description: 'Classic brown leather jacket, size M. Great condition with minimal wear.',
+      price: 85.00,
+      category: 'clothing',
+      location: 'Midtown',
+      distance: '1.8 miles',
+      image: '🧥',
+      seller: {
+        id: 'seller_sample_2',
+        name: 'StyleCollector',
+        rating: 4.9
+      },
+      bids: [],
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+  
+  console.log('📦 Marketplace sample data initialized');
+}
+
+// Initialize marketplace data on startup
+initializeMarketplaceData();
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 PacMac Mobile server running on port ${PORT}`);
