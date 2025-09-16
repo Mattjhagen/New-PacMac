@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +12,7 @@ import {
   HeartIcon,
   StarIcon
 } from '@heroicons/react/24/outline';
+import { supabase } from '@/lib/supabase';
 
 interface User {
   id: string;
@@ -103,15 +105,21 @@ export default function OAuthSplashScreen({
     setAuthStep('authenticating');
 
     try {
-      // Create GitHub OAuth URL
-      const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || 'your_github_client_id';
-      const redirectUri = `${window.location.origin}/auth/callback`;
-      const scope = 'user:email,read:user';
-      
-      const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${Date.now()}`;
-      
-      // Redirect to GitHub OAuth
-      window.location.href = authUrl;
+      // Use Supabase GitHub OAuth
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) {
+        console.error('Supabase OAuth error:', error);
+        setError(error.message);
+        setIsLoading(false);
+        setAuthStep('welcome');
+      }
+      // If successful, Supabase will handle the redirect
 
     } catch (error) {
       console.error('GitHub auth error:', error);

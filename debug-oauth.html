@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Debug</title>
+</head>
+<body>
+    <h1>OAuth Debug Test</h1>
+    <button onclick="testOAuth()">Test OAuth</button>
+    <div id="result"></div>
+    
+    <script>
+        function testOAuth() {
+            const clientId = 'Ov23liQ9MO4Icvic5D6H';
+            const redirectUri = window.location.origin + '/auth/callback';
+            const scope = 'user:email,read:user';
+            const state = Date.now();
+            
+            const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+            
+            document.getElementById('result').innerHTML = `
+                <p><strong>Client ID:</strong> ${clientId}</p>
+                <p><strong>Redirect URI:</strong> ${redirectUri}</p>
+                <p><strong>State:</strong> ${state}</p>
+                <p><strong>Auth URL:</strong> <a href="${authUrl}" target="_blank">${authUrl}</a></p>
+            `;
+            
+            // Redirect to GitHub
+            window.location.href = authUrl;
+        }
+    </script>
+</body>
+</html>
