@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Verification Test - PacMac Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .verification-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #ddd;
+        }
+
+        .status-card.verified {
+            border-left-color: #27ae60;
+            background: #d4edda;
+        }
+
+        .status-card.pending {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .status-card.required {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .status-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .status-verified {
+            color: #27ae60;
+        }
+
+        .status-pending {
+            color: #ffc107;
+        }
+
+        .status-required {
+            color: #dc3545;
+        }
+
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .test-button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .test-button.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .test-button.success {
+            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+
+        .test-button.warning {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .test-button.danger {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .test-result {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .test-result.success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .test-result.error {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            color: #721c24;
+        }
+
+        .test-result.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .age-requirements {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .age-requirements h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .age-requirements ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .age-requirements li {
+            padding: 8px 0;
+            border-bottom: 1px solid #bbdefb;
+        }
+
+        .age-requirements li:last-child {
+            border-bottom: none;
+        }
+
+        .age-requirements .state-21 {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .age-requirements .state-18 {
+            color: #388e3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Age Verification Test</h1>
+            <p>Test the age verification system for bidding and cashing out</p>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="age-requirements">
+            <h3>📋 Age Requirements by State</h3>
+            <ul>
+                <li><span class="state-21">Alabama, Nebraska, Mississippi: 21+ years old</span></li>
+                <li><span class="state-18">All other states: 18+ years old</span></li>
+            </ul>
+            <p><strong>Note:</strong> Age verification is required for bidding and cashing out.</p>
+        </div>
+
+        <div class="test-section">
+            <h2>👤 Current User Status</h2>
+            <div class="verification-status" id="verificationStatus">
+                <div class="status-card">
+                    <div class="status-title">Authentication</div>
+                    <div class="status-value" id="authStatus">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Age Verification</div>
+                    <div class="status-value" id="ageStatus">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Identity Verification</div>
+                    <div class="status-value" id="identityStatus">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Total Earnings</div>
+                    <div class="status-value" id="earningsStatus">Checking...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Test Controls</h2>
+            <div class="test-controls">
+                <button class="test-button primary" onclick="checkUserStatus()">Check User Status</button>
+                <button class="test-button success" onclick="testAgeVerification()">Test Age Verification</button>
+                <button class="test-button warning" onclick="testBidding()">Test Bidding (Age Required)</button>
+                <button class="test-button danger" onclick="testPayout()">Test Payout (Identity Required)</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Age Verification Form</h2>
+            <form id="ageVerificationForm">
+                <div class="form-group">
+                    <label for="birthDate">Birth Date</label>
+                    <input type="date" id="birthDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <select id="state" required>
+                        <option value="">Select State</option>
+                        <option value="AL">Alabama (21+)</option>
+                        <option value="NE">Nebraska (21+)</option>
+                        <option value="MS">Mississippi (21+)</option>
+                        <option value="CA">California (18+)</option>
+                        <option value="NY">New York (18+)</option>
+                        <option value="TX">Texas (18+)</option>
+                        <option value="FL">Florida (18+)</option>
+                        <option value="IL">Illinois (18+)</option>
+                        <option value="PA">Pennsylvania (18+)</option>
+                        <option value="OH">Ohio (18+)</option>
+                        <option value="GA">Georgia (18+)</option>
+                        <option value="NC">North Carolina (18+)</option>
+                        <option value="MI">Michigan (18+)</option>
+                        <option value="NJ">New Jersey (18+)</option>
+                        <option value="VA">Virginia (18+)</option>
+                        <option value="WA">Washington (18+)</option>
+                        <option value="AZ">Arizona (18+)</option>
+                        <option value="MA">Massachusetts (18+)</option>
+                        <option value="TN">Tennessee (18+)</option>
+                        <option value="IN">Indiana (18+)</option>
+                    </select>
+                </div>
+                <button type="button" class="test-button success" onclick="submitAgeVerification()">
+                    Submit Age Verification
+                </button>
+            </form>
+        </div>
+
+        <div class="test-section">
+            <h2>💰 Payout Test</h2>
+            <form id="payoutForm">
+                <div class="form-group">
+                    <label for="payoutAmount">Payout Amount ($50 minimum)</label>
+                    <input type="number" id="payoutAmount" min="50" step="0.01" value="50" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod" required>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="venmo">Venmo</option>
+                        <option value="cashapp">Cash App</option>
+                    </select>
+                </div>
+                <button type="button" class="test-button danger" onclick="requestPayout()">
+                    Request Payout
+                </button>
+            </form>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div class="test-results" id="testResults">
+                <p>No tests run yet. Use the test controls above to run verification tests.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = message;
+            alertsContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Add test result
+        function addTestResult(message, type = 'info') {
+            const resultsContainer = document.getElementById('testResults');
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.innerHTML = message;
+            resultsContainer.appendChild(result);
+        }
+
+        // Check user status
+        async function checkUserStatus() {
+            try {
+                const response = await fetch('/auth/user', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    updateVerificationStatus(data.user);
+                    addTestResult('✅ User status loaded successfully', 'success');
+                } else {
+                    currentUser = null;
+                    updateVerificationStatus(null);
+                    addTestResult('❌ User not authenticated', 'error');
+                }
+            } catch (error) {
+                addTestResult('❌ Error checking user status: ' + error.message, 'error');
+            }
+        }
+
+        // Update verification status display
+        function updateVerificationStatus(user) {
+            const authStatus = document.getElementById('authStatus');
+            const ageStatus = document.getElementById('ageStatus');
+            const identityStatus = document.getElementById('identityStatus');
+            const earningsStatus = document.getElementById('earningsStatus');
+
+            if (!user) {
+                authStatus.textContent = 'Not Authenticated';
+                authStatus.className = 'status-value status-required';
+                ageStatus.textContent = 'N/A';
+                ageStatus.className = 'status-value status-required';
+                identityStatus.textContent = 'N/A';
+                identityStatus.className = 'status-value status-required';
+                earningsStatus.textContent = 'N/A';
+                earningsStatus.className = 'status-value status-required';
+                return;
+            }
+
+            // Authentication status
+            authStatus.textContent = 'Authenticated';
+            authStatus.className = 'status-value status-verified';
+
+            // Age verification status
+            if (user.ageVerified) {
+                ageStatus.textContent = 'Verified';
+                ageStatus.className = 'status-value status-verified';
+            } else {
+                ageStatus.textContent = 'Not Verified';
+                ageStatus.className = 'status-value status-required';
+            }
+
+            // Identity verification status
+            if (user.identityVerified) {
+                identityStatus.textContent = 'Verified';
+                identityStatus.className = 'status-value status-verified';
+            } else {
+                identityStatus.textContent = 'Not Verified';
+                identityStatus.className = 'status-value status-required';
+            }
+
+            // Earnings status
+            earningsStatus.textContent = `$${user.totalEarnings || 0}`;
+            if (user.totalEarnings >= 50) {
+                earningsStatus.className = 'status-value status-verified';
+            } else {
+                earningsStatus.className = 'status-value status-pending';
+            }
+        }
+
+        // Test age verification
+        async function testAgeVerification() {
+            if (!currentUser) {
+                addTestResult('❌ Please authenticate first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verify/age', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        birthDate: '1990-01-01', // 34 years old
+                        state: 'CA'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addTestResult('✅ Age verification successful', 'success');
+                    await checkUserStatus(); // Refresh status
+                } else {
+                    addTestResult('❌ Age verification failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                addTestResult('❌ Error testing age verification: ' + error.message, 'error');
+            }
+        }
+
+        // Test bidding (requires age verification)
+        async function testBidding() {
+            if (!currentUser) {
+                addTestResult('❌ Please authenticate first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/marketplace/bid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        itemId: 'item_sample_1',
+                        bidderId: currentUser.id,
+                        bidderName: currentUser.name,
+                        amount: 100.00
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addTestResult('✅ Bid placed successfully (age verification passed)', 'success');
+                } else {
+                    if (data.requiresAgeVerification) {
+                        addTestResult('⚠️ Bid blocked: ' + data.message, 'warning');
+                    } else {
+                        addTestResult('❌ Bid failed: ' + data.error, 'error');
+                    }
+                }
+            } catch (error) {
+                addTestResult('❌ Error testing bid: ' + error.message, 'error');
+            }
+        }
+
+        // Test payout (requires identity verification)
+        async function testPayout() {
+            if (!currentUser) {
+                addTestResult('❌ Please authenticate first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/payout/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        amount: 50.00,
+                        paymentMethod: 'bank_transfer'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addTestResult('✅ Payout requested successfully (identity verification passed)', 'success');
+                } else {
+                    if (data.requiresIdentityVerification) {
+                        addTestResult('⚠️ Payout blocked: ' + data.message, 'warning');
+                    } else {
+                        addTestResult('❌ Payout failed: ' + data.error, 'error');
+                    }
+                }
+            } catch (error) {
+                addTestResult('❌ Error testing payout: ' + error.message, 'error');
+            }
+        }
+
+        // Submit age verification
+        async function submitAgeVerification() {
+            const birthDate = document.getElementById('birthDate').value;
+            const state = document.getElementById('state').value;
+
+            if (!birthDate || !state) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verify/age', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ birthDate, state })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Age verification successful!', 'success');
+                    addTestResult('✅ Age verification submitted successfully', 'success');
+                    await checkUserStatus(); // Refresh status
+                } else {
+                    showAlert(data.error, 'error');
+                    addTestResult('❌ Age verification failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to verify age. Please try again.', 'error');
+                addTestResult('❌ Error submitting age verification: ' + error.message, 'error');
+            }
+        }
+
+        // Request payout
+        async function requestPayout() {
+            const amount = parseFloat(document.getElementById('payoutAmount').value);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            if (!amount || amount < 50) {
+                showAlert('Payout amount must be at least $50', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/payout/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ amount, paymentMethod })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Payout request submitted successfully!', 'success');
+                    addTestResult('✅ Payout request submitted: $' + amount, 'success');
+                    await checkUserStatus(); // Refresh status
+                } else {
+                    showAlert(data.error, 'error');
+                    addTestResult('❌ Payout request failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to request payout. Please try again.', 'error');
+                addTestResult('❌ Error requesting payout: ' + error.message, 'error');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            showAlert('Age verification test page loaded. Click "Check User Status" to begin.', 'info');
+            checkUserStatus();
+        });
+    </script>
+</body>
+</html>

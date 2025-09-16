@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - PacMac Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .schedule-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .day-schedule {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .day-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .day-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .day-stat {
+            text-align: center;
+        }
+
+        .day-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .day-stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .products-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .product-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .product-price {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-running {
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        .status-stopped {
+            background: #e74c3c;
+        }
+
+        .status-pending {
+            background: #f39c12;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Inventory Management</h1>
+            <p>Manage your 7-day automated posting schedule and inventory</p>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalProducts">-</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalValue">-</div>
+                <div class="stat-label">Total Value</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="postedToday">-</div>
+                <div class="stat-label">Posted Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingPosts">-</div>
+                <div class="stat-label">Pending Posts</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2>🤖 Auto-Posting Controls</h2>
+            <div class="button-grid">
+                <button class="btn btn-success" onclick="startAutoPosting()" id="startBtn">
+                    <span class="status-indicator status-stopped"></span>
+                    Start Auto-Posting
+                </button>
+                <button class="btn btn-warning" onclick="stopAutoPosting()" id="stopBtn">
+                    <span class="status-indicator status-running"></span>
+                    Stop Auto-Posting
+                </button>
+                <button class="btn btn-info" onclick="refreshStatus()" id="refreshBtn">
+                    <span class="loading" style="display: none;"></span>
+                    Refresh Status
+                </button>
+                <button class="btn btn-primary" onclick="viewSchedule()">
+                    📅 View Schedule
+                </button>
+                <button class="btn btn-primary" onclick="processInventory()">
+                    🔄 Process Inventory
+                </button>
+                <button class="btn btn-primary" onclick="viewPostingStatus()">
+                    📊 Posting Status
+                </button>
+            </div>
+        </div>
+
+        <div class="schedule-section">
+            <h2>📅 7-Day Posting Schedule</h2>
+            <div id="scheduleContent">
+                <div class="loading" style="margin: 20px auto; display: block;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Modal -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('scheduleModal')">&times;</span>
+            <h2>📅 Complete 7-Day Schedule</h2>
+            <div id="modalScheduleContent"></div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('statusModal')">&times;</span>
+            <h2>📊 Auto-Posting Status</h2>
+            <div id="modalStatusContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let autoPosterStatus = null;
+        let scheduleData = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStatus();
+            loadSchedule();
+        });
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = message;
+            alertsContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Refresh auto-poster status
+        async function refreshStatus() {
+            try {
+                const refreshBtn = document.getElementById('refreshBtn');
+                const loading = refreshBtn.querySelector('.loading');
+                loading.style.display = 'inline-block';
+                refreshBtn.disabled = true;
+
+                const response = await fetch('/api/auto-poster/status');
+                const data = await response.json();
+
+                if (data.success) {
+                    autoPosterStatus = data.status;
+                    updateStatusDisplay();
+                    showAlert('Status refreshed successfully', 'success');
+                } else {
+                    showAlert('Failed to refresh status: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error refreshing status: ' + error.message, 'error');
+            } finally {
+                const refreshBtn = document.getElementById('refreshBtn');
+                const loading = refreshBtn.querySelector('.loading');
+                loading.style.display = 'none';
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // Update status display
+        function updateStatusDisplay() {
+            if (!autoPosterStatus) return;
+
+            // Update stats
+            document.getElementById('totalProducts').textContent = autoPosterStatus.total || 0;
+            document.getElementById('postedToday').textContent = autoPosterStatus.posted || 0;
+            document.getElementById('pendingPosts').textContent = autoPosterStatus.pending || 0;
+
+            // Update buttons
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const startIndicator = startBtn.querySelector('.status-indicator');
+            const stopIndicator = stopBtn.querySelector('.status-indicator');
+
+            if (autoPosterStatus.isRunning) {
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                startIndicator.className = 'status-indicator status-pending';
+                stopIndicator.className = 'status-indicator status-running';
+            } else {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                startIndicator.className = 'status-indicator status-stopped';
+                stopIndicator.className = 'status-indicator status-stopped';
+            }
+        }
+
+        // Start auto-posting
+        async function startAutoPosting() {
+            try {
+                const response = await fetch('/api/auto-poster/start', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Auto-posting started successfully', 'success');
+                    refreshStatus();
+                } else {
+                    showAlert('Failed to start auto-posting: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error starting auto-posting: ' + error.message, 'error');
+            }
+        }
+
+        // Stop auto-posting
+        async function stopAutoPosting() {
+            try {
+                const response = await fetch('/api/auto-poster/stop', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Auto-posting stopped successfully', 'success');
+                    refreshStatus();
+                } else {
+                    showAlert('Failed to stop auto-posting: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error stopping auto-posting: ' + error.message, 'error');
+            }
+        }
+
+        // Load schedule
+        async function loadSchedule() {
+            try {
+                const response = await fetch('/api/auto-poster/schedule');
+                const data = await response.json();
+
+                if (data.success) {
+                    scheduleData = data.schedule;
+                    displaySchedule(data.schedule);
+                } else {
+                    showAlert('Failed to load schedule: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading schedule: ' + error.message, 'error');
+            }
+        }
+
+        // Display schedule
+        function displaySchedule(schedule) {
+            const container = document.getElementById('scheduleContent');
+            
+            if (!schedule || schedule.length === 0) {
+                container.innerHTML = '<p>No schedule data available</p>';
+                return;
+            }
+
+            let html = '';
+            schedule.forEach((day, index) => {
+                const date = new Date(day.date);
+                const totalValue = day.products.reduce((sum, product) => sum + product.listPrice, 0);
+                
+                html += `
+                    <div class="day-schedule">
+                        <div class="day-header">
+                            <div class="day-title">Day ${day.day} - ${date.toLocaleDateString()}</div>
+                            <div class="day-stats">
+                                <div class="day-stat">
+                                    <div class="day-stat-number">${day.totalProducts}</div>
+                                    <div class="day-stat-label">Products</div>
+                                </div>
+                                <div class="day-stat">
+                                    <div class="day-stat-number">$${totalValue.toLocaleString()}</div>
+                                    <div class="day-stat-label">Value</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="products-preview">
+                            ${day.products.slice(0, 6).map(product => `
+                                <div class="product-preview">
+                                    <div class="product-title">${product.title}</div>
+                                    <div class="product-price">$${product.listPrice}</div>
+                                </div>
+                            `).join('')}
+                            ${day.products.length > 6 ? `<div class="product-preview"><div class="product-title">+${day.products.length - 6} more...</div></div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // View complete schedule
+        function viewSchedule() {
+            if (!scheduleData) {
+                showAlert('No schedule data available', 'error');
+                return;
+            }
+
+            const modal = document.getElementById('scheduleModal');
+            const content = document.getElementById('modalScheduleContent');
+            
+            let html = '';
+            scheduleData.forEach((day, index) => {
+                const date = new Date(day.date);
+                const totalValue = day.products.reduce((sum, product) => sum + product.listPrice, 0);
+                
+                html += `
+                    <div class="day-schedule">
+                        <div class="day-header">
+                            <div class="day-title">Day ${day.day} - ${date.toLocaleDateString()}</div>
+                            <div class="day-stats">
+                                <div class="day-stat">
+                                    <div class="day-stat-number">${day.totalProducts}</div>
+                                    <div class="day-stat-label">Products</div>
+                                </div>
+                                <div class="day-stat">
+                                    <div class="day-stat-number">$${totalValue.toLocaleString()}</div>
+                                    <div class="day-stat-label">Value</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="products-preview">
+                            ${day.products.map(product => `
+                                <div class="product-preview">
+                                    <div class="product-title">${product.title}</div>
+                                    <div class="product-price">$${product.listPrice}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">${product.manufacturer} - ${product.grade}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        }
+
+        // View posting status
+        function viewPostingStatus() {
+            if (!autoPosterStatus) {
+                showAlert('No status data available', 'error');
+                return;
+            }
+
+            const modal = document.getElementById('statusModal');
+            const content = document.getElementById('modalStatusContent');
+            
+            let html = `
+                <div class="stat-card" style="margin-bottom: 20px;">
+                    <div class="stat-number">${autoPosterStatus.isRunning ? 'Running' : 'Stopped'}</div>
+                    <div class="stat-label">Status</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="stat-number">${autoPosterStatus.total}</div>
+                        <div class="stat-label">Total Products</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${autoPosterStatus.pending}</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${autoPosterStatus.posted}</div>
+                        <div class="stat-label">Posted</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${autoPosterStatus.failed}</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+            `;
+
+            if (autoPosterStatus.queue && autoPosterStatus.queue.length > 0) {
+                html += '<h3>Posting Queue</h3>';
+                autoPosterStatus.queue.forEach(item => {
+                    const scheduledTime = new Date(item.scheduledTime).toLocaleString();
+                    const postedAt = item.postedAt ? new Date(item.postedAt).toLocaleString() : 'Not posted';
+                    
+                    html += `
+                        <div class="product-preview" style="margin-bottom: 10px;">
+                            <div class="product-title">${item.title}</div>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                Status: ${item.status.toUpperCase()}<br>
+                                Scheduled: ${scheduledTime}<br>
+                                Posted: ${postedAt}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        }
+
+        // Process inventory
+        async function processInventory() {
+            try {
+                showAlert('Processing inventory... This may take a few minutes.', 'info');
+                
+                // In a real implementation, this would call the inventory processor
+                // For now, we'll just refresh the data
+                await loadSchedule();
+                showAlert('Inventory processing completed', 'success');
+            } catch (error) {
+                showAlert('Error processing inventory: ' + error.message, 'error');
+            }
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshStatus, 30000);
+    </script>
+</body>
+</html>

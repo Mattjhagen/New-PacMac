@@ -190,6 +190,68 @@ function requireAuth(req, res, next) {
   res.status(401).json({ success: false, error: 'Authentication required' });
 }
 
+// Age verification middleware
+function requireAgeVerification(req, res, next) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ success: false, error: 'Authentication required' });
+  }
+  
+  const user = marketplaceData.users.find(u => u.id === req.user.id);
+  if (!user) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+  
+  if (!user.ageVerified) {
+    return res.status(403).json({ 
+      success: false, 
+      error: 'Age verification required',
+      requiresAgeVerification: true,
+      message: 'You must verify your age before placing bids or cashing out. You must be at least 18 years old (21 in some states).'
+    });
+  }
+  
+  // Check if user meets minimum age requirement
+  if (user.verification && user.verification.birthDate) {
+    const age = Math.floor((new Date() - new Date(user.verification.birthDate)) / (365.25 * 24 * 60 * 60 * 1000));
+    const state = user.verification.state;
+    const minAge = (state === 'AL' || state === 'NE' || state === 'MS') ? 21 : 18;
+    
+    if (age < minAge) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Age requirement not met',
+        requiresAgeVerification: true,
+        message: `You must be at least ${minAge} years old to use this platform. Current age: ${age}`
+      });
+    }
+  }
+  
+  next();
+}
+
+// Identity verification middleware for payouts
+function requireIdentityVerification(req, res, next) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ success: false, error: 'Authentication required' });
+  }
+  
+  const user = marketplaceData.users.find(u => u.id === req.user.id);
+  if (!user) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+  
+  if (!user.identityVerified) {
+    return res.status(403).json({ 
+      success: false, 
+      error: 'Identity verification required',
+      requiresIdentityVerification: true,
+      message: 'You must complete identity verification before cashing out. This includes photo ID, address, and social security verification.'
+    });
+  }
+  
+  next();
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.redirect('/home.html');
@@ -1461,10 +1523,123 @@ app.get('/api/payout/status', requireAuth, (req, res) => {
       totalEarnings: user.totalEarnings,
       threshold: 50,
       remaining: Math.max(0, 50 - user.totalEarnings),
-      identityVerified: user.identityVerified
+      identityVerified: user.identityVerified,
+      ageVerified: user.ageVerified,
+      verificationStatus: {
+        ageVerified: user.ageVerified,
+        identityVerified: user.identityVerified,
+        photoIdUploaded: user.verification?.photoIdUploaded || false,
+        addressVerified: user.verification?.addressVerified || false,
+        socialSecurityVerified: user.verification?.socialSecurityVerified || false
+      }
     });
   } catch (error) {
     console.error('Error checking payout status:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Request payout
+app.post('/api/payout/request', requireIdentityVerification, async (req, res) => {
+  try {
+    const { amount, paymentMethod } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid payout amount is required'
+      });
+    }
+    
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    // Check if user has enough earnings
+    if (user.totalEarnings < amount) {
+      return res.status(400).json({
+        success: false,
+        error: 'Insufficient earnings for payout'
+      });
+    }
+    
+    // Check minimum payout threshold
+    if (amount < 50) {
+      return res.status(400).json({
+        success: false,
+        error: 'Minimum payout amount is $50'
+      });
+    }
+    
+    // Create payout request
+    const payoutRequest = {
+      id: 'payout_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      userId: user.id,
+      userName: user.name,
+      amount: parseFloat(amount),
+      paymentMethod: paymentMethod || 'bank_transfer',
+      status: 'pending',
+      requestedAt: new Date().toISOString(),
+      estimatedProcessing: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days
+    };
+    
+    // In production, this would be stored in a database
+    if (!marketplaceData.payoutRequests) {
+      marketplaceData.payoutRequests = [];
+    }
+    marketplaceData.payoutRequests.push(payoutRequest);
+    
+    // Update user earnings (in production, this would be handled by the payment processor)
+    user.totalEarnings -= amount;
+    user.pendingPayouts = (user.pendingPayouts || 0) + amount;
+    
+    console.log(`✅ Payout requested: $${amount} for user ${user.name}`);
+    
+    res.json({
+      success: true,
+      payoutRequest: payoutRequest,
+      message: 'Payout request submitted successfully. Processing time: 3-5 business days.',
+      remainingEarnings: user.totalEarnings
+    });
+    
+  } catch (error) {
+    console.error('Error processing payout request:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user's payout history
+app.get('/api/payout/history', requireAuth, (req, res) => {
+  try {
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    const userPayouts = marketplaceData.payoutRequests ? 
+      marketplaceData.payoutRequests.filter(p => p.userId === user.id) : [];
+    
+    res.json({
+      success: true,
+      payouts: userPayouts,
+      totalEarnings: user.totalEarnings,
+      pendingPayouts: user.pendingPayouts || 0
+    });
+  } catch (error) {
+    console.error('Error fetching payout history:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -1483,6 +1658,7 @@ const marketplaceData = {
   users: [],
   chats: [],
   bannedDevices: [],
+  payoutRequests: [],
   analytics: {
     userBehavior: [],
     purchaseHistory: [],
@@ -1601,15 +1777,15 @@ app.post('/api/marketplace/items', requireAuth, async (req, res) => {
   }
 });
 
-// Place bid on item
-app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
+// Place bid on item (Auction-style - no payment required until winning)
+app.post('/api/marketplace/bid', requireAgeVerification, async (req, res) => {
   try {
-    const { itemId, bidderId, bidderName, amount = 0.05 } = req.body;
+    const { itemId, bidderId, bidderName, amount } = req.body;
     
-    if (!itemId || !bidderId) {
+    if (!itemId || !bidderId || !amount) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields'
+        error: 'Missing required fields: itemId, bidderId, amount'
       });
     }
     
@@ -1621,21 +1797,144 @@ app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
       });
     }
     
-    // Create escrow payment intent for bid amount + $3 flat fee + 3% fee
+    // Check if auction is still active
+    if (item.auctionEndTime && new Date() > new Date(item.auctionEndTime)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Auction has ended'
+      });
+    }
+    
+    // Check if bid amount is higher than current highest bid
+    const currentHighestBid = item.bids.length > 0 ? Math.max(...item.bids.map(b => b.amount)) : 0;
+    if (amount <= currentHighestBid) {
+      return res.status(400).json({
+        success: false,
+        error: `Bid must be higher than current highest bid of $${currentHighestBid}`
+      });
+    }
+    
+    // Create bid record (no payment required yet)
+    const bid = {
+      id: 'bid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      bidderId: bidderId,
+      bidderName: bidderName || 'Anonymous',
+      amount: parseFloat(amount),
+      createdAt: new Date().toISOString(),
+      status: 'active'
+    };
+    
+    // Add bid to item
+    item.bids.push(bid);
+    
+    // Update item with current highest bid
+    item.currentHighestBid = amount;
+    item.currentHighestBidder = bidderId;
+    item.currentHighestBidderName = bidderName || 'Anonymous';
+    
+    // If this is the first bid, set auction end time (24 hours from now)
+    if (item.bids.length === 1) {
+      item.auctionEndTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      item.auctionStatus = 'active';
+    }
+    
+    // Extend auction by 5 minutes if bid is placed in last 5 minutes
+    if (item.auctionEndTime) {
+      const timeLeft = new Date(item.auctionEndTime) - new Date();
+      if (timeLeft <= 5 * 60 * 1000) { // 5 minutes
+        item.auctionEndTime = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      }
+    }
+    
+    console.log(`✅ Bid placed: $${amount} on ${item.title} by ${bidderName}`);
+    
+    res.json({
+      success: true,
+      bid: bid,
+      item: {
+        id: item.id,
+        title: item.title,
+        currentHighestBid: item.currentHighestBid,
+        currentHighestBidder: item.currentHighestBidderName,
+        auctionEndTime: item.auctionEndTime,
+        bidsCount: item.bids.length
+      },
+      message: 'Bid placed successfully!'
+    });
+  } catch (error) {
+    console.error('Error placing bid:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Process auction completion and create payment for winning bidder
+app.post('/api/marketplace/process-auction', async (req, res) => {
+  try {
+    const { itemId } = req.body;
+    
+    if (!itemId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Item ID is required'
+      });
+    }
+    
+    const item = marketplaceData.items.find(i => i.id === itemId);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+    
+    // Check if auction has ended
+    if (!item.auctionEndTime || new Date() < new Date(item.auctionEndTime)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Auction has not ended yet'
+      });
+    }
+    
+    // Check if auction is already processed
+    if (item.auctionStatus === 'completed') {
+      return res.status(400).json({
+        success: false,
+        error: 'Auction already processed'
+      });
+    }
+    
+    // Find winning bid
+    if (item.bids.length === 0) {
+      item.auctionStatus = 'no_bids';
+      return res.json({
+        success: true,
+        message: 'Auction ended with no bids',
+        auctionStatus: 'no_bids'
+      });
+    }
+    
+    const winningBid = item.bids.reduce((highest, bid) => 
+      bid.amount > highest.amount ? bid : highest
+    );
+    
+    // Create payment intent for winning bidder
     const flatFee = 3.00; // $3 flat fee
-    const percentageFee = amount * 0.03; // 3% of bid amount
+    const percentageFee = winningBid.amount * 0.03; // 3% of bid amount
     const totalFee = flatFee + percentageFee;
-    const totalAmount = Math.round((amount + totalFee) * 100); // Convert to cents
+    const totalAmount = Math.round((winningBid.amount + totalFee) * 100); // Convert to cents
     
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: 'usd',
-      description: `Bid on ${item.title}`,
+      description: `Winning bid on ${item.title}`,
       metadata: {
-        type: 'marketplace_bid',
+        type: 'auction_win',
         itemId: itemId,
-        bidderId: bidderId,
-        bidAmount: amount.toString(),
+        bidderId: winningBid.bidderId,
+        bidAmount: winningBid.amount.toString(),
         flatFee: flatFee.toString(),
         percentageFee: percentageFee.toString(),
         totalFee: totalFee.toString()
@@ -1645,45 +1944,100 @@ app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
       },
     });
     
-    // Create transaction record
+    // Create transaction record for winning bid
     const transaction = {
-      id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-      type: 'bid',
+      id: 'auction_txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      type: 'auction_win',
       itemId: itemId,
       itemTitle: item.title,
-      bidderId: bidderId,
-      bidderName: bidderName || 'Anonymous',
+      buyerId: winningBid.bidderId,
+      buyerName: winningBid.bidderName,
       sellerId: item.seller.id,
       sellerName: item.seller.name,
-      amount: amount,
+      amount: winningBid.amount,
       flatFee: flatFee,
       percentageFee: percentageFee,
       totalFee: totalFee,
-      totalAmount: amount + totalFee,
+      totalAmount: winningBid.amount + totalFee,
       status: 'pending_payment',
       paymentIntentId: paymentIntent.id,
       createdAt: new Date().toISOString(),
-      countdownEnd: null
+      countdownEnd: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours to pay
+      chatEnabled: true,
+      meetupEnabled: true,
+      auctionEndTime: item.auctionEndTime,
+      winningBidId: winningBid.id
     };
     
     marketplaceData.transactions.push(transaction);
     
-    // Add bid to item
-    item.bids.push({
-      id: transaction.id,
-      bidderId: bidderId,
-      bidderName: bidderName || 'Anonymous',
-      amount: amount,
-      createdAt: new Date().toISOString()
-    });
+    // Update item status
+    item.auctionStatus = 'completed';
+    item.winningBidId = winningBid.id;
+    item.winningTransactionId = transaction.id;
+    item.status = 'sold';
+    item.soldTo = winningBid.bidderId;
+    item.soldAt = new Date().toISOString();
+    
+    console.log(`✅ Auction completed: ${item.title} won by ${winningBid.bidderName} for $${winningBid.amount}`);
     
     res.json({
       success: true,
       transaction: transaction,
-      clientSecret: paymentIntent.client_secret
+      clientSecret: paymentIntent.client_secret,
+      winningBid: winningBid,
+      message: 'Auction completed! Winner has 24 hours to pay.',
+      paymentDeadline: transaction.countdownEnd
+    });
+    
+  } catch (error) {
+    console.error('Error processing auction:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get auction status for an item
+app.get('/api/marketplace/auction/:itemId', (req, res) => {
+  try {
+    const { itemId } = req.params;
+    
+    const item = marketplaceData.items.find(i => i.id === itemId);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+    
+    const now = new Date();
+    const auctionEndTime = item.auctionEndTime ? new Date(item.auctionEndTime) : null;
+    const timeLeft = auctionEndTime ? auctionEndTime - now : 0;
+    
+    res.json({
+      success: true,
+      auction: {
+        itemId: item.id,
+        title: item.title,
+        currentHighestBid: item.currentHighestBid || 0,
+        currentHighestBidder: item.currentHighestBidderName || null,
+        auctionEndTime: item.auctionEndTime,
+        timeLeft: Math.max(0, timeLeft),
+        isActive: timeLeft > 0,
+        bidsCount: item.bids.length,
+        auctionStatus: item.auctionStatus || 'not_started',
+        bids: item.bids.map(bid => ({
+          id: bid.id,
+          bidderName: bid.bidderName,
+          amount: bid.amount,
+          createdAt: bid.createdAt
+        }))
+      }
     });
   } catch (error) {
-    console.error('Error placing bid:', error);
+    console.error('Error getting auction status:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -2192,7 +2546,7 @@ app.post('/api/marketplace/dispute', (req, res) => {
 
 // Initialize sample data
 function initializeMarketplaceData() {
-  // Add some sample items
+  // Add some sample items with auction support
   marketplaceData.items = [
     {
       id: 'item_sample_1',
@@ -2210,6 +2564,11 @@ function initializeMarketplaceData() {
       },
       bids: [],
       status: 'active',
+      auctionStatus: 'not_started',
+      currentHighestBid: 0,
+      currentHighestBidder: null,
+      currentHighestBidderName: null,
+      auctionEndTime: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     },
@@ -2229,13 +2588,120 @@ function initializeMarketplaceData() {
       },
       bids: [],
       status: 'active',
+      auctionStatus: 'not_started',
+      currentHighestBid: 0,
+      currentHighestBidder: null,
+      currentHighestBidderName: null,
+      auctionEndTime: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 'item_sample_3',
+      title: 'MacBook Pro 14" M3',
+      description: 'Brand new MacBook Pro 14" with M3 chip, 16GB RAM, 512GB SSD. Still in original packaging.',
+      price: 1999.00,
+      category: 'electronics',
+      location: 'West Omaha',
+      distance: '5.2 miles',
+      image: '💻',
+      seller: {
+        id: 'seller_sample_3',
+        name: 'AppleReseller',
+        rating: 4.9
+      },
+      bids: [],
+      status: 'active',
+      auctionStatus: 'not_started',
+      currentHighestBid: 0,
+      currentHighestBidder: null,
+      currentHighestBidderName: null,
+      auctionEndTime: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
   ];
   
-  console.log('📦 Marketplace sample data initialized');
+  console.log('📦 Marketplace sample data initialized with auction support');
 }
+
+// Auto-posting system integration
+const AutoPoster = require('./auto-poster');
+const autoPoster = new AutoPoster();
+
+// Auto-posting API endpoints
+app.get('/api/auto-poster/status', (req, res) => {
+  try {
+    const status = autoPoster.getStatus();
+    res.json({
+      success: true,
+      status: status
+    });
+  } catch (error) {
+    console.error('Error getting auto-poster status:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/auto-poster/start', (req, res) => {
+  try {
+    autoPoster.startPosting();
+    res.json({
+      success: true,
+      message: 'Auto-posting started'
+    });
+  } catch (error) {
+    console.error('Error starting auto-poster:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/auto-poster/stop', (req, res) => {
+  try {
+    autoPoster.stopPosting();
+    res.json({
+      success: true,
+      message: 'Auto-posting stopped'
+    });
+  } catch (error) {
+    console.error('Error stopping auto-poster:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/auto-poster/schedule', (req, res) => {
+  try {
+    if (autoPoster.inventoryData) {
+      res.json({
+        success: true,
+        schedule: autoPoster.inventoryData.postingSchedule
+      });
+    } else {
+      res.json({
+        success: false,
+        error: 'No inventory data loaded'
+      });
+    }
+  } catch (error) {
+    console.error('Error getting posting schedule:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Initialize auto-poster on startup
+autoPoster.run();
 
 // Initialize marketplace data on startup
 initializeMarketplaceData();

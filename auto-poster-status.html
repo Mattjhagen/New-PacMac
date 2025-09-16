@@ -1,0 +1,792 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Posting Status</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #007AFF; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .status-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-number { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
+        .stat-label { font-size: 14px; color: #666; }
+        .pending { color: #FF9500; }
+        .posted { color: #34C759; }
+        .failed { color: #FF3B30; }
+        .queue-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #ddd; }
+        .queue-item.pending { border-left-color: #FF9500; }
+        .queue-item.posted { border-left-color: #34C759; }
+        .queue-item.failed { border-left-color: #FF3B30; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-start { background: #34C759; color: white; }
+        .btn-stop { background: #FF3B30; color: white; }
+        .btn-refresh { background: #007AFF; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Auto-Posting Status</h1>
+            <p>Last Updated: 9/16/2025, 3:32:55 PM</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-start" onclick="startPosting()">Start Posting</button>
+            <button class="btn btn-stop" onclick="stopPosting()">Stop Posting</button>
+            <button class="btn btn-refresh" onclick="location.reload()">Refresh</button>
+        </div>
+
+        <div class="status-card">
+            <h2>📊 Posting Statistics</h2>
+            <div class="status-grid">
+                <div class="stat-card">
+                    <div class="stat-number">141</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number pending">141</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number posted">0</div>
+                    <div class="stat-label">Posted</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number failed">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h2>📋 Posting Queue</h2>
+
+            <div class="queue-item pending">
+                <strong>Apple iPad Pro 6 12.9-inch 128GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:15:25 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPad Pro 3 12.9-inch 64GB Grey (C-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:12:09 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPad Pro 3 12.9-inch 64GB Grey (KFCG)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:35:20 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Black Tita (KFCG)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:41:39 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:30:17 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB White (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:05:26 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Natural (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:51:54 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Black Tita (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:58:09 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Desert Tit (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:59:04 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB White Tita (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:30:28 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB White Tita (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:41:09 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Black Tita (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:58:50 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:24:45 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB White (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:55:38 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Blue (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:59:04 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB White Tita (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:35:44 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Desert Tit (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:12:45 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Black Tita (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:36:27 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:51:24 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:10:34 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 256GB Black Tita (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:53:43 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Desert Tit (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:01:27 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Black Tita (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:58:04 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Natural Ti (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:35:15 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB White Tita (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:53:06 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:45:34 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:36:50 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB White (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:52:06 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:32:11 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:38:09 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:12:49 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 256GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:38:58 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:56:36 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Natural (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:56:53 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:10:26 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 256GB Natural Ti (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:34:00 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 512GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:10:35 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:22:51 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:24:26 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:32:38 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:57:12 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro Max 256GB White Tita (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:17:04 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 512GB Blue (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:23:56 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (C1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:39:31 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 256GB Black (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:28:35 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:53:55 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 512GB Black (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:13:41 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 256GB Black Tita (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:24:00 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 256GB Natural Ti (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:26:12 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Black (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:36:05 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB White (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:40:04 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Desert Tit (KFCG)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:10:16 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB White Tita (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:14:01 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Black Tita (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:43:49 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Black Tita (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:26:23 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Natural Ti (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:31:20 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:48:52 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:37:45 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB White (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:28:53 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB Ultramarin (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:48:21 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB Teal (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:57:20 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB Pink (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:20:13 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Desert Tit (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:39:44 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Black (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:58:18 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB White (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:08:58 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Natural (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:47:16 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Blue (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:50:10 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Black (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:12:38 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 512GB Blue (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:39:36 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB White Tita (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:50:07 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Black Tita (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:10:30 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Desert Tit (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:05:43 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max PSIM 256GB Silver (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:14:12 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max PSIM 256GB Purple (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:38:42 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Black (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:34:30 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:03:35 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:39:29 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:54:50 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:37:54 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Black Tita (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:39:51 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Blue (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:32:35 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Black (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:29:18 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Natural (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:26:55 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Blue (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:11:27 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Desert Tit (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:19:51 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB White Tita (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:59:23 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Black Tita (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:51:50 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Natural Ti (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:53:36 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Natural Ti (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:58:43 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Desert Tit (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:15:36 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Blue (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:37:16 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Black (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:37:42 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max 512GB Purple (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:11:23 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB Teal (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:20:12 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB Pink (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:00:37 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB White (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:44:34 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 128GB Ultramarin (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:51:55 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:03:24 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Blue (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:48:38 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max 256GB Black (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:22:40 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max PSIM 128GB Gold (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:50:38 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max PSIM 128GB Silver (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:01:34 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 Pro 128GB Natural Ti (KFCG)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:22:02 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max 256GB Black (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:24:48 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 14 Pro Max 256GB Purple (RC1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:17:29 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB Blue (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:10:24 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 128GB White (RC2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:42:25 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:22:41 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:36:06 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:43:13 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:39:42 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Mixed (PID)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:43:48 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB White (PLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:34:11 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Blue (PLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:51:31 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Black (PLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:15:13 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro Max 256GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:14:44 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 16 256GB Black (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:05:54 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 256GB Black (C1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:02:17 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 512GB Black (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:24:53 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 512GB Blue (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:21:05 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple iPhone 15 Pro 512GB White (KFLB)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:30:10 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple Magic Keyboard NA Silver (Used)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:47:11 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Apple Watch SE 2 44mm GPS+Cellular Aluminum NA Black (C-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:10:25 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>JBL Live600NC NA Black (Open Box)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:05:54 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S25 Ultra 256GB Silverblue (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:07:35 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy Z Fold6 256GB Navy (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:24:44 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S24 Ultra 512GB Black (A2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:03:44 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S24 Ultra 512GB Violet (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:06:50 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S25 Ultra 256GB Mixed (PLCD)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:08:38 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy Z Fold5 256GB Black (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:25:52 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S25+ 256GB Silver (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:00:54 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S25+ 256GB Navy (A1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:37:32 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S24 Ultra 256GB Blue (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:41:41 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S24 Ultra 256GB Violet (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:46:23 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy S24 Ultra 256GB Black (PGL)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:45:06 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy Z Fold5 256GB Black (B1-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:28:55 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy Z Fold5 256GB Black (B2-Stock)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:27:13 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Samsung Galaxy Tab S8+ 5G 128GB Graphite (KFCG)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:25:14 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Sony WH-1000XM4 NA Cream (Open Box)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:22:30 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Soundcore Liberty 4 NC NA Blue (Used)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 9:37:39 AM | Posted: N/A</small>
+            </div>
+            
+            <div class="queue-item pending">
+                <strong>Verizon 5G Sim Card DFILLSIM5G-SA-A NA  (New)</strong><br>
+                <small>Status: PENDING | Scheduled: 9/16/2025, 10:36:23 AM | Posted: N/A</small>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        function startPosting() {
+            fetch('/api/auto-poster/start', { method: 'POST' })
+                .then(() => location.reload());
+        }
+        
+        function stopPosting() {
+            fetch('/api/auto-poster/stop', { method: 'POST' })
+                .then(() => location.reload());
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => location.reload(), 30000);
+    </script>
+</body>
+</html>
