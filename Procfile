@@ -1,1 +1,1 @@
-web: node server-minimal-oauth.js
+web: node server-ultra-minimal.js
