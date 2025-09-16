@@ -44,8 +44,8 @@ console.log(`   Callback URL: ${callbackURL}`);
 console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
 
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID || '1053950032683-uq62m35cvps95qql1u8b8malds0jipe2.apps.googleusercontent.com',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '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',
+  clientID: process.env.GOOGLE_CLIENT_ID || '1053950032683-igseosamup9cej3bn1o8lj5kqdok1t1b.apps.googleusercontent.com',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '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',
   callbackURL: callbackURL
 }, async (accessToken, refreshToken, profile, done) => {
   try {
