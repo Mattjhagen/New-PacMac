@@ -343,6 +343,15 @@ function PacMacMarketplace() {
                     Disputes
                   </Link>
                   
+                  {/* Contact Button for OAuth Users */}
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200"
+                  >
+                    <span className="mr-1">📞</span>
+                    Contact
+                  </Link>
+                  
                   <button
                     onClick={handleOAuthLogout}
                     className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -395,6 +404,15 @@ function PacMacMarketplace() {
                   >
                     <span className="mr-2">⚖️</span>
                     Disputes
+                  </Link>
+                  
+                  {/* Contact Button */}
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <span className="mr-2">📞</span>
+                    Contact
                   </Link>
                   
                   {/* User Menu */}
