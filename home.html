@@ -1466,7 +1466,7 @@
       }
 
       // Show admin section for admin users
-      if (user.isAdmin || (user.email && user.email.endsWith('@pacmacmobile.com'))) {
+      if (user.isAdmin || (user.email && (user.email.endsWith('@pacmacmobile.com') || user.email === 'pacmacmobile@gmail.com'))) {
         adminSection.style.display = 'block';
         console.log('🔧 Admin user detected:', user.email);
       } else {
