@@ -1689,6 +1689,70 @@ app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
   }
 });
 
+// Demo purchase endpoint (no auth required for testing)
+app.post('/api/marketplace/demo-purchase', async (req, res) => {
+  try {
+    const { itemId, buyerId, buyerName, amount = 1.00 } = req.body;
+    
+    if (!itemId || !buyerId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    // Create a demo item if it doesn't exist
+    let item = marketplaceData.items.find(i => i.id === itemId);
+    if (!item) {
+      item = {
+        id: itemId,
+        title: 'iPhone 15 Pro',
+        description: 'Demo iPhone for testing',
+        price: amount,
+        category: 'Electronics',
+        sellerId: 'demo-seller',
+        sellerName: 'Demo Seller',
+        location: 'Demo Location',
+        images: ['demo-image.jpg'],
+        status: 'available'
+      };
+      marketplaceData.items.push(item);
+    }
+    
+    // Create demo transaction (no real Stripe payment)
+    const transaction = {
+      id: 'demo-tx-' + Date.now(),
+      itemId: itemId,
+      buyerId: buyerId,
+      buyerName: buyerName,
+      sellerId: item.sellerId,
+      sellerName: item.sellerName,
+      amount: amount,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      paymentIntentId: 'demo_pi_' + Date.now(),
+      chatMessages: []
+    };
+    
+    marketplaceData.transactions.push(transaction);
+    
+    console.log('✅ Demo purchase created:', transaction.id);
+    
+    res.json({
+      success: true,
+      transaction: transaction,
+      message: 'Demo purchase successful!'
+    });
+    
+  } catch (error) {
+    console.error('❌ Demo purchase error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Purchase item (heart action)
 app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
   try {
