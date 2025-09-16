@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PacMac Marketplace - Discover Nearby Items</title>
+  <meta name="description" content="Discover and bid on nearby items in your local marketplace." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🛒</text></svg>">
+  <style>
+    :root {
+      --primary: #FF6B6B;
+      --secondary: #4ECDC4;
+      --accent: #45B7D1;
+      --success: #96CEB4;
+      --warning: #FFEAA7;
+      --purple: #A29BFE;
+      --pink: #FD79A8;
+      --orange: #FDCB6E;
+      --gradient-1: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+      --gradient-2: linear-gradient(135deg, #45B7D1, #96CEB4);
+      --gradient-3: linear-gradient(135deg, #A29BFE, #FD79A8);
+      --gradient-4: linear-gradient(135deg, #FDCB6E, #FF6B6B);
+      --shadow: 0 10px 30px rgba(0,0,0,0.1);
+      --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gradient-1);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gradient-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 2rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .welcome-section {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: white;
+    }
+
+    .welcome-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .welcome-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 1rem;
+    }
+
+    .location-info {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 1rem;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      display: inline-block;
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      box-shadow: var(--shadow);
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .filter-btn.active {
+      background: var(--gradient-2);
+      color: white;
+    }
+
+    /* Items Grid */
+    .items-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .item-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .item-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .item-image {
+      width: 100%;
+      height: 200px;
+      background: var(--gradient-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: white;
+      position: relative;
+    }
+
+    .item-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--gradient-4);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .item-content {
+      padding: 1.5rem;
+    }
+
+    .item-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .item-description {
+      color: #666;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .item-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .item-price {
+      font-size: 1.5rem;
+      font-weight: bold;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .item-distance {
+      color: #999;
+      font-size: 0.9rem;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .bid-btn {
+      background: var(--gradient-2);
+      color: white;
+    }
+
+    .heart-btn {
+      background: var(--gradient-3);
+      color: white;
+    }
+
+    .pass-btn {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      transition: all 0.3s ease;
+      z-index: 50;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+    }
+
+    /* Loading States */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .welcome-title {
+        font-size: 2rem;
+      }
+      
+      .items-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .filters {
+        padding: 0 1rem;
+      }
+      
+      .main-content {
+        padding: 1rem;
+      }
+    }
+
+    /* Animations */
+    .item-card {
+      animation: slideUp 0.5s ease forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .item-card:nth-child(1) { animation-delay: 0.1s; }
+    .item-card:nth-child(2) { animation-delay: 0.2s; }
+    .item-card:nth-child(3) { animation-delay: 0.3s; }
+    .item-card:nth-child(4) { animation-delay: 0.4s; }
+    .item-card:nth-child(5) { animation-delay: 0.5s; }
+    .item-card:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">🛒 PacMac</div>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span id="userName">User</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <h1 class="welcome-title">Discover Nearby Items</h1>
+      <p class="welcome-subtitle">Swipe, bid, and find amazing deals in your area</p>
+      <div class="location-info">
+        📍 <span id="userLocation">Detecting your location...</span>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+      <button class="filter-btn active" data-filter="all">All Items</button>
+      <button class="filter-btn" data-filter="electronics">📱 Electronics</button>
+      <button class="filter-btn" data-filter="clothing">👕 Clothing</button>
+      <button class="filter-btn" data-filter="home">🏠 Home & Garden</button>
+      <button class="filter-btn" data-filter="sports">⚽ Sports</button>
+      <button class="filter-btn" data-filter="books">📚 Books</button>
+    </section>
+
+    <!-- Items Container -->
+    <section class="items-container" id="itemsContainer">
+      <!-- Items will be loaded here -->
+    </section>
+
+    <!-- Loading State -->
+    <div class="loading" id="loadingState" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+  </main>
+
+  <!-- Floating Action Button -->
+  <button class="fab" onclick="showAddItemModal()">+</button>
+
+  <script>
+    // Sample data for nearby items
+    const sampleItems = [
+      {
+        id: 1,
+        title: "iPhone 15 Pro Max",
+        description: "Brand new iPhone 15 Pro Max, 256GB, Space Black. Still in original packaging.",
+        price: 899,
+        distance: "0.3 miles",
+        category: "electronics",
+        image: "📱",
+        badge: "New",
+        currentBids: 12
+      },
+      {
+        id: 2,
+        title: "Nike Air Jordan 1",
+        description: "Classic Air Jordan 1 Retro High, size 10.5, worn once, excellent condition.",
+        price: 120,
+        distance: "0.7 miles",
+        category: "clothing",
+        image: "👟",
+        badge: "Popular",
+        currentBids: 8
+      },
+      {
+        id: 3,
+        title: "MacBook Pro M3",
+        description: "2023 MacBook Pro 14-inch, M3 chip, 16GB RAM, 512GB SSD. Perfect for work.",
+        price: 1599,
+        distance: "1.2 miles",
+        category: "electronics",
+        image: "💻",
+        badge: "Hot",
+        currentBids: 25
+      },
+      {
+        id: 4,
+        title: "Vintage Leather Jacket",
+        description: "Authentic vintage leather jacket, size M, great condition. Perfect for fall.",
+        price: 85,
+        distance: "0.5 miles",
+        category: "clothing",
+        image: "🧥",
+        badge: "Vintage",
+        currentBids: 5
+      },
+      {
+        id: 5,
+        title: "Gaming Chair",
+        description: "Ergonomic gaming chair with RGB lighting, barely used, like new condition.",
+        price: 200,
+        distance: "1.8 miles",
+        category: "home",
+        image: "🪑",
+        badge: "Deal",
+        currentBids: 15
+      },
+      {
+        id: 6,
+        title: "Basketball Hoop",
+        description: "Portable basketball hoop, adjustable height, perfect for driveway or park.",
+        price: 150,
+        distance: "2.1 miles",
+        category: "sports",
+        image: "🏀",
+        badge: "Sport",
+        currentBids: 3
+      }
+    ];
+
+    let currentFilter = 'all';
+    let userLocation = null;
+
+    // Initialize the app
+    async function initApp() {
+      console.log('🚀 Initializing PacMac Marketplace Home...');
+      
+      // Check for OAuth success in URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const authStatus = urlParams.get('auth');
+      const provider = urlParams.get('provider');
+      
+      if (authStatus === 'success') {
+        console.log('✅ OAuth authentication successful, provider:', provider);
+        
+        // Create a temporary authenticated user for OAuth success
+        const oauthUser = {
+          id: 'oauth-user-' + Date.now(),
+          name: provider === 'x' ? 'X User' : 'Google User',
+          email: provider === 'x' ? 'user@x.com' : 'user@google.com',
+          avatar: provider === 'x' 
+            ? 'https://ui-avatars.com/api/?name=X+User&background=1da1f2&color=fff'
+            : 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
+          ageVerified: true,
+          identityVerified: false,
+          totalEarnings: 0,
+          isOAuth: true,
+          provider: provider
+        };
+        
+        // Store in localStorage to maintain login state
+        localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+        
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show success notification
+        showNotification('Successfully signed in! Welcome to PacMac Marketplace!', 'success');
+      }
+      
+      // Check authentication
+      await checkAuthStatus();
+      
+      // Get user location
+      await getUserLocation();
+      
+      // Load items
+      loadItems();
+      
+      // Setup event listeners
+      setupEventListeners();
+      
+      console.log('✅ App initialized successfully');
+    }
+
+    // Check authentication status
+    async function checkAuthStatus() {
+      try {
+        // Check for OAuth user first
+        const oauthUser = localStorage.getItem('oauthUser');
+        if (oauthUser) {
+          const user = JSON.parse(oauthUser);
+          updateUserInfo(user);
+          return;
+        }
+        
+        // Check for demo user
+        const demoUser = localStorage.getItem('demoUser');
+        if (demoUser) {
+          const user = JSON.parse(demoUser);
+          updateUserInfo(user);
+          return;
+        }
+
+        // Check server authentication
+        const response = await fetch('/auth/user', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+          updateUserInfo(data.user);
+        } else {
+          // Redirect to login if not authenticated
+          window.location.href = '/marketplace.html';
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        window.location.href = '/marketplace.html';
+      }
+    }
+
+    // Update user info in header
+    function updateUserInfo(user) {
+      const userAvatar = document.getElementById('userAvatar');
+      const userName = document.getElementById('userName');
+      
+      if (user.name) {
+        userName.textContent = user.name;
+        userAvatar.textContent = user.name.charAt(0).toUpperCase();
+      }
+      
+      if (user.avatar) {
+        userAvatar.style.backgroundImage = `url(${user.avatar})`;
+        userAvatar.style.backgroundSize = 'cover';
+        userAvatar.style.backgroundPosition = 'center';
+      }
+    }
+
+    // Get user location
+    async function getUserLocation() {
+      const locationElement = document.getElementById('userLocation');
+      
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+          
+          userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          
+          // For demo purposes, show a mock location
+          locationElement.textContent = 'Downtown San Francisco, CA';
+        } catch (error) {
+          console.error('Geolocation error:', error);
+          locationElement.textContent = 'Location access denied';
+        }
+      } else {
+        locationElement.textContent = 'Location not supported';
+      }
+    }
+
+    // Load items
+    function loadItems() {
+      const container = document.getElementById('itemsContainer');
+      const loadingState = document.getElementById('loadingState');
+      
+      // Show loading
+      container.innerHTML = '';
+      loadingState.style.display = 'flex';
+      
+      // Simulate loading delay
+      setTimeout(() => {
+        const filteredItems = currentFilter === 'all' 
+          ? sampleItems 
+          : sampleItems.filter(item => item.category === currentFilter);
+        
+        renderItems(filteredItems);
+        loadingState.style.display = 'none';
+      }, 1000);
+    }
+
+    // Render items
+    function renderItems(items) {
+      const container = document.getElementById('itemsContainer');
+      
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: white; padding: 2rem;">
+            <h3>No items found</h3>
+            <p>Try adjusting your filters or check back later!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = items.map(item => `
+        <div class="item-card" data-category="${item.category}">
+          <div class="item-image">
+            ${item.image}
+            <div class="item-badge">${item.badge}</div>
+          </div>
+          <div class="item-content">
+            <h3 class="item-title">${item.title}</h3>
+            <p class="item-description">${item.description}</p>
+            <div class="item-meta">
+              <div class="item-price">$${item.price}</div>
+              <div class="item-distance">${item.distance}</div>
+            </div>
+            <div class="item-actions">
+              <button class="action-btn pass-btn" onclick="passItem(${item.id})">
+                👎 Pass
+              </button>
+              <button class="action-btn bid-btn" onclick="bidOnItem(${item.id})">
+                💰 Bid $0.05
+              </button>
+              <button class="action-btn heart-btn" onclick="heartItem(${item.id})">
+                ❤️ $1.00
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          // Update active state
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          
+          // Update filter and reload items
+          currentFilter = e.target.dataset.filter;
+          loadItems();
+        });
+      });
+    }
+
+    // Item actions
+    function passItem(itemId) {
+      console.log('Passing item:', itemId);
+      // Remove item from view
+      const itemCard = document.querySelector(`[data-category]`);
+      if (itemCard) {
+        itemCard.style.transform = 'translateX(-100%)';
+        itemCard.style.opacity = '0';
+        setTimeout(() => {
+          itemCard.remove();
+        }, 300);
+      }
+    }
+
+    function bidOnItem(itemId) {
+      console.log('Bidding on item:', itemId);
+      // Show bid confirmation
+      alert('Bid placed! $0.05 bid added to this item.');
+    }
+
+    function heartItem(itemId) {
+      console.log('Hearting item:', itemId);
+      // Show heart confirmation
+      alert('Purchase initiated! $1.00 payment processing...');
+    }
+
+    function showAddItemModal() {
+      alert('Add item functionality coming soon!');
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'var(--gradient-2)' : 'var(--gradient-1)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 15px;
+        box-shadow: var(--shadow-hover);
+        z-index: 1000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+      `;
+      notification.textContent = message;
+      
+      // Add to page
+      document.body.appendChild(notification);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>

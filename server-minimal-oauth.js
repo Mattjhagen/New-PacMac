@@ -116,10 +116,10 @@ app.get('/auth/google', passport.authenticate('google', {
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/marketplace?error=auth_failed' }),
   (req, res) => {
-    // Successful authentication, redirect to marketplace
+    // Successful authentication, redirect to home page
     console.log('✅ Google OAuth callback successful, user:', req.user?.email);
     console.log('✅ Session ID:', req.sessionID);
-    res.redirect('/marketplace?auth=success&provider=google');
+    res.redirect('/home.html?auth=success&provider=google');
   }
 );
 
