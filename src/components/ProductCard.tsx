@@ -35,10 +35,18 @@ interface Product {
 interface ProductCardProps {
   product: Product
   onAddToCart?: (product: Product) => void
+  onBuyNow?: (product: Product) => void
   showAddToCart?: boolean
+  showBuyNow?: boolean
 }
 
-export default function ProductCard({ product, onAddToCart, showAddToCart = false }: ProductCardProps) {
+export default function ProductCard({ 
+  product, 
+  onAddToCart, 
+  onBuyNow, 
+  showAddToCart = false, 
+  showBuyNow = true 
+}: ProductCardProps) {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -150,14 +158,24 @@ export default function ProductCard({ product, onAddToCart, showAddToCart = fals
         </p>
 
         {/* Action Buttons */}
-        {showAddToCart && onAddToCart && (
+        {(showAddToCart || showBuyNow) && (
           <div className="flex space-x-2">
-            <button
-              onClick={() => onAddToCart(product)}
-              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            >
-              🛒 Add to Cart
-            </button>
+            {showBuyNow && onBuyNow && product.inStock && (
+              <button
+                onClick={() => onBuyNow(product)}
+                className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                💳 Buy Now
+              </button>
+            )}
+            {showAddToCart && onAddToCart && (
+              <button
+                onClick={() => onAddToCart(product)}
+                className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                🛒 Add to Cart
+              </button>
+            )}
           </div>
         )}
       </div>

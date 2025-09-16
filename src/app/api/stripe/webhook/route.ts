@@ -1,14 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import Stripe from 'stripe';
-// import { headers } from 'next/headers';
+import Stripe from 'stripe';
+import { headers } from 'next/headers';
 
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-//   apiVersion: '2025-08-27.basil',
-// });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-12-18.acacia',
+});
 
-// const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
-  return NextResponse.json({ message: 'Webhook functionality temporarily disabled' }, { status: 503 });
+  try {
+    const body = await request.text();
+    const signature = headers().get('stripe-signature')!;
+
+    let event: Stripe.Event;
+
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err);
+      return NextResponse.json(
+        { error: 'Webhook signature verification failed' },
+        { status: 400 }
+      );
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        console.log('Payment succeeded:', paymentIntent.id);
+        
+        // Here you can:
+        // - Update order status in your database
+        // - Send confirmation email
+        // - Update inventory
+        // - Notify the seller
+        
+        break;
+
+      case 'payment_intent.payment_failed':
+        const failedPayment = event.data.object as Stripe.PaymentIntent;
+        console.log('Payment failed:', failedPayment.id);
+        
+        // Here you can:
+        // - Log the failure
+        // - Send failure notification
+        // - Update order status
+        
+        break;
+
+      case 'checkout.session.completed':
+        const session = event.data.object as Stripe.Checkout.Session;
+        console.log('Checkout session completed:', session.id);
+        
+        // Handle successful checkout
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    return NextResponse.json({ received: true });
+
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return NextResponse.json(
+      { error: 'Webhook processing failed' },
+      { status: 500 }
+    );
+  }
 }
 

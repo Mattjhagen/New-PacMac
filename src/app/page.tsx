@@ -111,6 +111,8 @@ export default function PacMacMarketplace() {
   // Customer states
   const [showCheckout, setShowCheckout] = useState(false)
   const [cart, setCart] = useState<{ id: string; name: string; price: number; qty: number }[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
 
 
   const fetchProducts = async () => {
@@ -172,6 +174,30 @@ export default function PacMacMarketplace() {
     setCart([])
     setShowCheckout(false)
     // You can add success notification here
+  }
+
+  // Buy Now handler for individual products
+  const handleBuyNow = (product: Product) => {
+    setSelectedProduct(product)
+    setShowCheckoutModal(true)
+  }
+
+  const handlePaymentSuccess = (paymentIntent: { id: string; status: string }) => {
+    console.log('Payment successful:', paymentIntent)
+    setShowCheckoutModal(false)
+    setSelectedProduct(null)
+    
+    // Store payment details for success page
+    if (selectedProduct) {
+      localStorage.setItem('lastPayment', JSON.stringify({
+        paymentIntentId: paymentIntent.id,
+        amount: selectedProduct.price,
+        productName: selectedProduct.name,
+      }))
+    }
+    
+    // Redirect to success page
+    window.location.href = '/payment-success'
   }
 
   // OAuth Authentication Handlers
@@ -469,7 +495,9 @@ export default function PacMacMarketplace() {
                       key={product.id}
                       product={product}
                       onAddToCart={addToCart}
+                      onBuyNow={handleBuyNow}
                       showAddToCart={true}
+                      showBuyNow={true}
                     />
                   ))}
               </div>
@@ -512,6 +540,14 @@ export default function PacMacMarketplace() {
           onClose={() => setShowCheckout(false)}
           cartItems={cart}
           onPaymentSuccess={handleCheckoutSuccess}
+        />
+
+        {/* Individual Product Checkout Modal */}
+        <CheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          product={selectedProduct}
+          onPaymentSuccess={handlePaymentSuccess}
         />
       </main>
     </div>
