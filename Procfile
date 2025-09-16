@@ -1,1 +1,1 @@
-web: node server-minimal-verification.js
+web: node server-emergency-stable.js
