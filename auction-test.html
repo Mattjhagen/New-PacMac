@@ -270,6 +270,35 @@
         data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js" 
         data-widget-id="68c9d11dfa0aac42e742dfe3">
     </script>
+    
+    <!-- Snap Tracking Pixel -->
+    <script>
+        // Snap tracking function
+        function trackSnapAchievement(eventData) {
+            if (typeof snaptr !== 'undefined') {
+                snaptr('track', 'ACHIEVEMENT_UNLOCKED', {
+                    'level': eventData.level || 'auction_participant',
+                    'uuid_c1': eventData.uuid_c1 || 'auction_' + Date.now(),
+                    'price': eventData.price || 0,
+                    'description': eventData.description || 'Auction participation',
+                    'payment_info_available': eventData.payment_info_available || 0,
+                    'sign_up_method': eventData.sign_up_method || 'google_oauth',
+                    'success': eventData.success || 1,
+                    'user_email': eventData.user_email || 'test@example.com',
+                    'user_phone_number': eventData.user_phone_number || '',
+                    'user_hashed_email': eventData.user_hashed_email || '',
+                    'user_hashed_phone_number': eventData.user_hashed_phone_number || '',
+                    'firstname': eventData.firstname || 'Test',
+                    'lastname': eventData.lastname || 'User',
+                    'age': eventData.age || '25',
+                    'geo_city': eventData.geo_city || 'Omaha',
+                    'geo_country': eventData.geo_country || 'US',
+                    'geo_postal_code': eventData.geo_postal_code || '68102',
+                    'geo_region': eventData.geo_region || 'NE'
+                });
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -442,6 +471,26 @@
 
                 if (data.success) {
                     showAlert(`Bid of $${bidAmount} placed successfully!`, 'success');
+                    
+                    // Track Snap achievement for bid placement
+                    trackSnapAchievement({
+                        level: 'bid_placed',
+                        uuid_c1: 'bid_' + itemId + '_' + Date.now(),
+                        price: bidAmount,
+                        description: 'Bid placed on auction item',
+                        payment_info_available: 0,
+                        sign_up_method: 'google_oauth',
+                        success: 1,
+                        user_email: 'test@example.com',
+                        firstname: 'Test',
+                        lastname: 'Bidder',
+                        age: '25',
+                        geo_city: 'Omaha',
+                        geo_country: 'US',
+                        geo_postal_code: '68102',
+                        geo_region: 'NE'
+                    });
+                    
                     loadItems(); // Refresh items
                     updateAuctionStatus(itemId);
                 } else {
@@ -545,6 +594,25 @@
                         const data = await response.json();
                         if (data.success) {
                             showAlert(`Auction completed for ${item.title}. Winner has 24 hours to pay.`, 'success');
+                            
+                            // Track Snap achievement for auction completion
+                            trackSnapAchievement({
+                                level: 'auction_completed',
+                                uuid_c1: 'auction_complete_' + item.id + '_' + Date.now(),
+                                price: data.winningBid ? data.winningBid.amount : item.currentHighestBid,
+                                description: 'Auction completed - winner determined',
+                                payment_info_available: 1,
+                                sign_up_method: 'google_oauth',
+                                success: 1,
+                                user_email: 'test@example.com',
+                                firstname: 'Test',
+                                lastname: 'Winner',
+                                age: '25',
+                                geo_city: 'Omaha',
+                                geo_country: 'US',
+                                geo_postal_code: '68102',
+                                geo_region: 'NE'
+                            });
                         }
                     } catch (error) {
                         console.error('Error processing auction:', error);
