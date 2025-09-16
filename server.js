@@ -151,6 +151,41 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
+// Test endpoint to manually set a session
+app.get('/test-session', (req, res) => {
+  console.log('🧪 Test session endpoint called');
+  console.log('🧪 Session ID:', req.sessionID);
+  console.log('🧪 Is authenticated:', req.isAuthenticated());
+  
+  // Create a test user and set it in the session
+  const testUser = {
+    id: 'test-user-123',
+    name: 'Test User',
+    email: 'test@pacmacmobile.com',
+    profilePicture: 'https://ui-avatars.com/api/?name=Test+User&background=3b82f6&color=fff',
+    isVerified: true,
+    ageVerified: true,
+    identityVerified: false,
+    payoutThreshold: 50,
+    totalEarnings: 0,
+    stats: { itemsListed: 0, itemsSold: 0, itemsBought: 0 },
+    verification: { photoId: false, address: false, social: false }
+  };
+  
+  // Add to marketplace data
+  marketplaceData.users.push(testUser);
+  
+  // Set in session
+  req.login(testUser, (err) => {
+    if (err) {
+      console.error('❌ Login error:', err);
+      return res.json({ success: false, error: 'Login failed' });
+    }
+    console.log('✅ Test user logged in successfully');
+    res.json({ success: true, message: 'Test session created', user: testUser });
+  });
+});
+
 app.get('/auth/user', (req, res) => {
   console.log('🔍 Auth user check - isAuthenticated:', req.isAuthenticated());
   console.log('🔍 Session ID:', req.sessionID);
