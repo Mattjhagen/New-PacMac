@@ -59,13 +59,17 @@ app.get('/auth/google/callback', (req, res) => {
 
 app.get('/auth/user', (req, res) => {
   // Return demo user for testing
+  console.log('Auth user endpoint called');
   res.json({
     success: true,
     user: {
       id: 'demo-user',
       name: 'Demo User',
       email: 'demo@pacmacmobile.com',
-      avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff'
+      avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff',
+      ageVerified: true,
+      identityVerified: false,
+      totalEarnings: 0
     }
   });
 });
