@@ -1,1 +1,1 @@
-web: node server-emergency.js
+web: node server.js
