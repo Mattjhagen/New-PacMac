@@ -94,8 +94,8 @@ function PacMacMarketplace() {
 
   // Check for existing OAuth authentication on mount
   useEffect(() => {
-    const token = localStorage.getItem('github_token');
-    const user = localStorage.getItem('github_user');
+    const token = localStorage.getItem('google_token');
+    const user = localStorage.getItem('google_user');
     
     if (token && user) {
       try {
@@ -205,6 +205,10 @@ function PacMacMarketplace() {
 
   // OAuth Authentication Handlers
   const handleOAuthSuccess = (user: { id: string; name: string; email: string; login: string; avatar?: string }, token: string) => {
+    // Clear any old GitHub tokens
+    localStorage.removeItem('github_token')
+    localStorage.removeItem('github_user')
+    
     setOauthUser(user)
     setIsOAuthAuthenticated(true)
     setShowOAuthSplash(false)
@@ -212,6 +216,10 @@ function PacMacMarketplace() {
   }
 
   const handleOAuthLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('google_token')
+    localStorage.removeItem('google_user')
+    
     setOauthUser(null)
     setIsOAuthAuthenticated(false)
     setShowOAuthSplash(true)
