@@ -271,9 +271,26 @@
         data-widget-id="68c9d11dfa0aac42e742dfe3">
     </script>
     
-    <!-- Snap Tracking Pixel -->
+    <!-- Snap Pixel Code -->
+    <script type='text/javascript'>
+    (function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function()
+    {a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};
+    a.queue=[];var s='script';r=t.createElement(s);r.async=!0;
+    r.src=n;var u=t.getElementsByTagName(s)[0];
+    u.parentNode.insertBefore(r,u);})(window,document,
+    'https://sc-static.net/scevent.min.js');
+
+    snaptr('init', '2864ffc6-e6b8-4912-a099-60f05f2d233c', {
+    'user_email': 'test@example.com'
+    });
+
+    snaptr('track', 'PAGE_VIEW');
+    </script>
+    <!-- End Snap Pixel Code -->
+    
+    <!-- Snap tracking function for custom events -->
     <script>
-        // Snap tracking function
+        // Snap tracking function for custom events
         function trackSnapAchievement(eventData) {
             if (typeof snaptr !== 'undefined') {
                 snaptr('track', 'ACHIEVEMENT_UNLOCKED', {
