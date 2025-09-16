@@ -597,6 +597,47 @@
       height: 20px;
     }
 
+    .auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .x-auth-btn {
+      width: 100%;
+      padding: 16px 20px;
+      background: #1DA1F2;
+      border: 2px solid #1DA1F2;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .x-auth-btn:hover {
+      background: #0d8bd9;
+      border-color: #0d8bd9;
+      box-shadow: 0 4px 12px rgba(29, 161, 242, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .x-auth-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .x-icon {
+      width: 20px;
+      height: 20px;
+    }
+
     .auth-footer {
       margin-bottom: 20px;
       font-size: 12px;
@@ -758,15 +799,24 @@
               </div>
             </div>
 
-            <button class="google-auth-btn" onclick="loginWithGoogle()" id="googleAuthBtn">
-              <svg class="google-icon" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              <span>Continue with Google</span>
-            </button>
+            <div class="auth-buttons">
+              <button class="google-auth-btn" onclick="loginWithGoogle()" id="googleAuthBtn">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Continue with Google</span>
+              </button>
+              
+              <button class="x-auth-btn" onclick="loginWithX()" id="xAuthBtn">
+                <svg class="x-icon" viewBox="0 0 24 24" fill="#1DA1F2">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <span>Continue with X</span>
+              </button>
+            </div>
 
             <div class="auth-footer">
               <p>By continuing, you agree to our <a href="pacmac_terms_service.html">Terms of Service</a> and <a href="pacmac_privacy_policy.html">Privacy Policy</a></p>
@@ -1098,18 +1148,22 @@
       const authCode = urlParams.get('code');
       
       if (authStatus === 'success') {
-        console.log('✅ OAuth authentication successful, code received:', authCode);
+        const provider = urlParams.get('provider') || 'google';
+        console.log('✅ OAuth authentication successful, provider:', provider);
         
         // Create a temporary authenticated user for OAuth success
         const oauthUser = {
           id: 'oauth-user-' + Date.now(),
-          name: 'Google User',
-          email: 'user@google.com',
-          avatar: 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
+          name: provider === 'x' ? 'X User' : 'Google User',
+          email: provider === 'x' ? 'user@x.com' : 'user@google.com',
+          avatar: provider === 'x' 
+            ? 'https://ui-avatars.com/api/?name=X+User&background=1da1f2&color=fff'
+            : 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
           ageVerified: true,
           identityVerified: false,
           totalEarnings: 0,
-          isOAuth: true
+          isOAuth: true,
+          provider: provider
         };
         
         // Store in localStorage to maintain login state
@@ -1789,6 +1843,31 @@
       }
     }
 
+    // Enhanced login with X function
+    async function loginWithX() {
+      const authBtn = document.getElementById('xAuthBtn');
+      const authError = document.getElementById('authError');
+      
+      // Show loading state
+      authBtn.disabled = true;
+      authBtn.innerHTML = `
+        <div style="width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top: 2px solid #1DA1F2; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <span>Authenticating...</span>
+      `;
+      
+      // Hide any previous errors
+      authError.style.display = 'none';
+      
+      try {
+        // Redirect to X OAuth
+        window.location.href = '/auth/x';
+      } catch (error) {
+        console.error('X auth error:', error);
+        showAuthError('Authentication failed. Please try again.');
+        resetXAuthButton();
+      }
+    }
+
     // Show authentication error
     function showAuthError(message) {
       const authError = document.getElementById('authError');
@@ -1809,6 +1888,18 @@
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
         </svg>
         <span>Continue with Google</span>
+      `;
+    }
+
+    // Reset X auth button
+    function resetXAuthButton() {
+      const authBtn = document.getElementById('xAuthBtn');
+      authBtn.disabled = false;
+      authBtn.innerHTML = `
+        <svg class="x-icon" viewBox="0 0 24 24" fill="#1DA1F2">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span>Continue with X</span>
       `;
     }
 

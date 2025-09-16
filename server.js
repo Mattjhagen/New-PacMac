@@ -3,6 +3,7 @@ const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key');
 const sgMail = require('@sendgrid/mail');
 
@@ -101,6 +102,69 @@ passport.use(new GoogleStrategy({
   }
 }));
 
+// X (Twitter) OAuth Strategy
+passport.use('twitter', new TwitterStrategy({
+  clientID: process.env.X_CLIENT_ID || 'your_x_client_id',
+  clientSecret: process.env.X_CLIENT_SECRET || 'your_x_client_secret',
+  callbackURL: process.env.NODE_ENV === 'production' 
+    ? 'https://new-pacmac.onrender.com/auth/x/callback'
+    : 'http://localhost:3000/auth/x/callback',
+  scope: ['tweet.read', 'users.read']
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    console.log('🐦 X OAuth profile:', profile);
+    
+    // Check if user already exists
+    let user = marketplaceData.users.find(u => u.xId === profile.id);
+    
+    if (user) {
+      // Update last login
+      user.lastLogin = new Date().toISOString();
+      return done(null, user);
+    }
+    
+    // Create new user
+    user = {
+      id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      xId: profile.id,
+      email: profile.emails?.[0]?.value || `${profile.username}@x.com`,
+      name: profile.displayName,
+      username: profile.username,
+      profilePicture: profile.photos[0]?.value,
+      isVerified: false,
+      ageVerified: false,
+      identityVerified: false,
+      payoutThreshold: 0,
+      totalEarnings: 0,
+      deviceIds: [],
+      bannedDevices: [],
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      stats: {
+        totalBids: 0,
+        totalPurchases: 0,
+        totalSales: 0,
+        rating: 5.0,
+        disputes: 0,
+        violations: 0
+      },
+      verification: {
+        photoIdUploaded: false,
+        addressVerified: false,
+        socialSecurityVerified: false,
+        phoneVerified: false
+      }
+    };
+    
+    marketplaceData.users.push(user);
+    console.log('✅ New X user created:', user.username);
+    return done(null, user);
+  } catch (error) {
+    console.error('❌ X OAuth error:', error);
+    return done(error, null);
+  }
+}));
+
 // Passport serialization
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -136,9 +200,24 @@ app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/marketplace?error=auth_failed' }),
   (req, res) => {
     // Successful authentication, redirect to marketplace
-    console.log('✅ OAuth callback successful, user:', req.user?.email);
+    console.log('✅ Google OAuth callback successful, user:', req.user?.email);
     console.log('✅ Session ID:', req.sessionID);
-    res.redirect('/marketplace?auth=success');
+    res.redirect('/marketplace?auth=success&provider=google');
+  }
+);
+
+// X (Twitter) OAuth Routes
+app.get('/auth/x', passport.authenticate('twitter', {
+  scope: ['tweet.read', 'users.read']
+}));
+
+app.get('/auth/x/callback', 
+  passport.authenticate('twitter', { failureRedirect: '/marketplace?error=auth_failed' }),
+  (req, res) => {
+    // Successful authentication, redirect to marketplace
+    console.log('✅ X OAuth callback successful, user:', req.user?.username);
+    console.log('✅ Session ID:', req.sessionID);
+    res.redirect('/marketplace?auth=success&provider=x');
   }
 );
 
