@@ -190,7 +190,7 @@ function requireAuth(req, res, next) {
 
 // Routes
 app.get('/', (req, res) => {
-  res.redirect('/marketplace');
+  res.redirect('/home.html');
 });
 
 // OAuth Routes
@@ -204,7 +204,7 @@ app.get('/auth/google/callback',
     // Successful authentication, redirect to marketplace
     console.log('✅ Google OAuth callback successful, user:', req.user?.email);
     console.log('✅ Session ID:', req.sessionID);
-    res.redirect('/marketplace?auth=success&provider=google');
+    res.redirect('/home.html?auth=success&provider=google');
   }
 );
 
@@ -220,7 +220,7 @@ app.get('/auth/x/callback',
     // Successful authentication, redirect to marketplace
     console.log('✅ X OAuth callback successful, user:', req.user?.username);
     console.log('✅ Session ID:', req.sessionID);
-    res.redirect('/marketplace?auth=success&provider=x');
+    res.redirect('/home.html?auth=success&provider=x');
   }
 );
 */
@@ -230,7 +230,7 @@ app.get('/auth/logout', (req, res) => {
     if (err) {
       return res.status(500).json({ success: false, error: 'Logout failed' });
     }
-    res.redirect('/marketplace');
+    res.redirect('/home.html');
   });
 });
 
