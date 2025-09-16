@@ -3,14 +3,49 @@ const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const cors = require('cors');
-const { IDVerificationService, BankVerificationService, AddressVerificationService } = require('./verification-service');
+// Simple verification services without external dependencies
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize verification services
-const idVerification = new IDVerificationService();
-const bankVerification = new BankVerificationService();
-const addressVerification = new AddressVerificationService();
+// Simple verification service functions
+const createVerificationSession = async (userId, userInfo) => {
+  console.log('🔧 ID Verification - Demo Mode');
+  return {
+    success: true,
+    transactionReference: `demo-${Date.now()}`,
+    redirectUrl: `${process.env.BASE_URL || 'https://new-pacmac.onrender.com'}/demo-id-verification.html`,
+    timestamp: new Date().toISOString(),
+    demo: true
+  };
+};
+
+const createLinkToken = async (userId) => {
+  console.log('🔧 Bank Verification - Demo Mode');
+  return {
+    success: true,
+    linkToken: `demo-link-token-${Date.now()}`,
+    expiration: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date().toISOString(),
+    demo: true
+  };
+};
+
+const verifyAddress = async (address) => {
+  console.log('🔧 Address Verification - Demo Mode');
+  return {
+    success: true,
+    verified: true,
+    standardizedAddress: {
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      zipcode: address.zipcode,
+      plus4: '0000'
+    },
+    timestamp: new Date().toISOString(),
+    demo: true
+  };
+};
 
 // Admin system - in-memory storage (replace with database in production)
 const adminData = {
@@ -409,13 +444,14 @@ app.post('/api/verification/id/initiate', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
-    const result = await idVerification.createVerificationSession(req.user.id, req.user);
+    const result = await createVerificationSession(req.user.id, req.user);
     
     if (result.success) {
       res.json({
         success: true,
         redirectUrl: result.redirectUrl,
-        transactionReference: result.transactionReference
+        transactionReference: result.transactionReference,
+        demo: result.demo
       });
     } else {
       res.status(400).json(result);
@@ -446,7 +482,7 @@ app.post('/api/verification/bank/create-link-token', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
-    const result = await bankVerification.createLinkToken(req.user.id);
+    const result = await createLinkToken(req.user.id);
     res.json(result);
   } catch (error) {
     console.error('Plaid Link Token Error:', error);
@@ -484,7 +520,7 @@ app.post('/api/verification/address', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Complete address required' });
     }
 
-    const result = await addressVerification.verifyAddress({ street, city, state, zipcode });
+    const result = await verifyAddress({ street, city, state, zipcode });
     res.json(result);
   } catch (error) {
     console.error('Address Verification Error:', error);
