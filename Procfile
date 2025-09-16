@@ -1,1 +1,1 @@
-web: node server-emergency-fix.js
+web: node server-stable.js
