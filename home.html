@@ -281,6 +281,225 @@
       font-size: 1rem;
     }
 
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: #999;
+      cursor: pointer;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    /* Upload Form Styles */
+    .upload-form {
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Image Upload Styles */
+    .image-upload-area {
+      border: 2px dashed #ddd;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .image-upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(255, 107, 107, 0.05);
+    }
+
+    .upload-placeholder {
+      color: #666;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .upload-placeholder p {
+      margin: 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .upload-placeholder small {
+      color: #999;
+    }
+
+    .image-preview {
+      position: relative;
+      display: inline-block;
+    }
+
+    .image-preview img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: #ff4757;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn-cancel,
+    .btn-submit {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cancel {
+      background: #f8f9fa;
+      color: #666;
+    }
+
+    .btn-cancel:hover {
+      background: #e9ecef;
+    }
+
+    .btn-submit {
+      background: var(--gradient-1);
+      color: white;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .action-btn {
       flex: 1;
       padding: 0.75rem;
@@ -447,6 +666,77 @@
 
   <!-- Floating Action Button -->
   <button class="fab" onclick="showAddItemModal()">+</button>
+
+  <!-- Upload Item Modal -->
+  <div id="uploadModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📤 Add New Item</h2>
+        <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+      </div>
+      
+      <form id="uploadForm" class="upload-form">
+        <div class="form-group">
+          <label for="itemTitle">Item Title *</label>
+          <input type="text" id="itemTitle" name="title" required placeholder="e.g., iPhone 15 Pro Max">
+        </div>
+        
+        <div class="form-group">
+          <label for="itemDescription">Description *</label>
+          <textarea id="itemDescription" name="description" required rows="3" placeholder="Describe your item in detail..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="itemPrice">Price ($) *</label>
+          <input type="number" id="itemPrice" name="price" required min="0.01" step="0.01" placeholder="0.00">
+        </div>
+        
+        <div class="form-group">
+          <label for="itemCategory">Category *</label>
+          <select id="itemCategory" name="category" required>
+            <option value="">Select a category</option>
+            <option value="electronics">📱 Electronics</option>
+            <option value="clothing">👕 Clothing</option>
+            <option value="home">🏠 Home & Garden</option>
+            <option value="sports">⚽ Sports</option>
+            <option value="books">📚 Books</option>
+            <option value="other">🔧 Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="itemImage">Item Image</label>
+          <div class="image-upload-area" id="imageUploadArea">
+            <input type="file" id="itemImage" name="image" accept="image/*" style="display: none;">
+            <div class="upload-placeholder" onclick="document.getElementById('itemImage').click()">
+              <div class="upload-icon">📷</div>
+              <p>Click to upload image</p>
+              <small>JPG, PNG, GIF up to 5MB</small>
+            </div>
+            <div class="image-preview" id="imagePreview" style="display: none;">
+              <img id="previewImg" src="" alt="Preview">
+              <button type="button" class="remove-image" onclick="removeImage()">×</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="auctionDuration">Auction Duration</label>
+          <select id="auctionDuration" name="duration">
+            <option value="24">24 hours</option>
+            <option value="48">48 hours</option>
+            <option value="72">72 hours</option>
+            <option value="168">1 week</option>
+          </select>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
+          <button type="submit" class="btn-submit">🚀 List Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     // Sample data for nearby items with countdown timestamps
@@ -832,9 +1122,149 @@
       alert('Purchase initiated! $1.00 payment processing...');
     }
 
+    // Upload Modal Functions
     function showAddItemModal() {
-      alert('Add item functionality coming soon!');
+      document.getElementById('uploadModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').style.display = 'none';
+      document.body.style.overflow = 'auto'; // Restore scrolling
+      resetUploadForm();
+    }
+
+    function resetUploadForm() {
+      document.getElementById('uploadForm').reset();
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('imageUploadArea').querySelector('.upload-placeholder').style.display = 'block';
+    }
+
+    // Image upload handling
+    document.getElementById('itemImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Image size must be less than 5MB');
+          return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          alert('Please select a valid image file');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('imagePreview').style.display = 'block';
+          document.getElementById('imageUploadArea').querySelector('.upload-placeholder').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function removeImage() {
+      document.getElementById('itemImage').value = '';
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('imageUploadArea').querySelector('.upload-placeholder').style.display = 'block';
+    }
+
+    // Form submission
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.querySelector('.btn-submit');
+      const originalText = submitBtn.textContent;
+      
+      // Disable submit button and show loading
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Listing Item...';
+      
+      try {
+        const formData = new FormData(this);
+        
+        // Get form values
+        const itemData = {
+          title: formData.get('title'),
+          description: formData.get('description'),
+          price: parseFloat(formData.get('price')),
+          category: formData.get('category'),
+          duration: parseInt(formData.get('duration')),
+          image: formData.get('image')
+        };
+
+        // Validate required fields
+        if (!itemData.title || !itemData.description || !itemData.price || !itemData.category) {
+          throw new Error('Please fill in all required fields');
+        }
+
+        if (itemData.price <= 0) {
+          throw new Error('Price must be greater than $0');
+        }
+
+        // Create new item with countdown timer
+        const newItem = {
+          id: Date.now(), // Use timestamp as unique ID
+          title: itemData.title,
+          description: itemData.description,
+          price: itemData.price,
+          distance: '0.0 miles', // User's own item
+          category: itemData.category,
+          image: itemData.image ? '📷' : getCategoryEmoji(itemData.category),
+          badge: 'New',
+          currentBids: 0,
+          endTime: new Date(Date.now() + itemData.duration * 60 * 60 * 1000) // Convert hours to milliseconds
+        };
+
+        // Add to sample items array (in a real app, this would be sent to server)
+        sampleItems.unshift(newItem); // Add to beginning of array
+
+        // Show success message
+        showNotification(`🎉 "${newItem.title}" listed successfully!`, 'success');
+        
+        // Close modal and refresh items
+        closeUploadModal();
+        loadItems(); // Reload items to show the new one
+
+      } catch (error) {
+        console.error('Upload error:', error);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+      } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+
+    // Helper function to get category emoji
+    function getCategoryEmoji(category) {
+      const emojis = {
+        electronics: '📱',
+        clothing: '👕',
+        home: '🏠',
+        sports: '⚽',
+        books: '📚',
+        other: '🔧'
+      };
+      return emojis[category] || '📦';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('uploadModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeUploadModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('uploadModal').style.display === 'flex') {
+        closeUploadModal();
+      }
+    });
 
     // Show notification
     function showNotification(message, type = 'info') {
