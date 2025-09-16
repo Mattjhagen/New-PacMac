@@ -170,6 +170,26 @@
       text-align: center;
     }
 
+    .admin-section {
+      border-top: 2px solid #ff6b6b;
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+    }
+
+    .admin-section h4 {
+      color: #ff6b6b;
+      font-weight: bold;
+    }
+
+    .admin-section a {
+      background: rgba(255, 107, 107, 0.1);
+      border-left: 3px solid #ff6b6b;
+    }
+
+    .admin-section a:hover {
+      background: var(--gradient-1);
+      transform: translateX(5px);
+    }
+
     .credit-balance {
       background: var(--gradient-2);
       color: white;
@@ -821,6 +841,13 @@
               <h4>Credits</h4>
               <div class="credit-display">Credits: <span id="creditBalance">5</span></div>
             </div>
+            <div class="dropdown-section admin-section" id="adminSection" style="display: none;">
+              <h4>🔧 Admin Tools</h4>
+              <a href="#" onclick="showAdminDashboard()">📊 Admin Dashboard</a>
+              <a href="#" onclick="showUserManagement()">👥 User Management</a>
+              <a href="#" onclick="showChatMonitoring()">💬 Chat Monitoring</a>
+              <a href="#" onclick="showDeviceManagement()">📱 Device Management</a>
+            </div>
           </div>
         </div>
       </div>
@@ -1210,6 +1237,7 @@
     function updateUserInfo(user) {
       const userAvatar = document.getElementById('userAvatar');
       const userDisplayName = document.getElementById('userDisplayName');
+      const adminSection = document.getElementById('adminSection');
       
       if (user.name) {
         userDisplayName.textContent = `Hello, ${user.name}`;
@@ -1221,6 +1249,14 @@
         userAvatar.style.backgroundSize = 'cover';
         userAvatar.style.backgroundPosition = 'center';
         userAvatar.textContent = '';
+      }
+
+      // Show admin section for admin users
+      if (user.isAdmin || (user.email && user.email.endsWith('@pacmacmobile.com'))) {
+        adminSection.style.display = 'block';
+        console.log('🔧 Admin user detected:', user.email);
+      } else {
+        adminSection.style.display = 'none';
       }
 
       // Update credit balance
@@ -1840,6 +1876,282 @@
         }
       };
       input.click();
+    }
+
+    // Admin Functions
+    function showAdminDashboard() {
+      fetch('/api/admin/dashboard', {
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const stats = data.stats;
+          alert(`📊 Admin Dashboard\n\n` +
+            `👥 Total Users: ${stats.totalUsers}\n` +
+            `🚫 Suspended Users: ${stats.suspendedUsers}\n` +
+            `📱 Banned Devices: ${stats.bannedDevices}\n` +
+            `💬 Total Chats: ${stats.totalChats}\n\n` +
+            `Recent Actions:\n${stats.recentActions.slice(0, 3).map(action => 
+              `• ${action.action} by ${action.adminId} at ${new Date(action.timestamp).toLocaleString()}`
+            ).join('\n')}`);
+        } else {
+          showNotification('❌ Failed to load admin dashboard', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Admin dashboard error:', error);
+        showNotification('❌ Admin dashboard unavailable', 'error');
+      });
+    }
+
+    function showUserManagement() {
+      fetch('/api/admin/users', {
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const users = data.users;
+          const userList = users.slice(0, 10).map(user => 
+            `${user.name} (${user.email}) - ${user.isSuspended ? '🚫 Suspended' : '✅ Active'}`
+          ).join('\n');
+          
+          const action = prompt(`👥 User Management\n\nRecent Users:\n${userList}\n\nEnter user email to manage:`);
+          if (action) {
+            const targetUser = users.find(u => u.email === action);
+            if (targetUser) {
+              showUserActions(targetUser);
+            } else {
+              showNotification('❌ User not found', 'error');
+            }
+          }
+        } else {
+          showNotification('❌ Failed to load users', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('User management error:', error);
+        showNotification('❌ User management unavailable', 'error');
+      });
+    }
+
+    function showUserActions(user) {
+      const actions = [
+        '1. Suspend User',
+        '2. Unsuspend User', 
+        '3. Kick User',
+        '4. View Details'
+      ].join('\n');
+      
+      const choice = prompt(`👤 User Actions for ${user.name}\n\n${actions}\n\nEnter choice (1-4):`);
+      
+      switch(choice) {
+        case '1':
+          const reason = prompt('Enter suspension reason:');
+          if (reason) {
+            suspendUser(user.id, reason);
+          }
+          break;
+        case '2':
+          unsuspendUser(user.id);
+          break;
+        case '3':
+          const kickReason = prompt('Enter kick reason:');
+          if (kickReason) {
+            kickUser(user.id, kickReason);
+          }
+          break;
+        case '4':
+          alert(`👤 User Details\n\n` +
+            `Name: ${user.name}\n` +
+            `Email: ${user.email}\n` +
+            `Admin: ${user.isAdmin ? 'Yes' : 'No'}\n` +
+            `Suspended: ${user.isSuspended ? 'Yes' : 'No'}\n` +
+            `Device ID: ${user.deviceId || 'Not set'}\n` +
+            `Last Login: ${user.lastLogin}\n` +
+            `Total Earnings: $${user.totalEarnings}`);
+          break;
+      }
+    }
+
+    function suspendUser(userId, reason) {
+      fetch(`/api/admin/users/${userId}/suspend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason, duration: 'indefinite' })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNotification('✅ User suspended successfully', 'success');
+        } else {
+          showNotification('❌ Failed to suspend user', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Suspend user error:', error);
+        showNotification('❌ Failed to suspend user', 'error');
+      });
+    }
+
+    function unsuspendUser(userId) {
+      fetch(`/api/admin/users/${userId}/unsuspend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNotification('✅ User unsuspended successfully', 'success');
+        } else {
+          showNotification('❌ Failed to unsuspend user', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Unsuspend user error:', error);
+        showNotification('❌ Failed to unsuspend user', 'error');
+      });
+    }
+
+    function kickUser(userId, reason) {
+      fetch(`/api/admin/users/${userId}/kick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNotification('✅ User kicked successfully', 'success');
+        } else {
+          showNotification('❌ Failed to kick user', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Kick user error:', error);
+        showNotification('❌ Failed to kick user', 'error');
+      });
+    }
+
+    function showChatMonitoring() {
+      fetch('/api/admin/chats', {
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const chats = data.chats;
+          if (chats.length === 0) {
+            alert('💬 Chat Monitoring\n\nNo chats found.');
+          } else {
+            const chatList = chats.slice(0, 10).map(chat => 
+              `Chat ${chat.id}: ${chat.participants?.join(', ') || 'Unknown participants'}`
+            ).join('\n');
+            
+            const chatId = prompt(`💬 Chat Monitoring\n\nRecent Chats:\n${chatList}\n\nEnter chat ID to view:`);
+            if (chatId) {
+              viewChat(chatId);
+            }
+          }
+        } else {
+          showNotification('❌ Failed to load chats', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Chat monitoring error:', error);
+        showNotification('❌ Chat monitoring unavailable', 'error');
+      });
+    }
+
+    function viewChat(chatId) {
+      fetch(`/api/admin/chats/${chatId}`, {
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const chat = data.chat;
+          alert(`💬 Chat Details\n\n` +
+            `Chat ID: ${chat.id}\n` +
+            `Participants: ${chat.participants?.join(', ') || 'Unknown'}\n` +
+            `Messages: ${chat.messages?.length || 0}\n` +
+            `Created: ${chat.createdAt || 'Unknown'}\n` +
+            `Last Activity: ${chat.lastActivity || 'Unknown'}`);
+        } else {
+          showNotification('❌ Chat not found', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('View chat error:', error);
+        showNotification('❌ Failed to load chat', 'error');
+      });
+    }
+
+    function showDeviceManagement() {
+      const deviceId = prompt('📱 Device Management\n\nEnter device ID to manage:');
+      if (deviceId) {
+        const action = prompt('Choose action:\n1. Ban Device\n2. Unban Device\n3. View Details\n\nEnter choice (1-3):');
+        
+        switch(action) {
+          case '1':
+            const reason = prompt('Enter ban reason:');
+            if (reason) {
+              banDevice(deviceId, reason);
+            }
+            break;
+          case '2':
+            unbanDevice(deviceId);
+            break;
+          case '3':
+            alert(`📱 Device Details\n\nDevice ID: ${deviceId}\nStatus: Check server logs for details`);
+            break;
+        }
+      }
+    }
+
+    function banDevice(deviceId, reason) {
+      fetch(`/api/admin/devices/${deviceId}/ban`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNotification('✅ Device banned successfully', 'success');
+        } else {
+          showNotification('❌ Failed to ban device', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Ban device error:', error);
+        showNotification('❌ Failed to ban device', 'error');
+      });
+    }
+
+    function unbanDevice(deviceId) {
+      fetch(`/api/admin/devices/${deviceId}/unban`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNotification('✅ Device unbanned successfully', 'success');
+        } else {
+          showNotification('❌ Failed to unban device', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Unban device error:', error);
+        showNotification('❌ Failed to unban device', 'error');
+      });
     }
 
     // Initialize when page loads

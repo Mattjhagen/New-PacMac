@@ -12,6 +12,34 @@ const idVerification = new IDVerificationService();
 const bankVerification = new BankVerificationService();
 const addressVerification = new AddressVerificationService();
 
+// Admin system - in-memory storage (replace with database in production)
+const adminData = {
+  users: new Map(),
+  chats: new Map(),
+  deviceBans: new Set(),
+  suspendedUsers: new Set(),
+  adminActions: []
+};
+
+// Helper function to check if user is admin
+function isAdmin(user) {
+  return user && user.email && user.email.endsWith('@pacmacmobile.com');
+}
+
+// Helper function to log admin actions
+function logAdminAction(adminId, action, targetId, details) {
+  const logEntry = {
+    id: Date.now(),
+    adminId,
+    action,
+    targetId,
+    details,
+    timestamp: new Date().toISOString()
+  };
+  adminData.adminActions.push(logEntry);
+  console.log('🔧 Admin Action:', logEntry);
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -70,8 +98,18 @@ passport.use(new GoogleStrategy({
       ageVerified: true,
       identityVerified: false,
       totalEarnings: 0,
-      isOAuth: true
+      isOAuth: true,
+      isAdmin: isAdmin({ email: profile.emails[0].value }),
+      deviceId: null, // Will be set by client
+      lastLogin: new Date().toISOString()
     };
+    
+    // Store user data for admin system
+    adminData.users.set(user.id, user);
+    
+    if (user.isAdmin) {
+      console.log('🔧 Admin user detected:', user.email);
+    }
     
     return done(null, user);
   } catch (error) {
@@ -123,6 +161,9 @@ app.get('/auth/user', (req, res) => {
   console.log('🔍 User:', req.user?.email);
   
   if (req.isAuthenticated()) {
+    // Update user data in admin system
+    adminData.users.set(req.user.id, req.user);
+    
     res.json({
       success: true,
       user: req.user
@@ -135,6 +176,19 @@ app.get('/auth/user', (req, res) => {
   }
 });
 
+// Admin middleware
+function requireAdmin(req, res, next) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ success: false, error: 'Authentication required' });
+  }
+  
+  if (!isAdmin(req.user)) {
+    return res.status(403).json({ success: false, error: 'Admin access required' });
+  }
+  
+  next();
+}
+
 app.get('/auth/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
@@ -142,6 +196,210 @@ app.get('/auth/logout', (req, res) => {
     }
     res.redirect('/home.html');
   });
+});
+
+// Admin Endpoints
+app.get('/api/admin/dashboard', requireAdmin, (req, res) => {
+  try {
+    const stats = {
+      totalUsers: adminData.users.size,
+      suspendedUsers: adminData.suspendedUsers.size,
+      bannedDevices: adminData.deviceBans.size,
+      totalChats: adminData.chats.size,
+      recentActions: adminData.adminActions.slice(-10).reverse()
+    };
+    
+    res.json({
+      success: true,
+      stats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin dashboard error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+  try {
+    const users = Array.from(adminData.users.values()).map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isSuspended: adminData.suspendedUsers.has(user.id),
+      deviceId: user.deviceId,
+      lastLogin: user.lastLogin,
+      totalEarnings: user.totalEarnings || 0
+    }));
+    
+    res.json({
+      success: true,
+      users,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin users error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/users/:userId/suspend', requireAdmin, (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { reason, duration } = req.body;
+    
+    if (adminData.suspendedUsers.has(userId)) {
+      return res.status(400).json({ success: false, error: 'User already suspended' });
+    }
+    
+    adminData.suspendedUsers.add(userId);
+    logAdminAction(req.user.id, 'SUSPEND_USER', userId, { reason, duration });
+    
+    res.json({
+      success: true,
+      message: 'User suspended successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin suspend error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/users/:userId/unsuspend', requireAdmin, (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!adminData.suspendedUsers.has(userId)) {
+      return res.status(400).json({ success: false, error: 'User not suspended' });
+    }
+    
+    adminData.suspendedUsers.delete(userId);
+    logAdminAction(req.user.id, 'UNSUSPEND_USER', userId, {});
+    
+    res.json({
+      success: true,
+      message: 'User unsuspended successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin unsuspend error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/users/:userId/kick', requireAdmin, (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { reason } = req.body;
+    
+    logAdminAction(req.user.id, 'KICK_USER', userId, { reason });
+    
+    res.json({
+      success: true,
+      message: 'User kicked successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin kick error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/devices/:deviceId/ban', requireAdmin, (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    const { reason } = req.body;
+    
+    if (adminData.deviceBans.has(deviceId)) {
+      return res.status(400).json({ success: false, error: 'Device already banned' });
+    }
+    
+    adminData.deviceBans.add(deviceId);
+    logAdminAction(req.user.id, 'BAN_DEVICE', deviceId, { reason });
+    
+    res.json({
+      success: true,
+      message: 'Device banned successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin device ban error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/devices/:deviceId/unban', requireAdmin, (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    
+    if (!adminData.deviceBans.has(deviceId)) {
+      return res.status(400).json({ success: false, error: 'Device not banned' });
+    }
+    
+    adminData.deviceBans.delete(deviceId);
+    logAdminAction(req.user.id, 'UNBAN_DEVICE', deviceId, {});
+    
+    res.json({
+      success: true,
+      message: 'Device unbanned successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin device unban error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/chats', requireAdmin, (req, res) => {
+  try {
+    const chats = Array.from(adminData.chats.values());
+    
+    res.json({
+      success: true,
+      chats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin chats error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/chats/:chatId', requireAdmin, (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chat = adminData.chats.get(chatId);
+    
+    if (!chat) {
+      return res.status(404).json({ success: false, error: 'Chat not found' });
+    }
+    
+    res.json({
+      success: true,
+      chat,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin chat details error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/actions', requireAdmin, (req, res) => {
+  try {
+    const actions = adminData.adminActions.slice(-50).reverse();
+    
+    res.json({
+      success: true,
+      actions,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Admin actions error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
 });
 
 // Verification Endpoints
