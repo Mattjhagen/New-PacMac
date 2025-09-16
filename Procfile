@@ -1,1 +1,1 @@
-web: node server-ultra-stable.js
+web: node server-super-minimal.js
