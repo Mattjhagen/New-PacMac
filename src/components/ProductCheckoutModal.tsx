@@ -10,32 +10,32 @@ interface CartItem {
   qty: number;
 }
 
-interface CheckoutModalProps {
+interface ProductCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  cartItems: CartItem[];
-  onPaymentSuccess: () => void;
+  product: Product | null;
+  onPaymentSuccess: (paymentIntent: { id: string; status: string }) => void;
 }
 
-export default function CheckoutModal({ 
+export default function ProductCheckoutModal({ 
   isOpen, 
   onClose, 
-  cartItems, 
+  product, 
   onPaymentSuccess 
-}: CheckoutModalProps) {
+}: ProductCheckoutModalProps) {
   const [step, setStep] = useState<'review' | 'payment' | 'success'>('review');
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  if (!isOpen || !product) return null;
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const subtotal = product.price;
   const tax = subtotal * 0.07; // 7% tax
   const total = subtotal + tax;
 
   const handlePaymentSuccess = (paymentIntent: { id: string; status: string }) => {
     console.log('Payment successful:', paymentIntent);
     setStep('success');
-    onPaymentSuccess();
+    onPaymentSuccess(paymentIntent);
   };
 
   const handlePaymentError = (error: string) => {
@@ -66,12 +66,10 @@ export default function CheckoutModal({
             <div>
               <h3 className="font-semibold mb-2">Order Summary</h3>
               <div className="space-y-2">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span>{item.name} × {item.qty}</span>
-                    <span>${(item.price * item.qty).toFixed(2)}</span>
-                  </div>
-                ))}
+                <div className="flex justify-between text-sm">
+                  <span>{product.name}</span>
+                  <span>${product.price.toFixed(2)}</span>
+                </div>
               </div>
               <div className="border-t pt-2 mt-2 space-y-1">
                 <div className="flex justify-between text-sm">
@@ -121,7 +119,8 @@ export default function CheckoutModal({
               onError={handlePaymentError}
               metadata={{
                 order_id: `order_${Date.now()}`,
-                items: cartItems.map(item => `${item.name}(${item.qty})`).join(', '),
+                product_id: product.id,
+                product_name: product.name,
                 customer_email: 'customer@pacmacmobile.com', // You can make this dynamic
               }}
             />
