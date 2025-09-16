@@ -24,7 +24,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax',
+    httpOnly: true
   }
 }));
 
@@ -134,6 +136,8 @@ app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/marketplace?error=auth_failed' }),
   (req, res) => {
     // Successful authentication, redirect to marketplace
+    console.log('✅ OAuth callback successful, user:', req.user?.email);
+    console.log('✅ Session ID:', req.sessionID);
     res.redirect('/marketplace?auth=success');
   }
 );
@@ -148,6 +152,10 @@ app.get('/auth/logout', (req, res) => {
 });
 
 app.get('/auth/user', (req, res) => {
+  console.log('🔍 Auth user check - isAuthenticated:', req.isAuthenticated());
+  console.log('🔍 Session ID:', req.sessionID);
+  console.log('🔍 User:', req.user?.email);
+  
   if (req.isAuthenticated()) {
     // Don't send sensitive information
     const userInfo = {
@@ -163,8 +171,10 @@ app.get('/auth/user', (req, res) => {
       stats: req.user.stats,
       verification: req.user.verification
     };
+    console.log('✅ Returning authenticated user:', userInfo.email);
     res.json({ success: true, user: userInfo });
   } else {
+    console.log('❌ User not authenticated');
     res.json({ success: false, user: null });
   }
 });
