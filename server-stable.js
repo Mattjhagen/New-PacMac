@@ -3,8 +3,14 @@ const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const cors = require('cors');
+const { IDVerificationService, BankVerificationService, AddressVerificationService } = require('./verification-service');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize verification services
+const idVerification = new IDVerificationService();
+const bankVerification = new BankVerificationService();
+const addressVerification = new AddressVerificationService();
 
 // Middleware
 app.use(express.json());
@@ -136,6 +142,109 @@ app.get('/auth/logout', (req, res) => {
     }
     res.redirect('/home.html');
   });
+});
+
+// Verification Endpoints
+app.post('/api/verification/id/initiate', async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const result = await idVerification.createVerificationSession(req.user.id, req.user);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        redirectUrl: result.redirectUrl,
+        transactionReference: result.transactionReference
+      });
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('ID Verification Initiate Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.get('/api/verification/id/status/:transactionReference', async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const result = await idVerification.getVerificationStatus(req.params.transactionReference);
+    res.json(result);
+  } catch (error) {
+    console.error('ID Verification Status Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/verification/bank/create-link-token', async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const result = await bankVerification.createLinkToken(req.user.id);
+    res.json(result);
+  } catch (error) {
+    console.error('Plaid Link Token Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/verification/bank/exchange-token', async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const { publicToken } = req.body;
+    if (!publicToken) {
+      return res.status(400).json({ success: false, error: 'Public token required' });
+    }
+
+    const result = await bankVerification.exchangePublicToken(publicToken, req.user.id);
+    res.json(result);
+  } catch (error) {
+    console.error('Plaid Exchange Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/verification/address', async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const { street, city, state, zipcode } = req.body;
+    if (!street || !city || !state || !zipcode) {
+      return res.status(400).json({ success: false, error: 'Complete address required' });
+    }
+
+    const result = await addressVerification.verifyAddress({ street, city, state, zipcode });
+    res.json(result);
+  } catch (error) {
+    console.error('Address Verification Error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Verification callback endpoints
+app.post('/api/verification/callback', (req, res) => {
+  console.log('ID Verification Callback:', req.body);
+  // Handle ID verification webhook
+  res.status(200).json({ received: true });
+});
+
+app.post('/api/plaid/webhook', (req, res) => {
+  console.log('Plaid Webhook:', req.body);
+  // Handle Plaid webhook
+  res.status(200).json({ received: true });
 });
 
 // Serve static files
