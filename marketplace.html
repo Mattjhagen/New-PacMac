@@ -1097,7 +1097,7 @@
       const authStatus = urlParams.get('auth');
       const authCode = urlParams.get('code');
       
-      if (authStatus === 'success' && authCode) {
+      if (authStatus === 'success') {
         console.log('✅ OAuth authentication successful, code received:', authCode);
         
         // Create a temporary authenticated user for OAuth success
