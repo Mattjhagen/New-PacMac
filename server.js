@@ -114,7 +114,7 @@ function requireAuth(req, res, next) {
 
 // Routes
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.redirect('/marketplace');
 });
 
 // OAuth Routes
