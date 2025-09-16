@@ -8,8 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useAuth } from '@/contexts/AuthContext'
 import ProductCard from '@/components/ProductCard'
 import ProductFilters from '@/components/ProductFilters'
-import UserRegistration from '@/components/UserRegistration'
-import UserLogin from '@/components/UserLogin'
+// Removed UserRegistration and UserLogin imports - using Google OAuth only
 import LocationPicker from '@/components/LocationPicker'
 import CheckoutModal from '@/components/CheckoutModal'
 import ProductCheckoutModal from '@/components/ProductCheckoutModal'
@@ -75,8 +74,7 @@ function PacMacMarketplace() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   
   // UI state
-  const [showUserLogin, setShowUserLogin] = useState(false)
-  const [showUserRegister, setShowUserRegister] = useState(false)
+  // Removed showUserLogin and showUserRegister - using Google OAuth only
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [splashDismissed, setSplashDismissed] = useState(false)
   
@@ -229,12 +227,12 @@ function PacMacMarketplace() {
   // Splash screen handlers
   const handleSplashGetStarted = () => {
     setSplashDismissed(true)
-    setShowUserLogin(true)
+    // Don't show login modal, just dismiss splash
   }
 
   const handleSplashSkip = () => {
     setSplashDismissed(true)
-    setShowUserLogin(true)
+    // Don't show login modal, just dismiss splash
   }
 
   // Debug authentication state
@@ -253,7 +251,8 @@ function PacMacMarketplace() {
   }
 
   // Show splash screen if not logged in, not loading, and splash hasn't been dismissed
-  if (!user && !authLoading && !splashDismissed) {
+  // Only show if OAuth is not authenticated
+  if (!user && !authLoading && !splashDismissed && !isOAuthAuthenticated) {
     console.log('Showing splash screen')
     return (
       <SplashScreen 
@@ -546,23 +545,7 @@ function PacMacMarketplace() {
 
 
         {/* User Authentication Modals */}
-        {showUserLogin && (
-          <UserLogin
-            onSuccess={() => {}} // Handled by auth context
-            onCancel={() => setShowUserLogin(false)}
-            onSwitchToRegister={() => {
-              setShowUserLogin(false)
-              setShowUserRegister(true)
-            }}
-          />
-        )}
-
-        {showUserRegister && (
-          <UserRegistration
-            onSuccess={() => {}} // Handled by auth context
-            onCancel={() => setShowUserRegister(false)}
-          />
-        )}
+        {/* Supabase login modals removed - using Google OAuth only */}
 
         {showLocationPicker && (
           <LocationPicker
