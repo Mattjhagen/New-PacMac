@@ -169,9 +169,10 @@ class RenderMCPServer {
       content: [
         {
           type: 'text',
-          text: `Found ${services.length} services:\n\n${services.map(service => 
-            `• ${service.name} (${service.id})\n  Type: ${service.type}\n  Status: ${service.serviceDetails?.buildCommand ? 'Web Service' : 'Other'}\n  URL: ${service.serviceDetails?.url || 'N/A'}\n`
-          ).join('\n')}`,
+          text: `Found ${services.length} services:\n\n${services.map(item => {
+            const service = item.service;
+            return `• ${service.name} (${service.id})\n  Type: ${service.type}\n  URL: ${service.serviceDetails?.url || 'N/A'}\n  Status: ${service.suspended === 'not_suspended' ? 'Active' : 'Suspended'}\n  Auto Deploy: ${service.autoDeploy}\n`;
+          }).join('\n')}`,
         },
       ],
     };
@@ -187,11 +188,14 @@ class RenderMCPServer {
                 `Name: ${service.name}\n` +
                 `ID: ${service.id}\n` +
                 `Type: ${service.type}\n` +
-                `Status: ${service.serviceDetails?.buildCommand ? 'Web Service' : 'Other'}\n` +
+                `Status: ${service.suspended === 'not_suspended' ? 'Active' : 'Suspended'}\n` +
                 `URL: ${service.serviceDetails?.url || 'N/A'}\n` +
-                `Build Command: ${service.serviceDetails?.buildCommand || 'N/A'}\n` +
-                `Start Command: ${service.serviceDetails?.startCommand || 'N/A'}\n` +
-                `Environment: ${service.serviceDetails?.env || 'N/A'}\n`,
+                `Build Command: ${service.serviceDetails?.envSpecificDetails?.buildCommand || service.serviceDetails?.buildCommand || 'N/A'}\n` +
+                `Start Command: ${service.serviceDetails?.envSpecificDetails?.startCommand || service.serviceDetails?.startCommand || 'N/A'}\n` +
+                `Environment: ${service.serviceDetails?.env || 'N/A'}\n` +
+                `Plan: ${service.serviceDetails?.plan || 'N/A'}\n` +
+                `Region: ${service.serviceDetails?.region || 'N/A'}\n` +
+                `Auto Deploy: ${service.autoDeploy}\n`,
         },
       ],
     };
