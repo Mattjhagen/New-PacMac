@@ -33,12 +33,20 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Google OAuth Strategy
+const callbackURL = process.env.NODE_ENV === 'production' 
+  ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') + '/auth/google/callback'
+  : 'http://localhost:3000/auth/google/callback';
+
+console.log('🔐 OAuth Configuration:');
+console.log(`   Client ID: ${process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Using fallback'}`);
+console.log(`   Client Secret: ${process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Using fallback'}`);
+console.log(`   Callback URL: ${callbackURL}`);
+console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
-  callbackURL: process.env.NODE_ENV === 'production' 
-    ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') + '/auth/google/callback'
-    : 'http://localhost:3000/auth/google/callback'
+  clientID: process.env.GOOGLE_CLIENT_ID || '1053950032683-uq62m35cvps95qql1u8b8malds0jipe2.apps.googleusercontent.com',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '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',
+  callbackURL: callbackURL
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     // Check if user already exists
