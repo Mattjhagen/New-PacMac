@@ -238,6 +238,49 @@
       gap: 0.5rem;
     }
 
+    /* Countdown Timer Styles */
+    .countdown-timer {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .countdown-label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .countdown-display {
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .countdown-display .hours {
+      color: #FF6B6B;
+    }
+
+    .countdown-display .minutes {
+      color: #4ECDC4;
+    }
+
+    .countdown-display .seconds {
+      color: #45B7D1;
+    }
+
+    .countdown-timer .expired {
+      color: #ff4757;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
     .action-btn {
       flex: 1;
       padding: 0.75rem;
@@ -406,7 +449,7 @@
   <button class="fab" onclick="showAddItemModal()">+</button>
 
   <script>
-    // Sample data for nearby items
+    // Sample data for nearby items with countdown timestamps
     const sampleItems = [
       {
         id: 1,
@@ -417,7 +460,8 @@
         category: "electronics",
         image: "📱",
         badge: "New",
-        currentBids: 12
+        currentBids: 12,
+        endTime: new Date(Date.now() + 23 * 60 * 60 * 1000 + 45 * 60 * 1000) // 23h 45m from now
       },
       {
         id: 2,
@@ -428,7 +472,8 @@
         category: "clothing",
         image: "👟",
         badge: "Popular",
-        currentBids: 8
+        currentBids: 8,
+        endTime: new Date(Date.now() + 18 * 60 * 60 * 1000 + 30 * 60 * 1000) // 18h 30m from now
       },
       {
         id: 3,
@@ -439,7 +484,8 @@
         category: "electronics",
         image: "💻",
         badge: "Hot",
-        currentBids: 25
+        currentBids: 25,
+        endTime: new Date(Date.now() + 12 * 60 * 60 * 1000 + 15 * 60 * 1000) // 12h 15m from now
       },
       {
         id: 4,
@@ -450,7 +496,8 @@
         category: "clothing",
         image: "🧥",
         badge: "Vintage",
-        currentBids: 5
+        currentBids: 5,
+        endTime: new Date(Date.now() + 6 * 60 * 60 * 1000 + 20 * 60 * 1000) // 6h 20m from now
       },
       {
         id: 5,
@@ -461,7 +508,8 @@
         category: "home",
         image: "🪑",
         badge: "Deal",
-        currentBids: 15
+        currentBids: 15,
+        endTime: new Date(Date.now() + 3 * 60 * 60 * 1000 + 45 * 60 * 1000) // 3h 45m from now
       },
       {
         id: 6,
@@ -472,7 +520,8 @@
         category: "sports",
         image: "🏀",
         badge: "Sport",
-        currentBids: 3
+        currentBids: 3,
+        endTime: new Date(Date.now() + 1 * 60 * 60 * 1000 + 30 * 60 * 1000) // 1h 30m from now
       }
     ];
 
@@ -491,29 +540,76 @@
       if (authStatus === 'success') {
         console.log('✅ OAuth authentication successful, provider:', provider);
         
-        // Create a temporary authenticated user for OAuth success
-        const oauthUser = {
-          id: 'oauth-user-' + Date.now(),
-          name: provider === 'x' ? 'X User' : 'Google User',
-          email: provider === 'x' ? 'user@x.com' : 'user@google.com',
-          avatar: provider === 'x' 
-            ? 'https://ui-avatars.com/api/?name=X+User&background=1da1f2&color=fff'
-            : 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
-          ageVerified: true,
-          identityVerified: false,
-          totalEarnings: 0,
-          isOAuth: true,
-          provider: provider
-        };
-        
-        // Store in localStorage to maintain login state
-        localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+        // Get user info from server to get actual Google name
+        try {
+          const userResponse = await fetch('/auth/user', {
+            credentials: 'include'
+          });
+          const userData = await userResponse.json();
+          
+          if (userData.success && userData.user) {
+            // Use actual user data from Google
+            const oauthUser = {
+              id: userData.user.id || 'oauth-user-' + Date.now(),
+              name: userData.user.name || userData.user.displayName || 'Google User',
+              email: userData.user.email || 'user@google.com',
+              avatar: userData.user.avatar || userData.user.photos?.[0]?.value || 
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.user.name || 'Google User')}&background=3b82f6&color=fff`,
+              ageVerified: true,
+              identityVerified: false,
+              totalEarnings: 0,
+              isOAuth: true,
+              provider: provider
+            };
+            
+            // Store in localStorage to maintain login state
+            localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+            
+            // Update UI immediately
+            updateUserInfo(oauthUser);
+            
+            // Show success notification with user's name
+            showNotification(`Welcome back, ${oauthUser.name}! 🎉`, 'success');
+          } else {
+            // Fallback if server data not available
+            const oauthUser = {
+              id: 'oauth-user-' + Date.now(),
+              name: 'Google User',
+              email: 'user@google.com',
+              avatar: 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
+              ageVerified: true,
+              identityVerified: false,
+              totalEarnings: 0,
+              isOAuth: true,
+              provider: provider
+            };
+            
+            localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+            updateUserInfo(oauthUser);
+            showNotification('Successfully signed in! Welcome to PacMac Marketplace!', 'success');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          // Fallback user creation
+          const oauthUser = {
+            id: 'oauth-user-' + Date.now(),
+            name: 'Google User',
+            email: 'user@google.com',
+            avatar: 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
+            ageVerified: true,
+            identityVerified: false,
+            totalEarnings: 0,
+            isOAuth: true,
+            provider: provider
+          };
+          
+          localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+          updateUserInfo(oauthUser);
+          showNotification('Successfully signed in! Welcome to PacMac Marketplace!', 'success');
+        }
         
         // Clear URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Show success notification
-        showNotification('Successfully signed in! Welcome to PacMac Marketplace!', 'success');
       }
       
       // Check authentication
@@ -600,8 +696,22 @@
             lng: position.coords.longitude
           };
           
-          // For demo purposes, show a mock location
-          locationElement.textContent = 'Downtown San Francisco, CA';
+          // Get actual location using reverse geocoding
+          try {
+            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${userLocation.lat}&longitude=${userLocation.lng}&localityLanguage=en`);
+            const locationData = await response.json();
+            
+            if (locationData.city && locationData.principalSubdivision) {
+              locationElement.textContent = `${locationData.city}, ${locationData.principalSubdivision}`;
+            } else if (locationData.locality) {
+              locationElement.textContent = locationData.locality;
+            } else {
+              locationElement.textContent = 'Your Location';
+            }
+          } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            locationElement.textContent = 'Your Location';
+          }
         } catch (error) {
           console.error('Geolocation error:', error);
           locationElement.textContent = 'Location access denied';
@@ -657,6 +767,12 @@
             <div class="item-meta">
               <div class="item-price">$${item.price}</div>
               <div class="item-distance">${item.distance}</div>
+            </div>
+            <div class="countdown-timer" data-end-time="${item.endTime.getTime()}">
+              <div class="countdown-label">Time Left:</div>
+              <div class="countdown-display" id="countdown-${item.id}">
+                <span class="hours">00</span>:<span class="minutes">00</span>:<span class="seconds">00</span>
+              </div>
             </div>
             <div class="item-actions">
               <button class="action-btn pass-btn" onclick="passItem(${item.id})">
@@ -765,8 +881,42 @@
     `;
     document.head.appendChild(style);
 
+    // Countdown timer functionality
+    function startCountdownTimers() {
+      setInterval(() => {
+        document.querySelectorAll('.countdown-timer').forEach(timer => {
+          const endTime = parseInt(timer.dataset.endTime);
+          const now = new Date().getTime();
+          const timeLeft = endTime - now;
+          
+          if (timeLeft > 0) {
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            const display = timer.querySelector('.countdown-display');
+            if (display) {
+              display.innerHTML = `
+                <span class="hours">${hours.toString().padStart(2, '0')}</span>:
+                <span class="minutes">${minutes.toString().padStart(2, '0')}</span>:
+                <span class="seconds">${seconds.toString().padStart(2, '0')}</span>
+              `;
+            }
+          } else {
+            // Time expired
+            timer.innerHTML = '<div class="expired">⏰ Auction Ended</div>';
+            timer.style.color = '#ff4757';
+            timer.style.fontWeight = 'bold';
+          }
+        });
+      }, 1000);
+    }
+
     // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', initApp);
+    document.addEventListener('DOMContentLoaded', () => {
+      initApp();
+      startCountdownTimers();
+    });
   </script>
 </body>
 </html>
