@@ -67,8 +67,13 @@ export default function OAuthSplashScreen({
     setAuthStep('authenticating');
 
     try {
-      // Create Google OAuth URL
-      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'your_google_client_id';
+      // Check if Google OAuth is configured
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      
+      if (!clientId || clientId === 'your_google_client_id') {
+        throw new Error('Google OAuth is not configured. Please contact support.');
+      }
+
       const redirectUri = `${window.location.origin}/auth/callback`;
       const scope = 'openid email profile';
       
