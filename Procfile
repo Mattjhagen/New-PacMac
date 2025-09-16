@@ -1,1 +1,1 @@
-web: node server-stable.js
+web: node server-verification-fix.js
