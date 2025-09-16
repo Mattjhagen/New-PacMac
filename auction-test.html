@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction System Test - PacMac Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .item-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .item-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .item-price {
+            font-size: 1.1rem;
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .auction-info {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .auction-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-not-started {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-completed {
+            background: #2196f3;
+            color: white;
+        }
+
+        .bid-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        .bid-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .bid-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .bid-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .bid-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .bids-list {
+            margin-top: 15px;
+        }
+
+        .bid-item {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .bid-amount {
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .bid-bidder {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .bid-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .countdown {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .test-button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .test-button.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .test-button.success {
+            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+
+        .test-button.warning {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Auction System Test</h1>
+            <p>Test the new auction-style bidding system where bids don't add to cart</p>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="test-section">
+            <h2>🎮 Test Controls</h2>
+            <div class="test-controls">
+                <button class="test-button primary" onclick="loadItems()">Load Sample Items</button>
+                <button class="test-button success" onclick="startAuctionTest()">Start Auction Test</button>
+                <button class="test-button warning" onclick="processCompletedAuctions()">Process Completed Auctions</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 Sample Items</h2>
+            <div id="itemsContainer">
+                <p>Click "Load Sample Items" to see available items for auction testing.</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Auction Status</h2>
+            <div id="auctionStatus">
+                <p>No active auctions to display.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentItems = [];
+        let auctionTimers = {};
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = message;
+            alertsContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Load sample items
+        async function loadItems() {
+            try {
+                const response = await fetch('/api/marketplace/items');
+                const data = await response.json();
+
+                if (data.success) {
+                    currentItems = data.items;
+                    displayItems(data.items);
+                    showAlert('Sample items loaded successfully', 'success');
+                } else {
+                    showAlert('Failed to load items: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading items: ' + error.message, 'error');
+            }
+        }
+
+        // Display items
+        function displayItems(items) {
+            const container = document.getElementById('itemsContainer');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p>No items available.</p>';
+                return;
+            }
+
+            let html = '';
+            items.forEach(item => {
+                const auctionStatus = item.auctionStatus || 'not_started';
+                const currentBid = item.currentHighestBid || 0;
+                const bidderName = item.currentHighestBidderName || 'No bids yet';
+                const timeLeft = item.auctionEndTime ? 
+                    Math.max(0, new Date(item.auctionEndTime) - new Date()) : 0;
+
+                html += `
+                    <div class="item-card">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-price">Starting Price: $${item.price}</div>
+                        
+                        <div class="auction-info">
+                            <div class="auction-status status-${auctionStatus}">
+                                ${auctionStatus.toUpperCase()}
+                            </div>
+                            
+                            <div><strong>Current Highest Bid:</strong> $${currentBid}</div>
+                            <div><strong>Current Leader:</strong> ${bidderName}</div>
+                            <div><strong>Total Bids:</strong> ${item.bids ? item.bids.length : 0}</div>
+                            
+                            ${item.auctionEndTime ? `
+                                <div class="countdown" id="countdown-${item.id}">
+                                    Time Left: ${formatTime(timeLeft)}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="bid-form">
+                            <input type="number" class="bid-input" id="bid-${item.id}" 
+                                   placeholder="Enter bid amount" min="${currentBid + 0.01}" 
+                                   step="0.01" value="${(currentBid + 0.01).toFixed(2)}">
+                            <button class="bid-button" onclick="placeBid('${item.id}')" 
+                                    ${auctionStatus !== 'active' && auctionStatus !== 'not_started' ? 'disabled' : ''}>
+                                Place Bid
+                            </button>
+                        </div>
+
+                        ${item.bids && item.bids.length > 0 ? `
+                            <div class="bids-list">
+                                <h4>Recent Bids:</h4>
+                                ${item.bids.slice(-5).reverse().map(bid => `
+                                    <div class="bid-item">
+                                        <div class="bid-amount">$${bid.amount}</div>
+                                        <div class="bid-bidder">by ${bid.bidderName}</div>
+                                        <div class="bid-time">${new Date(bid.createdAt).toLocaleString()}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Start countdown timers for active auctions
+            items.forEach(item => {
+                if (item.auctionEndTime && item.auctionStatus === 'active') {
+                    startCountdown(item.id, item.auctionEndTime);
+                }
+            });
+        }
+
+        // Place bid
+        async function placeBid(itemId) {
+            const bidInput = document.getElementById(`bid-${itemId}`);
+            const bidAmount = parseFloat(bidInput.value);
+
+            if (!bidAmount || bidAmount <= 0) {
+                showAlert('Please enter a valid bid amount', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/marketplace/bid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        itemId: itemId,
+                        bidderId: 'test-bidder-' + Date.now(),
+                        bidderName: 'Test Bidder ' + Math.floor(Math.random() * 1000),
+                        amount: bidAmount
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(`Bid of $${bidAmount} placed successfully!`, 'success');
+                    loadItems(); // Refresh items
+                    updateAuctionStatus(itemId);
+                } else {
+                    if (data.requiresAgeVerification) {
+                        showAlert('Age verification required: ' + data.message, 'warning');
+                    } else {
+                        showAlert('Failed to place bid: ' + data.error, 'error');
+                    }
+                }
+            } catch (error) {
+                showAlert('Error placing bid: ' + error.message, 'error');
+            }
+        }
+
+        // Update auction status
+        async function updateAuctionStatus(itemId) {
+            try {
+                const response = await fetch(`/api/marketplace/auction/${itemId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const auction = data.auction;
+                    const statusDiv = document.getElementById('auctionStatus');
+                    
+                    let statusHtml = `
+                        <div class="item-card">
+                            <div class="item-title">${auction.title}</div>
+                            <div class="auction-status status-${auction.auctionStatus}">
+                                ${auction.auctionStatus.toUpperCase()}
+                            </div>
+                            <div><strong>Current Bid:</strong> $${auction.currentHighestBid}</div>
+                            <div><strong>Leader:</strong> ${auction.currentHighestBidder || 'No bids'}</div>
+                            <div><strong>Bids Count:</strong> ${auction.bidsCount}</div>
+                            <div><strong>Time Left:</strong> ${formatTime(auction.timeLeft)}</div>
+                            <div><strong>Active:</strong> ${auction.isActive ? 'Yes' : 'No'}</div>
+                        </div>
+                    `;
+                    
+                    statusDiv.innerHTML = statusHtml;
+                }
+            } catch (error) {
+                console.error('Error updating auction status:', error);
+            }
+        }
+
+        // Start auction test
+        async function startAuctionTest() {
+            showAlert('Starting auction test...', 'info');
+            
+            // Place some test bids
+            const items = currentItems.slice(0, 2); // Test first 2 items
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const bidAmount = item.price + (i + 1) * 10; // Bid above starting price
+                
+                setTimeout(async () => {
+                    try {
+                        const response = await fetch('/api/marketplace/bid', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                itemId: item.id,
+                                bidderId: 'test-bidder-' + i,
+                                bidderName: 'Test Bidder ' + (i + 1),
+                                amount: bidAmount
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            showAlert(`Test bid $${bidAmount} placed on ${item.title}`, 'success');
+                            loadItems();
+                        }
+                    } catch (error) {
+                        console.error('Test bid error:', error);
+                    }
+                }, i * 2000); // Stagger bids by 2 seconds
+            }
+        }
+
+        // Process completed auctions
+        async function processCompletedAuctions() {
+            showAlert('Processing completed auctions...', 'info');
+            
+            for (const item of currentItems) {
+                if (item.auctionEndTime && new Date() > new Date(item.auctionEndTime) && item.auctionStatus !== 'completed') {
+                    try {
+                        const response = await fetch('/api/marketplace/process-auction', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                itemId: item.id
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            showAlert(`Auction completed for ${item.title}. Winner has 24 hours to pay.`, 'success');
+                        }
+                    } catch (error) {
+                        console.error('Error processing auction:', error);
+                    }
+                }
+            }
+            
+            loadItems(); // Refresh items
+        }
+
+        // Start countdown timer
+        function startCountdown(itemId, endTime) {
+            const countdownElement = document.getElementById(`countdown-${itemId}`);
+            if (!countdownElement) return;
+
+            const timer = setInterval(() => {
+                const now = new Date();
+                const end = new Date(endTime);
+                const timeLeft = end - now;
+
+                if (timeLeft <= 0) {
+                    countdownElement.textContent = 'Auction Ended';
+                    countdownElement.style.color = '#e74c3c';
+                    clearInterval(timer);
+                    delete auctionTimers[itemId];
+                    return;
+                }
+
+                countdownElement.textContent = `Time Left: ${formatTime(timeLeft)}`;
+            }, 1000);
+
+            auctionTimers[itemId] = timer;
+        }
+
+        // Format time
+        function formatTime(milliseconds) {
+            const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+            const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            showAlert('Auction system test page loaded. Click "Load Sample Items" to begin.', 'info');
+        });
+    </script>
+</body>
+</html>
