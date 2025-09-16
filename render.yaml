@@ -1,11 +1,13 @@
 services:
   - type: web
-    name: pacmac-web
+    name: pacmac-marketplace
     env: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
-    healthCheckPath: /api/health
+      - key: PORT
+        value: 3000

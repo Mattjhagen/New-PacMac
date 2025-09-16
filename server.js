@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 'https://pacmacmobile.com' : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' ? process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com' : 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
@@ -37,7 +37,7 @@ passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
   clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
   callbackURL: process.env.NODE_ENV === 'production' 
-    ? 'https://pacmacmobile.com/auth/google/callback' 
+    ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') + '/auth/google/callback'
     : 'http://localhost:3000/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
@@ -985,11 +985,23 @@ app.get('/api/health', (req, res) => {
 
 // Simple health check endpoint for deployment platforms
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
+  try {
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 3000
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // ============================================================================
@@ -1828,13 +1840,27 @@ initializeMarketplaceData();
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 PacMac Mobile server running on port ${PORT}`);
-  console.log(`📱 Open http://localhost:${PORT} to view the application`);
-  console.log(`🔧 API endpoints available at http://localhost:${PORT}/api/`);
-  console.log(`💚 Health check available at http://localhost:${PORT}/health`);
+  console.log(`🚀 PacMac Marketplace server running on port ${PORT}`);
+  console.log(`📱 Marketplace: http://localhost:${PORT}/marketplace`);
+  console.log(`🔐 OAuth: http://localhost:${PORT}/auth/google`);
+  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'Configured' : 'Not configured'}`);
+  console.log(`📧 SendGrid: ${process.env.SENDGRID_API_KEY ? 'Configured' : 'Not configured'}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 CORS Origin: ${process.env.NODE_ENV === 'production' ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') : 'http://localhost:3000'}`);
+  console.log(`💚 Health check available at http://localhost:${PORT}/health`);
 }).on('error', (err) => {
   console.error('❌ Failed to start server:', err);
+  process.exit(1);
+});
+
+// Error handling
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
 
