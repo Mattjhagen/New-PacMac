@@ -12,6 +12,7 @@ import UserRegistration from '@/components/UserRegistration'
 import UserLogin from '@/components/UserLogin'
 import LocationPicker from '@/components/LocationPicker'
 import CheckoutModal from '@/components/CheckoutModal'
+import ProductCheckoutModal from '@/components/ProductCheckoutModal'
 import SplashScreen from '@/components/SplashScreen'
 import OAuthSplashScreen from '@/components/OAuthSplashScreen'
 
@@ -543,7 +544,7 @@ export default function PacMacMarketplace() {
         />
 
         {/* Individual Product Checkout Modal */}
-        <CheckoutModal
+        <ProductCheckoutModal
           isOpen={showCheckoutModal}
           onClose={() => setShowCheckoutModal(false)}
           product={selectedProduct}
