@@ -1564,7 +1564,7 @@ app.post('/api/marketplace/items', requireAuth, async (req, res) => {
 // Place bid on item
 app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
   try {
-    const { itemId, bidderId, bidderName, amount = 0.05 } = req.body;
+    const { itemId, bidderId, bidderName, amount = 0.99 } = req.body;
     
     if (!itemId || !bidderId) {
       return res.status(400).json({
