@@ -16,7 +16,7 @@ import {
   ChatBubbleLeftRightIcon,
   PlayIcon,
   CheckIcon,
-  LocationMarkerIcon,
+  MapPinIcon as LocationMarkerIcon,
   GiftIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
