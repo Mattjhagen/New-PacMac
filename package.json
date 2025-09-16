@@ -20,11 +20,14 @@
   "author": "PacMac Mobile LLC",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "stripe": "^14.7.0",
     "@sendgrid/mail": "^8.0.1",
-    "dotenv": "^16.3.1"
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
+    "@vercel/toolbar": "^0.1.41",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "stripe": "^14.7.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
@@ -41,6 +44,3 @@
   },
   "homepage": "https://pacmacmobile.com"
 }
-
-
-

@@ -256,7 +256,7 @@ If you encounter issues:
 2. Review browser console for errors
 3. Check server logs
 4. Contact support:
-   - **Phone**: 402.302.2197
+   - **Phone**: (947) 225-4327
    - **Email**: info@pacmacmobile.com
 
 ## 🎉 Go Live Checklist

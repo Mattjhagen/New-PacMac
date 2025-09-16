@@ -163,7 +163,6 @@
       <a href="#tradein" class="pill">Trade‑In</a>
       <a href="#lease" class="pill">Lease‑to‑Own</a>
       <a href="#internet" class="pill">Unlimited Internet</a>
-      <a href="#support" class="pill">Support</a>
       <div class="spacer"></div>
       <button class="link" id="take-tour" aria-label="Take tour">Take Tour</button>
       <button class="link" id="open-cart" aria-label="Open cart">Cart</button>
@@ -246,12 +245,6 @@
       </div>
     </section>
 
-    <section class="section" id="support">
-      <div class="panel">
-        <h3>Support</h3>
-        <p>Email: info@pacmacmobile.com | 402.302.2197</p>
-      </div>
-    </section>
 
 <footer>
   <div class="cols">
@@ -263,9 +256,11 @@
       <li><a href="pacmac_terms_service.html">Terms of Service</a></li>
       <li><a href="pacmac_privacy_policy.html">Privacy Policy</a></li>
     </ul>
-    <div>
-      <strong>Cart</strong><br>
-      Secure checkout powered on‑site (protected by red pandas)
+    <div style="color: black;">
+      <strong>Contact Us</strong><br>
+      Email: info@pacmacmobile.com<br>
+      Phone: (947) 225-4327<br>
+      1402 Jones Street, Omaha, NE 68901
     </div>
   </div>
 </footer>
@@ -1079,6 +1074,22 @@
       if (paymentResult.success) {
         const orderId = PMM_UTILS.generateOrderId();
         
+        // Track user transaction history for bank verification threshold
+        const userEmail = email;
+        const userTransactionHistory = JSON.parse(localStorage.getItem(`user_transactions_${userEmail}`) || '[]');
+        userTransactionHistory.push({
+          orderId: orderId,
+          amount: total,
+          date: new Date().toISOString(),
+          type: 'card_payment'
+        });
+        localStorage.setItem(`user_transactions_${userEmail}`, JSON.stringify(userTransactionHistory));
+        
+        // Check if user meets bank verification threshold (first transaction + $50+)
+        const totalSpent = userTransactionHistory.reduce((sum, transaction) => sum + transaction.amount, 0);
+        const isFirstTransaction = userTransactionHistory.length === 1;
+        const meetsThreshold = totalSpent >= 50;
+        
         // Check if Nomad add-on was selected
         const nomadAddon = sessionStorage.getItem('nomadAddon');
         let emailHtml = `<h2>Order Confirmed!</h2>
@@ -1087,9 +1098,22 @@
            <p><strong>Payment Method:</strong> Credit/Debit Card</p>
            <p><strong>Total:</strong> ${PMM_UTILS.formatPrice(total)}</p>
            <p>We'll ship your items within 1-2 business days and send you tracking information.</p>
-           <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>`;
+           <p>Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com</p>`;
         
         let emailText = `Order Confirmed!\n\nOrder ID: ${orderId}\nPayment Method: Credit/Debit Card\nTotal: ${PMM_UTILS.formatPrice(total)}\n\nWe'll ship your items within 1-2 business days.`;
+        
+        // Add bank verification notice if threshold is met
+        if (isFirstTransaction && meetsThreshold) {
+          emailHtml += `
+           <div style="margin-top: 20px; padding: 16px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+             <h3>🔐 Bank Verification Required</h3>
+             <p>As part of our security measures, we require bank verification for transactions over $50.</p>
+             <p>You will receive a separate email with instructions to complete your bank verification within 24 hours.</p>
+             <p><strong>Note:</strong> Your order will be processed normally, but verification is required for future transactions.</p>
+           </div>`;
+          
+          emailText += `\n\n🔐 Bank Verification Required\nAs part of our security measures, we require bank verification for transactions over $50. You will receive a separate email with instructions to complete your bank verification within 24 hours.`;
+        }
         
         if (nomadAddon) {
           const nomadItem = JSON.parse(nomadAddon);
@@ -1177,6 +1201,22 @@
       if (leaseResult.status === 'approved') {
         const orderId = PMM_UTILS.generateOrderId();
         
+        // Track user transaction history for bank verification threshold
+        const userEmail = email;
+        const userTransactionHistory = JSON.parse(localStorage.getItem(`user_transactions_${userEmail}`) || '[]');
+        userTransactionHistory.push({
+          orderId: orderId,
+          amount: total,
+          date: new Date().toISOString(),
+          type: 'progressive_lease'
+        });
+        localStorage.setItem(`user_transactions_${userEmail}`, JSON.stringify(userTransactionHistory));
+        
+        // Check if user meets bank verification threshold (first transaction + $50+)
+        const totalSpent = userTransactionHistory.reduce((sum, transaction) => sum + transaction.amount, 0);
+        const isFirstTransaction = userTransactionHistory.length === 1;
+        const meetsThreshold = totalSpent >= 50;
+        
         // Check if Nomad add-on was selected
         const nomadAddon = sessionStorage.getItem('nomadAddon');
         let emailHtml = `<h2>Lease Application Approved!</h2>
@@ -1190,6 +1230,19 @@
            <p><small>Progressive Leasing is a lease-to-own program. You will own the merchandise after making all payments. This is not a credit transaction. Additional fees may apply.</small></p>`;
         
         let emailText = `Lease Application Approved!\n\nOrder ID: ${orderId}\nLease ID: ${leaseResult.id}\nCredit Limit: ${PMM_UTILS.formatPrice(leaseResult.limit)}\nMonthly Payment: ${PMM_UTILS.formatPrice(leaseResult.monthlyPayment)}\nTerms: ${leaseResult.terms}\n\nWe'll contact you within 24 hours to complete your order.`;
+        
+        // Add bank verification notice if threshold is met
+        if (isFirstTransaction && meetsThreshold) {
+          emailHtml += `
+           <div style="margin-top: 20px; padding: 16px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+             <h3>🔐 Bank Verification Required</h3>
+             <p>As part of our security measures, we require bank verification for transactions over $50.</p>
+             <p>You will receive a separate email with instructions to complete your bank verification within 24 hours.</p>
+             <p><strong>Note:</strong> Your lease application will be processed normally, but verification is required for future transactions.</p>
+           </div>`;
+          
+          emailText += `\n\n🔐 Bank Verification Required\nAs part of our security measures, we require bank verification for transactions over $50. You will receive a separate email with instructions to complete your bank verification within 24 hours.`;
+        }
         
         if (nomadAddon) {
           const nomadItem = JSON.parse(nomadAddon);

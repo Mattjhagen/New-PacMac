@@ -263,7 +263,7 @@ Add `?debug=true` to the URL to enable detailed logging.
 
 ## 📞 Support
 
-- **Phone**: 402.302.2197
+- **Phone**: (947) 225-4327
 - **Email**: info@pacmacmobile.com
 - **Address**: 1402 Jones Street, Omaha, NE 68901
 

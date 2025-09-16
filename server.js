@@ -112,7 +112,7 @@ app.post('/api/orders', async (req, res) => {
         <p><strong>Total:</strong> $${(total / 100).toFixed(2)}</p>
         <p><strong>Estimated Shipping:</strong> ${order.estimatedShipping.toLocaleDateString()}</p>
         <p>We'll send you tracking information once your order ships.</p>
-        <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>
+        <p>Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com</p>
       `;
 
       const emailText = `
@@ -121,7 +121,7 @@ app.post('/api/orders', async (req, res) => {
         Total: $${(total / 100).toFixed(2)}\n
         Estimated Shipping: ${order.estimatedShipping.toLocaleDateString()}\n\n
         We'll send you tracking information once your order ships.\n
-        Questions? Call us at 402.302.2197 or email info@pacmacmobile.com
+        Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com
       `;
 
       await sgMail.send({
@@ -178,7 +178,7 @@ app.post('/api/trade-in', async (req, res) => {
         <p><strong>Estimated Value:</strong> $${quote.amount}</p>
         <p><strong>Estimated Processing:</strong> ${tradeIn.estimatedProcessing.toLocaleDateString()}</p>
         <p>We'll contact you within 24 hours with next steps.</p>
-        <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>
+        <p>Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com</p>
       `;
 
       const emailText = `
@@ -189,7 +189,7 @@ app.post('/api/trade-in', async (req, res) => {
         Estimated Value: $${quote.amount}\n
         Estimated Processing: ${tradeIn.estimatedProcessing.toLocaleDateString()}\n\n
         We'll contact you within 24 hours with next steps.\n
-        Questions? Call us at 402.302.2197 or email info@pacmacmobile.com
+        Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com
       `;
 
       await sgMail.send({
@@ -254,7 +254,7 @@ app.post('/api/progressive-leasing', async (req, res) => {
           <p><strong>Monthly Payment:</strong> $${lease.monthlyPayment}</p>
           <p><strong>Terms:</strong> ${lease.terms}</p>
           <p>We'll contact you within 24 hours to complete your order.</p>
-          <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>
+          <p>Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com</p>
         `;
 
         const emailText = `
@@ -264,7 +264,7 @@ app.post('/api/progressive-leasing', async (req, res) => {
           Monthly Payment: $${lease.monthlyPayment}\n
           Terms: ${lease.terms}\n\n
           We'll contact you within 24 hours to complete your order.\n
-          Questions? Call us at 402.302.2197 or email info@pacmacmobile.com
+          Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com
         `;
 
         await sgMail.send({
@@ -325,7 +325,7 @@ app.post('/api/nomad-internet', async (req, res) => {
         <p><strong>Plan:</strong> ${planId}</p>
         <p><strong>Estimated Activation:</strong> ${order.estimatedActivation.toLocaleDateString()}</p>
         <p>We'll contact you within 24 hours with activation details.</p>
-        <p>Questions? Call us at 402.302.2197 or email info@pacmacmobile.com</p>
+        <p>Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com</p>
       `;
 
       const emailText = `
@@ -334,7 +334,7 @@ app.post('/api/nomad-internet', async (req, res) => {
         Plan: ${planId}\n
         Estimated Activation: ${order.estimatedActivation.toLocaleDateString()}\n\n
         We'll contact you within 24 hours with activation details.\n
-        Questions? Call us at 402.302.2197 or email info@pacmacmobile.com
+        Questions? Call us at (947) 225-4327 or email info@pacmacmobile.com
       `;
 
       await sgMail.send({
