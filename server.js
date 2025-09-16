@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key');
 const sgMail = require('@sendgrid/mail');
 
@@ -7,16 +10,155 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? 'https://pacmacmobile.com' : 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.static('.'));
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'pacmac-marketplace-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Passport configuration
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Google OAuth Strategy
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
+  callbackURL: process.env.NODE_ENV === 'production' 
+    ? 'https://pacmacmobile.com/auth/google/callback' 
+    : 'http://localhost:3000/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Check if user already exists
+    let user = marketplaceData.users.find(u => u.googleId === profile.id);
+    
+    if (user) {
+      // Update last login
+      user.lastLogin = new Date().toISOString();
+      return done(null, user);
+    }
+    
+    // Create new user
+    user = {
+      id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      googleId: profile.id,
+      email: profile.emails[0].value,
+      name: profile.displayName,
+      firstName: profile.name.givenName,
+      lastName: profile.name.familyName,
+      profilePicture: profile.photos[0]?.value,
+      isVerified: false,
+      ageVerified: false,
+      identityVerified: false,
+      payoutThreshold: 0,
+      totalEarnings: 0,
+      deviceIds: [],
+      bannedDevices: [],
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      stats: {
+        totalBids: 0,
+        totalPurchases: 0,
+        totalSales: 0,
+        rating: 5.0,
+        disputes: 0,
+        violations: 0
+      },
+      verification: {
+        photoIdUploaded: false,
+        addressVerified: false,
+        socialSecurityVerified: false,
+        phoneVerified: false
+      }
+    };
+    
+    marketplaceData.users.push(user);
+    return done(null, user);
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+// Passport serialization
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  const user = marketplaceData.users.find(u => u.id === id);
+  done(null, user);
+});
 
 // Configure SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || 'SG.your_sendgrid_api_key');
 
+// Authentication middleware
+function requireAuth(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ success: false, error: 'Authentication required' });
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
+});
+
+// OAuth Routes
+app.get('/auth/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/marketplace?error=auth_failed' }),
+  (req, res) => {
+    // Successful authentication, redirect to marketplace
+    res.redirect('/marketplace?auth=success');
+  }
+);
+
+app.get('/auth/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ success: false, error: 'Logout failed' });
+    }
+    res.redirect('/marketplace');
+  });
+});
+
+app.get('/auth/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    // Don't send sensitive information
+    const userInfo = {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      profilePicture: req.user.profilePicture,
+      isVerified: req.user.isVerified,
+      ageVerified: req.user.ageVerified,
+      identityVerified: req.user.identityVerified,
+      payoutThreshold: req.user.payoutThreshold,
+      totalEarnings: req.user.totalEarnings,
+      stats: req.user.stats,
+      verification: req.user.verification
+    };
+    res.json({ success: true, user: userInfo });
+  } else {
+    res.json({ success: false, user: null });
+  }
 });
 
 // Admin sync page
@@ -851,6 +993,298 @@ app.get('/health', (req, res) => {
 });
 
 // ============================================================================
+// VERIFICATION & SAFETY ENDPOINTS
+// ============================================================================
+
+// Age verification
+app.post('/api/verify/age', requireAuth, (req, res) => {
+  try {
+    const { birthDate, state } = req.body;
+    
+    if (!birthDate) {
+      return res.status(400).json({
+        success: false,
+        error: 'Birth date is required'
+      });
+    }
+    
+    const age = Math.floor((new Date() - new Date(birthDate)) / (365.25 * 24 * 60 * 60 * 1000));
+    const minAge = (state === 'AL' || state === 'NE' || state === 'MS') ? 21 : 18;
+    
+    if (age < minAge) {
+      return res.status(400).json({
+        success: false,
+        error: `You must be at least ${minAge} years old to use this platform`
+      });
+    }
+    
+    // Update user age verification
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (user) {
+      user.ageVerified = true;
+      user.verification.birthDate = birthDate;
+      user.verification.state = state;
+    }
+    
+    res.json({
+      success: true,
+      message: 'Age verification successful',
+      age: age
+    });
+  } catch (error) {
+    console.error('Error verifying age:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Photo ID upload
+app.post('/api/verify/photo-id', requireAuth, (req, res) => {
+  try {
+    const { imageData, idType, idNumber } = req.body;
+    
+    if (!imageData || !idType || !idNumber) {
+      return res.status(400).json({
+        success: false,
+        error: 'Image data, ID type, and ID number are required'
+      });
+    }
+    
+    // In production, you would:
+    // 1. Save the image to secure storage
+    // 2. Use OCR to extract information
+    // 3. Verify with third-party service
+    // 4. Store encrypted data
+    
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (user) {
+      user.verification.photoIdUploaded = true;
+      user.verification.idType = idType;
+      user.verification.idNumber = idNumber; // In production, encrypt this
+      user.verification.photoIdUploadedAt = new Date().toISOString();
+    }
+    
+    res.json({
+      success: true,
+      message: 'Photo ID uploaded successfully. Verification pending.'
+    });
+  } catch (error) {
+    console.error('Error uploading photo ID:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Address verification
+app.post('/api/verify/address', requireAuth, (req, res) => {
+  try {
+    const { address, city, state, zipCode } = req.body;
+    
+    if (!address || !city || !state || !zipCode) {
+      return res.status(400).json({
+        success: false,
+        error: 'Complete address information is required'
+      });
+    }
+    
+    // In production, verify with USPS API or similar service
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (user) {
+      user.verification.addressVerified = true;
+      user.verification.address = { address, city, state, zipCode };
+      user.verification.addressVerifiedAt = new Date().toISOString();
+    }
+    
+    res.json({
+      success: true,
+      message: 'Address verification successful'
+    });
+  } catch (error) {
+    console.error('Error verifying address:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Social Security verification (last 4 digits)
+app.post('/api/verify/social', requireAuth, (req, res) => {
+  try {
+    const { lastFour } = req.body;
+    
+    if (!lastFour || lastFour.length !== 4 || !/^\d{4}$/.test(lastFour)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Last 4 digits of Social Security Number are required'
+      });
+    }
+    
+    // In production, verify with third-party service
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (user) {
+      user.verification.socialSecurityVerified = true;
+      user.verification.socialLastFour = lastFour; // In production, encrypt this
+      user.verification.socialVerifiedAt = new Date().toISOString();
+      
+      // Check if all verification is complete
+      if (user.verification.photoIdUploaded && 
+          user.verification.addressVerified && 
+          user.verification.socialSecurityVerified) {
+        user.identityVerified = true;
+        user.isVerified = true;
+      }
+    }
+    
+    res.json({
+      success: true,
+      message: 'Social Security verification successful'
+    });
+  } catch (error) {
+    console.error('Error verifying social security:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Device tracking
+app.post('/api/device/register', requireAuth, (req, res) => {
+  try {
+    const { deviceId, imei, serialNumber, phoneNumber, userAgent, platform } = req.body;
+    
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    // Check if device is banned
+    const isBanned = marketplaceData.bannedDevices.some(device => 
+      device.deviceId === deviceId || 
+      device.imei === imei || 
+      device.serialNumber === serialNumber
+    );
+    
+    if (isBanned) {
+      return res.status(403).json({
+        success: false,
+        error: 'This device has been permanently banned from the platform'
+      });
+    }
+    
+    // Register device
+    const deviceInfo = {
+      deviceId,
+      imei,
+      serialNumber,
+      phoneNumber,
+      userAgent,
+      platform,
+      registeredAt: new Date().toISOString(),
+      userId: req.user.id
+    };
+    
+    // Add to user's device list if not already present
+    const existingDevice = user.deviceIds.find(d => d.deviceId === deviceId);
+    if (!existingDevice) {
+      user.deviceIds.push(deviceInfo);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Device registered successfully'
+    });
+  } catch (error) {
+    console.error('Error registering device:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Content moderation - check for prohibited items
+app.post('/api/moderate/content', requireAuth, (req, res) => {
+  try {
+    const { title, description, category, images } = req.body;
+    
+    const prohibitedKeywords = [
+      'pet', 'pets', 'animal', 'animals', 'dog', 'cat', 'bird', 'fish', 'hamster',
+      'living', 'alive', 'breed', 'puppy', 'kitten', 'livestock', 'cattle',
+      'horse', 'pony', 'reptile', 'snake', 'lizard', 'turtle', 'rabbit'
+    ];
+    
+    const content = `${title} ${description} ${category}`.toLowerCase();
+    const hasProhibitedContent = prohibitedKeywords.some(keyword => 
+      content.includes(keyword)
+    );
+    
+    if (hasProhibitedContent) {
+      // Log violation
+      const user = marketplaceData.users.find(u => u.id === req.user.id);
+      if (user) {
+        user.stats.violations++;
+      }
+      
+      return res.status(400).json({
+        success: false,
+        error: 'Prohibited content detected. No pets, animals, or living things are allowed on the platform.',
+        violation: true
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Content approved'
+    });
+  } catch (error) {
+    console.error('Error moderating content:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Payout threshold check
+app.get('/api/payout/status', requireAuth, (req, res) => {
+  try {
+    const user = marketplaceData.users.find(u => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    const canPayout = user.totalEarnings >= 50 && user.identityVerified;
+    
+    res.json({
+      success: true,
+      canPayout: canPayout,
+      totalEarnings: user.totalEarnings,
+      threshold: 50,
+      remaining: Math.max(0, 50 - user.totalEarnings),
+      identityVerified: user.identityVerified
+    });
+  } catch (error) {
+    console.error('Error checking payout status:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ============================================================================
 // MARKETPLACE API ENDPOINTS
 // ============================================================================
 
@@ -859,7 +1293,14 @@ const marketplaceData = {
   items: [],
   transactions: [],
   users: [],
-  chats: []
+  chats: [],
+  bannedDevices: [],
+  analytics: {
+    userBehavior: [],
+    purchaseHistory: [],
+    searchHistory: [],
+    deviceAnalytics: []
+  }
 };
 
 // Marketplace routes
@@ -907,7 +1348,7 @@ app.get('/api/marketplace/items', (req, res) => {
 });
 
 // Create new item listing
-app.post('/api/marketplace/items', (req, res) => {
+app.post('/api/marketplace/items', requireAuth, async (req, res) => {
   try {
     const { title, description, price, category, location, sellerId, sellerName } = req.body;
     
@@ -915,6 +1356,25 @@ app.post('/api/marketplace/items', (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Missing required fields'
+      });
+    }
+    
+    // Content moderation check
+    const moderationResponse = await fetch('http://localhost:3000/api/moderate/content', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': req.headers.cookie // Forward session cookie
+      },
+      body: JSON.stringify({ title, description, category })
+    });
+    
+    const moderationResult = await moderationResponse.json();
+    if (!moderationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: moderationResult.error,
+        violation: moderationResult.violation
       });
     }
     
@@ -954,7 +1414,7 @@ app.post('/api/marketplace/items', (req, res) => {
 });
 
 // Place bid on item
-app.post('/api/marketplace/bid', async (req, res) => {
+app.post('/api/marketplace/bid', requireAuth, async (req, res) => {
   try {
     const { itemId, bidderId, bidderName, amount = 0.05 } = req.body;
     
@@ -1036,7 +1496,7 @@ app.post('/api/marketplace/bid', async (req, res) => {
 });
 
 // Purchase item (heart action)
-app.post('/api/marketplace/purchase', async (req, res) => {
+app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
   try {
     const { itemId, buyerId, buyerName, amount = 1.00 } = req.body;
     

@@ -7,6 +7,7 @@
   <meta name="description" content="Proximity-based marketplace for local trading with escrow protection." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🛒</text></svg>">
   <script src="config.js" defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root{
       --bg: #000;
@@ -408,10 +409,16 @@
         <span>PacMac Marketplace</span>
       </div>
       <div class="spacer"></div>
-      <button class="link" onclick="showProfile()">Profile</button>
-      <button class="link" onclick="showTransactions()">Transactions</button>
-      <button class="link" onclick="showListings()">My Listings</button>
-      <button class="pill" onclick="showAddItem()">+ Add Item</button>
+      <div id="authButtons" class="auth-buttons">
+        <button class="btn btn-primary" onclick="loginWithGoogle()">Sign In with Google</button>
+      </div>
+      <div id="userMenu" class="user-menu hidden">
+        <button class="link" onclick="showProfile()">Profile</button>
+        <button class="link" onclick="showTransactions()">Transactions</button>
+        <button class="link" onclick="showListings()">My Listings</button>
+        <button class="pill" onclick="showAddItem()">+ Add Item</button>
+        <button class="link" onclick="logout()">Logout</button>
+      </div>
     </nav>
   </header>
 
@@ -557,25 +564,132 @@
     </div>
   </div>
 
+  <!-- Age Verification Modal -->
+  <div class="modal hidden" id="ageVerificationModal">
+    <div class="modal-content">
+      <h2>Age Verification Required</h2>
+      <p>You must be at least 18 years old (21 in some states) to use this platform.</p>
+      <form id="ageVerificationForm">
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">Birth Date</label>
+          <input type="date" id="birthDateInput" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px;">State</label>
+          <select id="stateInput" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+            <option value="">Select State</option>
+            <option value="AL">Alabama (21+)</option>
+            <option value="NE">Nebraska (21+)</option>
+            <option value="MS">Mississippi (21+)</option>
+            <option value="CA">California (18+)</option>
+            <option value="NY">New York (18+)</option>
+            <option value="TX">Texas (18+)</option>
+            <option value="FL">Florida (18+)</option>
+            <option value="IL">Illinois (18+)</option>
+            <option value="PA">Pennsylvania (18+)</option>
+            <option value="OH">Ohio (18+)</option>
+            <option value="GA">Georgia (18+)</option>
+            <option value="NC">North Carolina (18+)</option>
+            <option value="MI">Michigan (18+)</option>
+            <option value="NJ">New Jersey (18+)</option>
+            <option value="VA">Virginia (18+)</option>
+            <option value="WA">Washington (18+)</option>
+            <option value="AZ">Arizona (18+)</option>
+            <option value="MA">Massachusetts (18+)</option>
+            <option value="TN">Tennessee (18+)</option>
+            <option value="IN">Indiana (18+)</option>
+            <option value="MO">Missouri (18+)</option>
+            <option value="MD">Maryland (18+)</option>
+            <option value="WI">Wisconsin (18+)</option>
+            <option value="CO">Colorado (18+)</option>
+            <option value="MN">Minnesota (18+)</option>
+            <option value="SC">South Carolina (18+)</option>
+            <option value="AL">Alabama (21+)</option>
+            <option value="LA">Louisiana (18+)</option>
+            <option value="KY">Kentucky (18+)</option>
+            <option value="OR">Oregon (18+)</option>
+            <option value="OK">Oklahoma (18+)</option>
+            <option value="CT">Connecticut (18+)</option>
+            <option value="UT">Utah (18+)</option>
+            <option value="IA">Iowa (18+)</option>
+            <option value="NV">Nevada (18+)</option>
+            <option value="AR">Arkansas (18+)</option>
+            <option value="NM">New Mexico (18+)</option>
+            <option value="WV">West Virginia (18+)</option>
+            <option value="ID">Idaho (18+)</option>
+            <option value="HI">Hawaii (18+)</option>
+            <option value="NH">New Hampshire (18+)</option>
+            <option value="ME">Maine (18+)</option>
+            <option value="MT">Montana (18+)</option>
+            <option value="RI">Rhode Island (18+)</option>
+            <option value="DE">Delaware (18+)</option>
+            <option value="SD">South Dakota (18+)</option>
+            <option value="ND">North Dakota (18+)</option>
+            <option value="AK">Alaska (18+)</option>
+            <option value="VT">Vermont (18+)</option>
+            <option value="WY">Wyoming (18+)</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="hideAgeVerification()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Verify Age</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Identity Verification Modal -->
+  <div class="modal hidden" id="identityVerificationModal">
+    <div class="modal-content">
+      <h2>Identity Verification Required</h2>
+      <p>To receive payouts over $50, you must verify your identity with photo ID, address, and last 4 digits of SSN.</p>
+      
+      <div class="verification-steps">
+        <div class="verification-step" id="photoIdStep">
+          <h3>1. Photo ID Upload</h3>
+          <input type="file" id="photoIdInput" accept="image/*" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg); margin-bottom: 8px;">
+          <select id="idTypeInput" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg); margin-bottom: 8px;">
+            <option value="">Select ID Type</option>
+            <option value="drivers_license">Driver's License</option>
+            <option value="passport">Passport</option>
+            <option value="state_id">State ID</option>
+          </select>
+          <input type="text" id="idNumberInput" placeholder="ID Number" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+          <button class="btn btn-primary" onclick="uploadPhotoId()" style="margin-top: 8px;">Upload Photo ID</button>
+        </div>
+
+        <div class="verification-step" id="addressStep">
+          <h3>2. Address Verification</h3>
+          <input type="text" id="addressInput" placeholder="Street Address" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg); margin-bottom: 8px;">
+          <input type="text" id="cityInput" placeholder="City" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg); margin-bottom: 8px;">
+          <input type="text" id="stateAddressInput" placeholder="State" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg); margin-bottom: 8px;">
+          <input type="text" id="zipInput" placeholder="ZIP Code" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+          <button class="btn btn-primary" onclick="verifyAddress()" style="margin-top: 8px;">Verify Address</button>
+        </div>
+
+        <div class="verification-step" id="socialStep">
+          <h3>3. Social Security Verification</h3>
+          <input type="text" id="socialInput" placeholder="Last 4 digits of SSN" maxlength="4" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: var(--fg);">
+          <button class="btn btn-primary" onclick="verifySocial()" style="margin-top: 8px;">Verify SSN</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="hideIdentityVerification()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Marketplace Application State
     const MARKETPLACE_STATE = {
-      currentUser: {
-        id: 'user_' + Date.now(),
-        name: 'Guest User',
-        location: null,
-        stats: {
-          totalBids: 0,
-          totalPurchases: 0,
-          totalSales: 0,
-          rating: 5.0
-        }
-      },
+      currentUser: null,
       currentItem: null,
       items: [],
       transactions: [],
       chatMessages: [],
-      location: null
+      location: null,
+      isAuthenticated: false
     };
 
     // Initialize the marketplace
@@ -585,19 +699,76 @@
       // Initialize starfield
       initStarfield();
       
-      // Load user data from localStorage
-      loadUserData();
-      
-      // Load items from API
-      await loadItems();
-      
-      // Show first item
-      showNextItem();
+      // Check authentication status
+      await checkAuthStatus();
       
       // Set up event listeners
       setupEventListeners();
       
       console.log('✅ Marketplace initialized successfully');
+    }
+
+    // Check authentication status
+    async function checkAuthStatus() {
+      try {
+        const response = await fetch('/auth/user', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+          MARKETPLACE_STATE.currentUser = data.user;
+          MARKETPLACE_STATE.isAuthenticated = true;
+          updateAuthUI();
+          
+          // Load items and show first item
+          await loadItems();
+          showNextItem();
+          
+          // Check if age verification is needed
+          if (!data.user.ageVerified) {
+            showAgeVerification();
+          }
+          
+          // Check if identity verification is needed for payouts
+          if (data.user.totalEarnings >= 50 && !data.user.identityVerified) {
+            showIdentityVerification();
+          }
+        } else {
+          MARKETPLACE_STATE.isAuthenticated = false;
+          updateAuthUI();
+          showLoginPrompt();
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        MARKETPLACE_STATE.isAuthenticated = false;
+        updateAuthUI();
+        showLoginPrompt();
+      }
+    }
+
+    // Update authentication UI
+    function updateAuthUI() {
+      const authButtons = document.getElementById('authButtons');
+      const userMenu = document.getElementById('userMenu');
+      
+      if (MARKETPLACE_STATE.isAuthenticated) {
+        authButtons.classList.add('hidden');
+        userMenu.classList.remove('hidden');
+        updateUserProfile();
+      } else {
+        authButtons.classList.remove('hidden');
+        userMenu.classList.add('hidden');
+      }
+    }
+
+    // Show login prompt
+    function showLoginPrompt() {
+      document.getElementById('itemImage').textContent = '🔐';
+      document.getElementById('itemTitle').textContent = 'Sign In Required';
+      document.getElementById('itemPrice').textContent = 'Get Started';
+      document.getElementById('itemDescription').textContent = 'Please sign in with Google to start trading on PacMac Marketplace.';
+      document.getElementById('itemLocation').textContent = 'Secure authentication required';
     }
 
     // Initialize starfield background
@@ -667,6 +838,8 @@
 
     // Update user profile display
     function updateUserProfile() {
+      if (!MARKETPLACE_STATE.currentUser) return;
+      
       document.getElementById('userName').textContent = MARKETPLACE_STATE.currentUser.name;
       document.getElementById('userLocation').textContent = MARKETPLACE_STATE.currentUser.location || 'Location not set';
       document.getElementById('userAvatar').textContent = MARKETPLACE_STATE.currentUser.name.charAt(0).toUpperCase();
@@ -1083,6 +1256,185 @@
           sendMessage();
         }
       });
+      
+      // Age verification form submission
+      document.getElementById('ageVerificationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        verifyAge();
+      });
+    }
+
+    // Authentication functions
+    function loginWithGoogle() {
+      window.location.href = '/auth/google';
+    }
+
+    function logout() {
+      window.location.href = '/auth/logout';
+    }
+
+    // Age verification functions
+    function showAgeVerification() {
+      document.getElementById('ageVerificationModal').classList.remove('hidden');
+    }
+
+    function hideAgeVerification() {
+      document.getElementById('ageVerificationModal').classList.add('hidden');
+    }
+
+    // Identity verification functions
+    function showIdentityVerification() {
+      document.getElementById('identityVerificationModal').classList.remove('hidden');
+    }
+
+    function hideIdentityVerification() {
+      document.getElementById('identityVerificationModal').classList.add('hidden');
+    }
+
+    // Verification API calls
+    async function verifyAge() {
+      const birthDate = document.getElementById('birthDateInput').value;
+      const state = document.getElementById('stateInput').value;
+      
+      if (!birthDate || !state) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/verify/age', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ birthDate, state })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Age verification successful!', 'success');
+          hideAgeVerification();
+          // Refresh user data
+          await checkAuthStatus();
+        } else {
+          showNotification(data.error, 'error');
+        }
+      } catch (error) {
+        console.error('Error verifying age:', error);
+        showNotification('Failed to verify age. Please try again.', 'error');
+      }
+    }
+
+    async function uploadPhotoId() {
+      const fileInput = document.getElementById('photoIdInput');
+      const idType = document.getElementById('idTypeInput').value;
+      const idNumber = document.getElementById('idNumberInput').value;
+      
+      if (!fileInput.files[0] || !idType || !idNumber) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+      }
+      
+      // Convert file to base64
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const response = await fetch('/api/verify/photo-id', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              imageData: e.target.result,
+              idType: idType,
+              idNumber: idNumber
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            showNotification('Photo ID uploaded successfully!', 'success');
+          } else {
+            showNotification(data.error, 'error');
+          }
+        } catch (error) {
+          console.error('Error uploading photo ID:', error);
+          showNotification('Failed to upload photo ID. Please try again.', 'error');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function verifyAddress() {
+      const address = document.getElementById('addressInput').value;
+      const city = document.getElementById('cityInput').value;
+      const state = document.getElementById('stateAddressInput').value;
+      const zipCode = document.getElementById('zipInput').value;
+      
+      if (!address || !city || !state || !zipCode) {
+        showNotification('Please fill in all address fields', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/verify/address', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ address, city, state, zipCode })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Address verification successful!', 'success');
+        } else {
+          showNotification(data.error, 'error');
+        }
+      } catch (error) {
+        console.error('Error verifying address:', error);
+        showNotification('Failed to verify address. Please try again.', 'error');
+      }
+    }
+
+    async function verifySocial() {
+      const lastFour = document.getElementById('socialInput').value;
+      
+      if (!lastFour || lastFour.length !== 4) {
+        showNotification('Please enter the last 4 digits of your SSN', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/verify/social', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ lastFour })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification('Social Security verification successful!', 'success');
+          // Refresh user data
+          await checkAuthStatus();
+        } else {
+          showNotification(data.error, 'error');
+        }
+      } catch (error) {
+        console.error('Error verifying social security:', error);
+        showNotification('Failed to verify social security. Please try again.', 'error');
+      }
     }
 
     // Placeholder functions for future implementation
