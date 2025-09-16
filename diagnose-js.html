@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diagnose JavaScript Issues</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Diagnose JavaScript Issues on pacmacmobile.com</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function diagnoseJavaScript() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p class="info">🔄 Analyzing pacmacmobile.com for JavaScript issues...</p>';
+            
+            try {
+                // Fetch the live site
+                const response = await fetch('https://pacmacmobile.com', {
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                
+                const html = await response.text();
+                resultsDiv.innerHTML += `<p class="success">✅ Fetched site (${html.length} characters)</p>`;
+                
+                // Test 1: Check for JavaScript syntax errors
+                resultsDiv.innerHTML += '<div class="test-section"><h3>🧪 Test 1: JavaScript Syntax Check</h3>';
+                
+                const scriptTags = html.match(/<script[^>]*>[\s\S]*?<\/script>/gi) || [];
+                resultsDiv.innerHTML += `<p>Found ${scriptTags.length} script tags</p>`;
+                
+                let syntaxErrors = [];
+                scriptTags.forEach((script, index) => {
+                    const scriptContent = script.replace(/<script[^>]*>|<\/script>/gi, '');
+                    if (scriptContent.trim()) {
+                        try {
+                            // Basic syntax check
+                            new Function(scriptContent);
+                            resultsDiv.innerHTML += `<p class="success">✅ Script ${index + 1}: Syntax OK</p>`;
+                        } catch (e) {
+                            syntaxErrors.push(`Script ${index + 1}: ${e.message}`);
+                            resultsDiv.innerHTML += `<p class="error">❌ Script ${index + 1}: ${e.message}</p>`;
+                        }
+                    }
+                });
+                
+                if (syntaxErrors.length === 0) {
+                    resultsDiv.innerHTML += `<p class="success">✅ No JavaScript syntax errors found</p>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ Found ${syntaxErrors.length} syntax errors</p>`;
+                }
+                resultsDiv.innerHTML += '</div>';
+                
+                // Test 2: Check for PRODUCTS array and display logic
+                resultsDiv.innerHTML += '<div class="test-section"><h3>🧪 Test 2: Product Display Logic</h3>';
+                
+                const productsMatch = html.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                if (productsMatch) {
+                    resultsDiv.innerHTML += `<p class="success">✅ PRODUCTS array found</p>`;
+                    
+                    // Check for display functions
+                    const displayFunctions = [
+                        'renderProducts',
+                        'displayProducts', 
+                        'showProducts',
+                        'loadProducts',
+                        'updateProducts'
+                    ];
+                    
+                    let foundDisplayFunction = false;
+                    displayFunctions.forEach(func => {
+                        if (html.includes(func)) {
+                            resultsDiv.innerHTML += `<p class="success">✅ Found display function: ${func}</p>`;
+                            foundDisplayFunction = true;
+                        }
+                    });
+                    
+                    if (!foundDisplayFunction) {
+                        resultsDiv.innerHTML += `<p class="warning">⚠️ No common display functions found</p>`;
+                    }
+                    
+                    // Check for DOM manipulation
+                    const domMethods = ['getElementById', 'querySelector', 'innerHTML', 'appendChild'];
+                    let foundDomMethods = false;
+                    domMethods.forEach(method => {
+                        if (html.includes(method)) {
+                            resultsDiv.innerHTML += `<p class="success">✅ Found DOM method: ${method}</p>`;
+                            foundDomMethods = true;
+                        }
+                    });
+                    
+                    if (!foundDomMethods) {
+                        resultsDiv.innerHTML += `<p class="error">❌ No DOM manipulation methods found</p>`;
+                    }
+                    
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ PRODUCTS array not found</p>`;
+                }
+                resultsDiv.innerHTML += '</div>';
+                
+                // Test 3: Check for common issues
+                resultsDiv.innerHTML += '<div class="test-section"><h3>🧪 Test 3: Common Issues Check</h3>';
+                
+                // Check for console errors
+                if (html.includes('console.error') || html.includes('console.log')) {
+                    resultsDiv.innerHTML += `<p class="info">ℹ️ Found console statements (check browser console)</p>`;
+                }
+                
+                // Check for jQuery
+                if (html.includes('jquery') || html.includes('$(')) {
+                    resultsDiv.innerHTML += `<p class="info">ℹ️ jQuery detected</p>`;
+                }
+                
+                // Check for external scripts
+                const externalScripts = html.match(/<script[^>]*src=["'][^"']*["'][^>]*>/gi) || [];
+                if (externalScripts.length > 0) {
+                    resultsDiv.innerHTML += `<p class="info">ℹ️ Found ${externalScripts.length} external scripts</p>`;
+                    externalScripts.forEach((script, index) => {
+                        const src = script.match(/src=["']([^"']*)["']/);
+                        if (src) {
+                            resultsDiv.innerHTML += `<p class="info">  - ${src[1]}</p>`;
+                        }
+                    });
+                }
+                
+                // Check for CSS issues
+                if (html.includes('display: none') || html.includes('visibility: hidden')) {
+                    resultsDiv.innerHTML += `<p class="warning">⚠️ Found CSS that might hide elements</p>`;
+                }
+                
+                resultsDiv.innerHTML += '</div>';
+                
+                // Test 4: Show the actual PRODUCTS array
+                resultsDiv.innerHTML += '<div class="test-section"><h3>🧪 Test 4: PRODUCTS Array Content</h3>';
+                if (productsMatch) {
+                    const productsText = productsMatch[0];
+                    const productCount = (productsText.match(/\{/g) || []).length;
+                    resultsDiv.innerHTML += `<p class="success">✅ Found ${productCount} products</p>`;
+                    
+                    // Try to parse the JSON
+                    try {
+                        const productsArray = productsText.match(/\[[\s\S]*\]/);
+                        if (productsArray) {
+                            const products = JSON.parse(productsArray[0]);
+                            resultsDiv.innerHTML += `<p class="success">✅ Products array is valid JSON</p>`;
+                            
+                            // Show first product details
+                            if (products.length > 0) {
+                                resultsDiv.innerHTML += `<h4>First Product:</h4><pre>${JSON.stringify(products[0], null, 2)}</pre>`;
+                            }
+                        }
+                    } catch (e) {
+                        resultsDiv.innerHTML += `<p class="error">❌ Products array is not valid JSON: ${e.message}</p>`;
+                    }
+                }
+                resultsDiv.innerHTML += '</div>';
+                
+                // Test 5: Recommendations
+                resultsDiv.innerHTML += '<div class="test-section"><h3>💡 Recommendations</h3>';
+                resultsDiv.innerHTML += '<ol>';
+                resultsDiv.innerHTML += '<li><strong>Open Browser Console:</strong> Press F12 and check the Console tab for errors</li>';
+                resultsDiv.innerHTML += '<li><strong>Check Network Tab:</strong> Look for failed script or resource loads</li>';
+                resultsDiv.innerHTML += '<li><strong>Test in Incognito:</strong> Open the site in a private window</li>';
+                resultsDiv.innerHTML += '<li><strong>Check Mobile View:</strong> Test on mobile device or browser dev tools mobile view</li>';
+                resultsDiv.innerHTML += '<li><strong>Verify Script Loading:</strong> Ensure all JavaScript files are loading properly</li>';
+                resultsDiv.innerHTML += '</ol>';
+                resultsDiv.innerHTML += '</div>';
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run the diagnosis
+        diagnoseJavaScript();
+    </script>
+</body>
+</html>

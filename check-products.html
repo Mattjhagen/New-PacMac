@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Products Array</title>
+</head>
+<body>
+    <h1>Products Array Checker</h1>
+    <div id="result"></div>
+    
+    <script>
+        // This will check if the PRODUCTS array exists on the main site
+        fetch('https://pacmacmobile.com')
+            .then(response => response.text())
+            .then(html => {
+                const resultDiv = document.getElementById('result');
+                
+                // Check if PRODUCTS array exists
+                if (html.includes('const PRODUCTS =') || html.includes('let PRODUCTS =') || html.includes('var PRODUCTS =')) {
+                    resultDiv.innerHTML = '<p style="color: green;">✅ PRODUCTS array found in main site!</p>';
+                    
+                    // Try to extract and display the array
+                    const match = html.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                    if (match) {
+                        resultDiv.innerHTML += '<h3>Products Array:</h3><pre>' + match[0] + '</pre>';
+                    }
+                } else {
+                    resultDiv.innerHTML = '<p style="color: red;">❌ PRODUCTS array NOT found in main site</p>';
+                }
+                
+                // Show first 2000 characters of the HTML
+                resultDiv.innerHTML += '<h3>First 2000 characters of main site:</h3><pre>' + html.substring(0, 2000) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error + '</p>';
+            });
+    </script>
+</body>
+</html>

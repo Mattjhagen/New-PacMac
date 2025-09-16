@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Product Display</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .product { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .product img { max-width: 100px; height: auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Product Display Logic</h1>
+    <div id="test-results"></div>
+    <div id="products-container"></div>
+    
+    <script>
+        // Test if we can fetch and display products from the live site
+        async function testProductDisplay() {
+            const resultsDiv = document.getElementById('test-results');
+            const productsDiv = document.getElementById('products-container');
+            
+            try {
+                // Fetch the live site
+                const response = await fetch('https://pacmacmobile.com');
+                const html = await response.text();
+                
+                // Extract the PRODUCTS array
+                const productsMatch = html.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                
+                if (productsMatch) {
+                    resultsDiv.innerHTML = '<p class="success">✅ Found PRODUCTS array</p>';
+                    
+                    // Try to parse the products
+                    const productsArray = productsMatch[0].match(/\[[\s\S]*\]/);
+                    if (productsArray) {
+                        const products = JSON.parse(productsArray[0]);
+                        resultsDiv.innerHTML += `<p class="success">✅ Parsed ${products.length} products</p>`;
+                        
+                        // Display the products
+                        productsDiv.innerHTML = '<h2>Products from Live Site:</h2>';
+                        products.forEach(product => {
+                            productsDiv.innerHTML += `
+                                <div class="product">
+                                    <h3>${product.name || 'No name'}</h3>
+                                    <p><strong>Price:</strong> $${product.price || 'N/A'}</p>
+                                    <p><strong>Tags:</strong> ${(product.tags || []).join(', ')}</p>
+                                    ${product.img ? `<img src="${product.img}" alt="${product.name}" onerror="this.style.display='none'">` : ''}
+                                </div>
+                            `;
+                        });
+                        
+                        resultsDiv.innerHTML += '<p class="success">✅ Products displayed successfully!</p>';
+                        resultsDiv.innerHTML += '<p><strong>This proves the products data is valid and can be displayed.</strong></p>';
+                        resultsDiv.innerHTML += '<p><strong>The issue is in the main site\'s JavaScript display logic.</strong></p>';
+                        
+                    } else {
+                        resultsDiv.innerHTML += '<p class="error">❌ Could not parse products array</p>';
+                    }
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ PRODUCTS array not found</p>';
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run the test
+        testProductDisplay();
+    </script>
+</body>
+</html>

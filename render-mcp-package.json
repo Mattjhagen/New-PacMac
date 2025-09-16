@@ -1,0 +1,18 @@
+{
+  "name": "render-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Render API integration",
+  "main": "render-mcp-server.js",
+  "bin": {
+    "render-mcp-server": "./render-mcp-server.js"
+  },
+  "scripts": {
+    "start": "node render-mcp-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

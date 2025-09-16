@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function simpleTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p class="info">🔄 Running simple test...</p>';
+            
+            try {
+                // Test 1: Check if we can access the main site
+                const response = await fetch('https://pacmacmobile.com');
+                const html = await response.text();
+                
+                resultsDiv.innerHTML += '<p class="success">✅ Successfully fetched main site</p>';
+                
+                // Test 2: Check PRODUCTS array
+                const productsMatch = html.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                if (productsMatch) {
+                    const productsArray = productsMatch[0].match(/\[[\s\S]*\]/);
+                    if (productsArray) {
+                        const products = JSON.parse(productsArray[0]);
+                        resultsDiv.innerHTML += `<p class="success">✅ Found ${products.length} products in PRODUCTS array</p>`;
+                        
+                        if (products.length > 0) {
+                            resultsDiv.innerHTML += `<h3>First Product:</h3><pre>${JSON.stringify(products[0], null, 2)}</pre>`;
+                        } else {
+                            resultsDiv.innerHTML += '<p class="error">❌ PRODUCTS array is empty!</p>';
+                        }
+                    }
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ PRODUCTS array not found</p>';
+                }
+                
+                // Test 3: Check if the fix was applied
+                if (html.includes('Using existing PRODUCTS array')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ Fix was applied - using existing PRODUCTS array</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ Fix was not applied</p>';
+                }
+                
+                // Test 4: Check for product-grid element
+                if (html.includes('id="product-grid"')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ product-grid element exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ product-grid element not found</p>';
+                }
+                
+                // Test 5: Check for initializeApp function
+                if (html.includes('function initializeApp')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ initializeApp function exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ initializeApp function not found</p>';
+                }
+                
+                // Test 6: Check for showProducts function
+                if (html.includes('function showProducts')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ showProducts function exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ showProducts function not found</p>';
+                }
+                
+                // Test 7: Check for DOMContentLoaded
+                if (html.includes('DOMContentLoaded')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ DOMContentLoaded event listener exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ DOMContentLoaded event listener not found</p>';
+                }
+                
+                // Test 8: Check for any obvious errors
+                if (html.includes('console.error') || html.includes('throw new Error')) {
+                    resultsDiv.innerHTML += '<p class="info">ℹ️ Found error handling code</p>';
+                }
+                
+                // Test 9: Check if there are any CSS issues that might hide products
+                if (html.includes('display: none') || html.includes('visibility: hidden')) {
+                    resultsDiv.innerHTML += '<p class="error">❌ Found CSS that might hide elements</p>';
+                }
+                
+                // Test 10: Check if there are any JavaScript errors in the code
+                const scriptTags = html.match(/<script[^>]*>[\s\S]*?<\/script>/gi) || [];
+                let hasSyntaxErrors = false;
+                scriptTags.forEach((script, index) => {
+                    const scriptContent = script.replace(/<script[^>]*>|<\/script>/gi, '');
+                    if (scriptContent.trim()) {
+                        try {
+                            new Function(scriptContent);
+                        } catch (e) {
+                            hasSyntaxErrors = true;
+                            resultsDiv.innerHTML += `<p class="error">❌ Syntax error in script ${index + 1}: ${e.message}</p>`;
+                        }
+                    }
+                });
+                
+                if (!hasSyntaxErrors) {
+                    resultsDiv.innerHTML += '<p class="success">✅ No JavaScript syntax errors found</p>';
+                }
+                
+                // Summary
+                resultsDiv.innerHTML += '<h3>🎯 Summary:</h3>';
+                resultsDiv.innerHTML += '<p>If all checks pass but products still don\'t display, the issue is likely:</p>';
+                resultsDiv.innerHTML += '<ol>';
+                resultsDiv.innerHTML += '<li><strong>JavaScript runtime error</strong> - Check browser console</li>';
+                resultsDiv.innerHTML += '<li><strong>CSS hiding elements</strong> - Check if product-grid is hidden</li>';
+                resultsDiv.innerHTML += '<li><strong>Timing issue</strong> - Functions called before DOM is ready</li>';
+                resultsDiv.innerHTML += '<li><strong>Empty PRODUCTS array</strong> - Data not being loaded</li>';
+                resultsDiv.innerHTML += '</ol>';
+                
+                resultsDiv.innerHTML += '<h3>🔍 Next Steps:</h3>';
+                resultsDiv.innerHTML += '<ol>';
+                resultsDiv.innerHTML += '<li>Open pacmacmobile.com in browser</li>';
+                resultsDiv.innerHTML += '<li>Press F12 to open Developer Tools</li>';
+                resultsDiv.innerHTML += '<li>Click "Console" tab</li>';
+                resultsDiv.innerHTML += '<li>Look for error messages</li>';
+                resultsDiv.innerHTML += '<li>Type <code>console.log(PRODUCTS)</code> to check if array has data</li>';
+                resultsDiv.innerHTML += '<li>Type <code>console.log(document.getElementById(\'product-grid\'))</code> to check if element exists</li>';
+                resultsDiv.innerHTML += '</ol>';
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run the test
+        simpleTest();
+    </script>
+</body>
+</html>

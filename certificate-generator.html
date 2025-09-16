@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacMac Security Certificate Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e5e7;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #e5e5e7;
+        }
+        .cert-display {
+            font-family: monospace;
+            background: #1d1d1f;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .copy-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 PacMac Security Certificate Generator</h1>
+            <p>Generate valid security certificates for admin access</p>
+        </div>
+
+        <form id="cert-form">
+            <div class="form-group">
+                <label for="device-name">Device Name</label>
+                <input type="text" id="device-name" placeholder="e.g., Admin Laptop, Office Desktop" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="device-location">Device Location</label>
+                <input type="text" id="device-location" placeholder="e.g., Main Office, Home Office" required>
+            </div>
+
+            <button type="submit">Generate Security Certificate</button>
+        </form>
+
+        <div id="result" class="result" style="display: none;">
+            <h3>✅ Generated Security Certificate</h3>
+            <p><strong>Device:</strong> <span id="device-info"></span></p>
+            
+            <div class="form-group">
+                <label>Security Certificate Key:</label>
+                <div class="cert-display" id="cert-key"></div>
+                <button class="copy-btn" onclick="copyToClipboard('cert-key')">Copy Certificate Key</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Device ID:</label>
+                <div class="cert-display" id="device-id"></div>
+                <button class="copy-btn" onclick="copyToClipboard('device-id')">Copy Device ID</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Validation Hash (for debugging):</label>
+                <div class="cert-display" id="validation-hash"></div>
+            </div>
+
+            <div style="background: #e6f2ff; padding: 15px; border-radius: 6px; margin-top: 20px;">
+                <h4>📋 Instructions:</h4>
+                <ol>
+                    <li>Copy the Security Certificate Key and Device ID above</li>
+                    <li>Go to your admin portal</li>
+                    <li>Enter the certificate information when prompted</li>
+                    <li>Then use your regular login credentials</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function generateCertificate(deviceName, deviceLocation) {
+            // Generate certificate key in format: PACMAC-XXXXXXXX-XXXXXXXX
+            const certKey = 'PACMAC-' + generateRandomString(8) + '-' + generateRandomString(8);
+            
+            // Generate device ID in format: DEV-XXXXXX
+            const deviceId = 'DEV-' + generateRandomString(6);
+            
+            // Calculate the hash to ensure it matches the validation
+            const combinedString = certKey + deviceId + 'PACMAC_SECURE_2024';
+            let hash = 0;
+            for (let i = 0; i < combinedString.length; i++) {
+                const char = combinedString.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            
+            return { certKey, deviceId, hash: Math.abs(hash) };
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Copied to clipboard!');
+            });
+        }
+
+        document.getElementById('cert-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const deviceName = document.getElementById('device-name').value;
+            const deviceLocation = document.getElementById('device-location').value;
+            
+            const { certKey, deviceId, hash } = generateCertificate(deviceName, deviceLocation);
+            
+            // Display results
+            document.getElementById('device-info').textContent = `${deviceName} (${deviceLocation})`;
+            document.getElementById('cert-key').textContent = certKey;
+            document.getElementById('device-id').textContent = deviceId;
+            document.getElementById('validation-hash').textContent = hash;
+            document.getElementById('result').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

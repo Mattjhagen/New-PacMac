@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Scripts from Live Site</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Scripts from Live Site</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testScripts() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p class="info">🔄 Testing scripts from pacmacmobile.com...</p>';
+            
+            // Test config.js
+            try {
+                const configResponse = await fetch('https://pacmacmobile.com/config.js');
+                if (configResponse.ok) {
+                    const configText = await configResponse.text();
+                    resultsDiv.innerHTML += '<p class="success">✅ config.js is accessible</p>';
+                    resultsDiv.innerHTML += `<pre>${configText.substring(0, 200)}...</pre>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ config.js failed: ${configResponse.status}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ config.js error: ${error.message}</p>`;
+            }
+            
+            // Test inventory-api.js
+            try {
+                const inventoryResponse = await fetch('https://pacmacmobile.com/inventory-api.js');
+                if (inventoryResponse.ok) {
+                    const inventoryText = await inventoryResponse.text();
+                    resultsDiv.innerHTML += '<p class="success">✅ inventory-api.js is accessible</p>';
+                    resultsDiv.innerHTML += `<pre>${inventoryText.substring(0, 200)}...</pre>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ inventory-api.js failed: ${inventoryResponse.status}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ inventory-api.js error: ${error.message}</p>`;
+            }
+            
+            // Test if we can load the scripts dynamically
+            resultsDiv.innerHTML += '<h3>🧪 Testing Dynamic Script Loading:</h3>';
+            
+            // Load config.js
+            try {
+                const script1 = document.createElement('script');
+                script1.src = 'https://pacmacmobile.com/config.js';
+                script1.onload = () => {
+                    resultsDiv.innerHTML += '<p class="success">✅ config.js loaded successfully</p>';
+                    if (window.CONFIG) {
+                        resultsDiv.innerHTML += '<p class="success">✅ CONFIG object is available</p>';
+                    } else {
+                        resultsDiv.innerHTML += '<p class="error">❌ CONFIG object not found</p>';
+                    }
+                };
+                script1.onerror = () => {
+                    resultsDiv.innerHTML += '<p class="error">❌ config.js failed to load</p>';
+                };
+                document.head.appendChild(script1);
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error loading config.js: ${error.message}</p>`;
+            }
+            
+            // Load inventory-api.js
+            try {
+                const script2 = document.createElement('script');
+                script2.src = 'https://pacmacmobile.com/inventory-api.js';
+                script2.onload = () => {
+                    resultsDiv.innerHTML += '<p class="success">✅ inventory-api.js loaded successfully</p>';
+                    if (window.inventoryAPI) {
+                        resultsDiv.innerHTML += '<p class="success">✅ inventoryAPI object is available</p>';
+                    } else {
+                        resultsDiv.innerHTML += '<p class="error">❌ inventoryAPI object not found</p>';
+                    }
+                };
+                script2.onerror = () => {
+                    resultsDiv.innerHTML += '<p class="error">❌ inventory-api.js failed to load</p>';
+                };
+                document.head.appendChild(script2);
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error loading inventory-api.js: ${error.message}</p>`;
+            }
+            
+            // Test the main site's PRODUCTS array
+            setTimeout(async () => {
+                try {
+                    const mainSiteResponse = await fetch('https://pacmacmobile.com');
+                    const mainSiteHtml = await mainSiteResponse.text();
+                    
+                    const productsMatch = mainSiteHtml.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                    if (productsMatch) {
+                        resultsDiv.innerHTML += '<p class="success">✅ PRODUCTS array found in main site</p>';
+                        
+                        try {
+                            const productsArray = productsMatch[0].match(/\[[\s\S]*\]/);
+                            if (productsArray) {
+                                const products = JSON.parse(productsArray[0]);
+                                resultsDiv.innerHTML += `<p class="success">✅ Found ${products.length} products in array</p>`;
+                                
+                                // Test if we can call the display function
+                                if (typeof window.showProducts === 'function') {
+                                    resultsDiv.innerHTML += '<p class="success">✅ showProducts function is available</p>';
+                                } else {
+                                    resultsDiv.innerHTML += '<p class="error">❌ showProducts function not found</p>';
+                                }
+                            }
+                        } catch (e) {
+                            resultsDiv.innerHTML += `<p class="error">❌ Error parsing products: ${e.message}</p>`;
+                        }
+                    } else {
+                        resultsDiv.innerHTML += '<p class="error">❌ PRODUCTS array not found in main site</p>';
+                    }
+                } catch (error) {
+                    resultsDiv.innerHTML += `<p class="error">❌ Error checking main site: ${error.message}</p>`;
+                }
+            }, 2000);
+        }
+        
+        // Run the test
+        testScripts();
+    </script>
+</body>
+</html>

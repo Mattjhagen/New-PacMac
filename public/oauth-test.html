@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background-color: #0056b3; }
+        .code { background-color: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔐 OAuth Test</h1>
+    
+    <div id="status" class="status info">Initializing...</div>
+    
+    <div>
+        <button onclick="testOAuth()">Test GitHub OAuth</button>
+        <button onclick="checkSession()">Check Session</button>
+        <button onclick="clearSession()">Clear Session</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const supabaseUrl = 'https://tvikatcdfnkwvjjpaxbu.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2aWthdGNkZm5rd3ZqanBheGJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0MDMxMzgsImV4cCI6MjA3Mjk3OTEzOH0.4NmsPSyWrwy7B2wQ1HEAXLr-2ccVPAg5gnGzFsElU24';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        function updateStatus(message, type = 'info') {
+            document.getElementById('status').textContent = message;
+            document.getElementById('status').className = `status ${type}`;
+        }
+        
+        function addResult(title, content, type = 'info') {
+            const resultsEl = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${type}`;
+            resultDiv.innerHTML = `<strong>${title}</strong><br>${content}`;
+            resultsEl.appendChild(resultDiv);
+        }
+        
+        async function testOAuth() {
+            updateStatus('Testing OAuth...', 'info');
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'github',
+                    options: {
+                        redirectTo: window.location.origin + '/auth/callback'
+                    }
+                });
+                
+                if (error) {
+                    addResult('OAuth Error', error.message, 'error');
+                    updateStatus('OAuth failed', 'error');
+                } else {
+                    addResult('OAuth Success', 'Redirecting to GitHub...', 'success');
+                    updateStatus('OAuth initiated', 'success');
+                }
+                
+            } catch (err) {
+                addResult('OAuth Exception', err.message, 'error');
+                updateStatus('OAuth failed', 'error');
+            }
+        }
+        
+        async function checkSession() {
+            updateStatus('Checking session...', 'info');
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    addResult('Session Error', error.message, 'error');
+                } else if (session) {
+                    addResult('Session Found', `User: ${session.user.email}`, 'success');
+                } else {
+                    addResult('No Session', 'No active session', 'info');
+                }
+                
+                updateStatus('Session check complete', 'success');
+                
+            } catch (err) {
+                addResult('Session Exception', err.message, 'error');
+                updateStatus('Session check failed', 'error');
+            }
+        }
+        
+        async function clearSession() {
+            updateStatus('Clearing session...', 'info');
+            
+            try {
+                await supabase.auth.signOut();
+                addResult('Session Cleared', 'Logged out successfully', 'success');
+                updateStatus('Session cleared', 'success');
+            } catch (err) {
+                addResult('Logout Error', err.message, 'error');
+                updateStatus('Logout failed', 'error');
+            }
+        }
+        
+        // Check for OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('code')) {
+            addResult('OAuth Callback', 'Received OAuth code, processing...', 'info');
+        }
+        
+        updateStatus('Ready to test OAuth', 'success');
+    </script>
+</body>
+</html>

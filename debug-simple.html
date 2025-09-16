@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Simple Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function simpleDebug() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p class="info">🔄 Running simple debug test...</p>';
+            
+            try {
+                // Test 1: Check if PRODUCTS array exists and has data
+                const response = await fetch('https://pacmacmobile.com');
+                const html = await response.text();
+                
+                const productsMatch = html.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                if (productsMatch) {
+                    const productsArray = productsMatch[0].match(/\[[\s\S]*\]/);
+                    if (productsArray) {
+                        const products = JSON.parse(productsArray[0]);
+                        resultsDiv.innerHTML += `<p class="success">✅ Found ${products.length} products in PRODUCTS array</p>`;
+                        
+                        // Show first product
+                        if (products.length > 0) {
+                            resultsDiv.innerHTML += `<h3>First Product:</h3><pre>${JSON.stringify(products[0], null, 2)}</pre>`;
+                        }
+                    }
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ PRODUCTS array not found</p>';
+                }
+                
+                // Test 2: Check if initializeApp function exists
+                if (html.includes('function initializeApp')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ initializeApp function exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ initializeApp function not found</p>';
+                }
+                
+                // Test 3: Check if product-grid element exists
+                if (html.includes('id="product-grid"')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ product-grid element exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ product-grid element not found</p>';
+                }
+                
+                // Test 4: Check if showProducts function exists
+                if (html.includes('function showProducts')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ showProducts function exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ showProducts function not found</p>';
+                }
+                
+                // Test 5: Check if DOMContentLoaded event is set up
+                if (html.includes('DOMContentLoaded')) {
+                    resultsDiv.innerHTML += '<p class="success">✅ DOMContentLoaded event listener exists</p>';
+                } else {
+                    resultsDiv.innerHTML += '<p class="error">❌ DOMContentLoaded event listener not found</p>';
+                }
+                
+                // Test 6: Check for any obvious errors in the JavaScript
+                if (html.includes('console.error') || html.includes('throw new Error')) {
+                    resultsDiv.innerHTML += '<p class="info">ℹ️ Found error handling code (check browser console for actual errors)</p>';
+                }
+                
+                resultsDiv.innerHTML += '<h3>🎯 The Issue:</h3>';
+                resultsDiv.innerHTML += '<p>Everything looks correct in the code. The issue is likely a <strong>timing problem</strong> or <strong>JavaScript error</strong> that prevents the products from rendering.</p>';
+                
+                resultsDiv.innerHTML += '<h3>💡 Solution:</h3>';
+                resultsDiv.innerHTML += '<ol>';
+                resultsDiv.innerHTML += '<li><strong>Open pacmacmobile.com in browser</strong></li>';
+                resultsDiv.innerHTML += '<li><strong>Press F12</strong> to open Developer Tools</li>';
+                resultsDiv.innerHTML += '<li><strong>Click "Console" tab</strong></li>';
+                resultsDiv.innerHTML += '<li><strong>Look for error messages</strong> like:</li>';
+                resultsDiv.innerHTML += '<ul>';
+                resultsDiv.innerHTML += '<li>"❌ inventoryAPI not available"</li>';
+                resultsDiv.innerHTML += '<li>"❌ Failed to initialize products"</li>';
+                resultsDiv.innerHTML += '<li>"TypeError: Cannot read property..."</li>';
+                resultsDiv.innerHTML += '</ul>';
+                resultsDiv.innerHTML += '<li><strong>Check if PRODUCTS array is populated</strong> by typing <code>console.log(PRODUCTS)</code> in console</li>';
+                resultsDiv.innerHTML += '</ol>';
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run the debug
+        simpleDebug();
+    </script>
+</body>
+</html>

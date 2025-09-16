@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug pacmacmobile.com</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug pacmacmobile.com</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function debugSite() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p class="info">🔄 Checking pacmacmobile.com...</p>';
+            
+            try {
+                // Check the live site
+                const response = await fetch('https://pacmacmobile.com', {
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                
+                if (!response.ok) {
+                    resultsDiv.innerHTML += `<p class="error">❌ HTTP Error: ${response.status} ${response.statusText}</p>`;
+                    return;
+                }
+                
+                const html = await response.text();
+                resultsDiv.innerHTML += `<p class="success">✅ Successfully fetched pacmacmobile.com (${html.length} characters)</p>`;
+                
+                // Check for PRODUCTS array
+                const productsPatterns = [
+                    /const\s+PRODUCTS\s*=\s*\[/,
+                    /let\s+PRODUCTS\s*=\s*\[/,
+                    /var\s+PRODUCTS\s*=\s*\[/,
+                    /PRODUCTS\s*=\s*\[/
+                ];
+                
+                let foundProducts = false;
+                for (const pattern of productsPatterns) {
+                    if (pattern.test(html)) {
+                        foundProducts = true;
+                        break;
+                    }
+                }
+                
+                if (foundProducts) {
+                    resultsDiv.innerHTML += `<p class="success">✅ PRODUCTS array found in live site!</p>`;
+                    
+                    // Extract the products array
+                    const productsMatch = html.match(/(?:const|let|var)\s+PRODUCTS\s*=\s*\[[\s\S]*?\];/);
+                    if (productsMatch) {
+                        const productsText = productsMatch[0];
+                        const productCount = (productsText.match(/\{/g) || []).length;
+                        resultsDiv.innerHTML += `<p class="info">📊 Found ${productCount} products in array</p>`;
+                        
+                        // Show first 500 characters of the array
+                        resultsDiv.innerHTML += `<h3>Products Array (first 500 chars):</h3><pre>${productsText.substring(0, 500)}...</pre>`;
+                    }
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ PRODUCTS array NOT found in live site</p>`;
+                }
+                
+                // Check for JavaScript errors
+                if (html.includes('console.error') || html.includes('Error:')) {
+                    resultsDiv.innerHTML += `<p class="error">⚠️ Potential JavaScript errors found in HTML</p>`;
+                }
+                
+                // Show first 1000 characters of the HTML
+                resultsDiv.innerHTML += `<h3>First 1000 characters of live site:</h3><pre>${html.substring(0, 1000)}...</pre>`;
+                
+                // Check last modified or cache headers
+                const lastModified = response.headers.get('last-modified');
+                const cacheControl = response.headers.get('cache-control');
+                resultsDiv.innerHTML += `<h3>Response Headers:</h3>`;
+                resultsDiv.innerHTML += `<p>Last Modified: ${lastModified || 'Not available'}</p>`;
+                resultsDiv.innerHTML += `<p>Cache Control: ${cacheControl || 'Not available'}</p>`;
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p class="error">❌ Error fetching site: ${error.message}</p>`;
+            }
+        }
+        
+        // Run the debug
+        debugSite();
+    </script>
+</body>
+</html>

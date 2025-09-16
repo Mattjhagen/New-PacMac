@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacMac Mobile - Products Integration Example</title>
+    
+    <!-- Include the PacMac Products CSS -->
+    <link rel="stylesheet" href="https://admin.pacmacmobile.com/pacmac-products.css">
+    
+    <!-- Your existing styles -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #1a1a1a;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+        }
+        
+        .section h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>PacMac Mobile</h1>
+            <p>Your trusted source for mobile devices and accessories</p>
+        </div>
+
+        <!-- Featured Products Section -->
+        <div class="section">
+            <h2>Featured Products</h2>
+            <div class="pacmac-products-container" data-max-products="6" data-layout="grid"></div>
+        </div>
+
+        <!-- All Products Section -->
+        <div class="section">
+            <h2>All Products</h2>
+            <div class="pacmac-products-container" data-max-products="12" data-layout="grid"></div>
+        </div>
+
+        <!-- Mobile Products Section -->
+        <div class="section">
+            <h2>Mobile Devices</h2>
+            <div class="pacmac-products-container" data-max-products="8" data-layout="list"></div>
+        </div>
+    </div>
+
+    <!-- Include the PacMac Products JavaScript -->
+    <script src="https://admin.pacmacmobile.com/pacmac-products.js"></script>
+    
+    <script>
+        // Customize the integration
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize with custom settings
+            PacMacProducts.init({
+                adminUrl: 'https://admin.pacmacmobile.com', // Your admin portal URL
+                maxProducts: 20, // Maximum products to fetch
+                layout: 'grid' // Default layout
+            });
+
+            // Handle product clicks
+            document.addEventListener('pacmacProductClick', function(event) {
+                const { product, productId } = event.detail;
+                
+                // Custom handling for product clicks
+                console.log('Product clicked:', product);
+                
+                // Example: Show product details modal
+                showProductModal(product);
+                
+                // Example: Add to cart
+                // addToCart(product);
+                
+                // Example: Navigate to product page
+                // window.location.href = `/product/${productId}`;
+            });
+
+            // Custom function to show product modal
+            function showProductModal(product) {
+                // Create modal HTML
+                const modalHTML = `
+                    <div id="productModal" style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.8);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1000;
+                    ">
+                        <div style="
+                            background: white;
+                            padding: 30px;
+                            border-radius: 12px;
+                            max-width: 500px;
+                            width: 90%;
+                            max-height: 80vh;
+                            overflow-y: auto;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="margin: 0; color: #333;">${product.name}</h2>
+                                <button onclick="closeModal()" style="
+                                    background: none;
+                                    border: none;
+                                    font-size: 24px;
+                                    cursor: pointer;
+                                    color: #666;
+                                ">&times;</button>
+                            </div>
+                            
+                            ${product.imageUrl ? `
+                                <img src="${product.imageUrl}" alt="${product.name}" style="
+                                    width: 100%;
+                                    height: 200px;
+                                    object-fit: cover;
+                                    border-radius: 8px;
+                                    margin-bottom: 20px;
+                                ">
+                            ` : ''}
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong>Brand:</strong> ${product.brand} ${product.model}
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <strong>Price:</strong> 
+                                <span style="color: #28a745; font-size: 24px; font-weight: bold;">
+                                    ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.price)}
+                                </span>
+                            </div>
+                            
+                            ${product.description ? `
+                                <div style="margin-bottom: 15px;">
+                                    <strong>Description:</strong>
+                                    <p style="margin: 5px 0 0 0; color: #666;">${product.description}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${product.specs ? `
+                                <div style="margin-bottom: 15px;">
+                                    <strong>Specifications:</strong>
+                                    <ul style="margin: 5px 0 0 0; color: #666;">
+                                        ${Object.entries(product.specs).map(([key, value]) => 
+                                            `<li><strong>${key}:</strong> ${value}</li>`
+                                        ).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            <div style="margin-bottom: 20px;">
+                                <strong>Stock:</strong> 
+                                <span style="
+                                    background: ${product.stockCount > 0 ? '#d4edda' : '#f8d7da'};
+                                    color: ${product.stockCount > 0 ? '#155724' : '#721c24'};
+                                    padding: 4px 8px;
+                                    border-radius: 4px;
+                                    font-size: 12px;
+                                ">
+                                    ${product.stockCount > 0 ? `In Stock (${product.stockCount})` : 'Out of Stock'}
+                                </span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="addToCart('${product.id}')" style="
+                                    background: #007bff;
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 24px;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                    flex: 1;
+                                " ${product.stockCount === 0 ? 'disabled' : ''}>
+                                    ${product.stockCount > 0 ? 'Add to Cart' : 'Out of Stock'}
+                                </button>
+                                
+                                <button onclick="closeModal()" style="
+                                    background: #6c757d;
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 24px;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                ">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add modal to page
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+            }
+
+            // Function to close modal
+            window.closeModal = function() {
+                const modal = document.getElementById('productModal');
+                if (modal) {
+                    modal.remove();
+                }
+            };
+
+            // Function to add to cart (customize as needed)
+            window.addToCart = function(productId) {
+                const product = PacMacProducts.getProduct(productId);
+                if (product) {
+                    console.log('Adding to cart:', product);
+                    // Implement your cart logic here
+                    alert(`Added ${product.name} to cart!`);
+                    closeModal();
+                }
+            };
+
+            // Handle different container configurations
+            const containers = document.querySelectorAll('.pacmac-products-container');
+            containers.forEach(container => {
+                const maxProducts = container.dataset.maxProducts || 12;
+                const layout = container.dataset.layout || 'grid';
+                
+                // You can customize each container individually
+                console.log(`Container configured: maxProducts=${maxProducts}, layout=${layout}`);
+            });
+        });
+    </script>
+</body>
+</html>

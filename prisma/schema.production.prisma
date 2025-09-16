@@ -1,0 +1,29 @@
+// This is your Prisma schema file for production with PostgreSQL
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String
+  model       String
+  price       Float
+  description String?
+  imageUrl    String?
+  specs       Json?    // Store phone specifications as JSON
+  inStock     Boolean  @default(true)
+  stockCount  Int      @default(0)
+  category    String   @default("phone")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("products")
+}
