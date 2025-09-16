@@ -3,7 +3,7 @@ const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const TwitterStrategy = require('passport-twitter-oauth2').Strategy;
+// const TwitterStrategy = require('passport-twitter-oauth2').Strategy; // Temporarily disabled
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key');
 const sgMail = require('@sendgrid/mail');
 
@@ -102,7 +102,8 @@ passport.use(new GoogleStrategy({
   }
 }));
 
-// X (Twitter) OAuth Strategy
+// X (Twitter) OAuth Strategy - Temporarily disabled until package is installed
+/*
 passport.use('twitter', new TwitterStrategy({
   clientID: process.env.X_CLIENT_ID || 'your_x_client_id',
   clientSecret: process.env.X_CLIENT_SECRET || 'your_x_client_secret',
@@ -164,6 +165,7 @@ passport.use('twitter', new TwitterStrategy({
     return done(error, null);
   }
 }));
+*/
 
 // Passport serialization
 passport.serializeUser((user, done) => {
@@ -206,7 +208,8 @@ app.get('/auth/google/callback',
   }
 );
 
-// X (Twitter) OAuth Routes
+// X (Twitter) OAuth Routes - Temporarily disabled until package is installed
+/*
 app.get('/auth/x', passport.authenticate('twitter', {
   scope: ['tweet.read', 'users.read']
 }));
@@ -220,6 +223,7 @@ app.get('/auth/x/callback',
     res.redirect('/marketplace?auth=success&provider=x');
   }
 );
+*/
 
 app.get('/auth/logout', (req, res) => {
   req.logout((err) => {
