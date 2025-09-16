@@ -1099,9 +1099,34 @@
       
       if (authStatus === 'success' && authCode) {
         console.log('✅ OAuth authentication successful, code received:', authCode);
+        
+        // Create a temporary authenticated user for OAuth success
+        const oauthUser = {
+          id: 'oauth-user-' + Date.now(),
+          name: 'Google User',
+          email: 'user@google.com',
+          avatar: 'https://ui-avatars.com/api/?name=Google+User&background=3b82f6&color=fff',
+          ageVerified: true,
+          identityVerified: false,
+          totalEarnings: 0,
+          isOAuth: true
+        };
+        
+        // Store in localStorage to maintain login state
+        localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+        MARKETPLACE_STATE.currentUser = oauthUser;
+        MARKETPLACE_STATE.isAuthenticated = true;
+        
         // Clear URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
         showNotification('Successfully signed in with Google!', 'success');
+        
+        // Show the main app instead of login screen
+        showMainApp();
+        updateAuthUI();
+        await loadItems();
+        showNextItem();
+        return; // Skip the normal auth check
       } else if (authStatus === 'error') {
         const errorMessage = urlParams.get('message') || 'Authentication failed';
         console.error('❌ OAuth authentication failed:', errorMessage);
@@ -1122,7 +1147,20 @@
     // Check authentication status
     async function checkAuthStatus() {
       try {
-        // Check for demo user first
+        // Check for OAuth user first
+        const oauthUser = localStorage.getItem('oauthUser');
+        if (oauthUser) {
+          const user = JSON.parse(oauthUser);
+          MARKETPLACE_STATE.currentUser = user;
+          MARKETPLACE_STATE.isAuthenticated = true;
+          showMainApp();
+          updateAuthUI();
+          await loadItems();
+          showNextItem();
+          return;
+        }
+        
+        // Check for demo user
         const demoUser = localStorage.getItem('demoUser');
         if (demoUser) {
           const user = JSON.parse(demoUser);
@@ -1777,6 +1815,9 @@
     function logout() {
       // Clear demo user data if it exists
       localStorage.removeItem('demoUser');
+      
+      // Clear OAuth user data if it exists
+      localStorage.removeItem('oauthUser');
       
       // Clear marketplace state
       MARKETPLACE_STATE.currentUser = null;
