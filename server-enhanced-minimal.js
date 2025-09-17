@@ -69,12 +69,96 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.6',
+        version: '1.0.8',
         environment: process.env.NODE_ENV || 'development',
         port: PORT,
         nodeVersion: process.version,
         platform: process.platform,
         arch: process.arch
+      }));
+    } else if (pathname === '/api/user/profile') {
+      // Mock user profile for admin pages
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        user: {
+          id: 'demo-admin',
+          name: 'Admin User',
+          email: 'pacmacmobile@gmail.com',
+          isAdmin: true,
+          avatar: null
+        }
+      }));
+    } else if (pathname === '/api/marketplace/items') {
+      // Mock marketplace items for admin pages
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        items: [
+          {
+            id: 'item_sample_1',
+            title: 'iPhone 13 Pro',
+            description: 'Excellent condition, 128GB, space gray. Includes original box and charger.',
+            price: 650.00,
+            category: 'electronics',
+            location: 'Downtown Omaha',
+            distance: '2.3 miles',
+            image: '📱',
+            seller: {
+              id: 'seller_sample_1',
+              name: 'TechTrader',
+              rating: 4.8
+            },
+            bids: [],
+            status: 'active',
+            auctionStatus: 'not_started',
+            currentHighestBid: 0,
+            currentHighestBidder: null,
+            currentHighestBidderName: null,
+            auctionEndTime: null,
+            reservePrice: 500.00,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'item_sample_2',
+            title: 'Vintage Leather Jacket',
+            description: 'Classic brown leather jacket, size M. Great condition with minimal wear.',
+            price: 85.00,
+            category: 'clothing',
+            location: 'Midtown',
+            distance: '1.8 miles',
+            image: '🧥',
+            seller: {
+              id: 'seller_sample_2',
+              name: 'StyleCollector',
+              rating: 4.9
+            },
+            bids: [],
+            status: 'active',
+            auctionStatus: 'not_started',
+            currentHighestBid: 0,
+            currentHighestBidder: null,
+            currentHighestBidderName: null,
+            auctionEndTime: null,
+            reservePrice: 60.00,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ],
+        total: 2
+      }));
+    } else if (pathname === '/api/marketplace/set-reserve' && method === 'POST') {
+      // Mock reserve price setting
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        message: 'Reserve price set successfully (demo mode)',
+        item: {
+          id: 'demo-item',
+          title: 'Demo Item',
+          reservePrice: 100.00
+        }
       }));
     } else {
       res.writeHead(501, { 'Content-Type': 'application/json' });
