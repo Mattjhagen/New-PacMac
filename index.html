@@ -28,7 +28,10 @@
     <!-- End Google Tag Manager (noscript) -->
     <p>Redirecting to PacMac Marketplace...</p>
     <script>
-        window.location.href = '/welcome.html';
+        // Force redirect to welcome page
+        if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+            window.location.replace('/welcome.html');
+        }
     </script>
 </body>
 </html>
