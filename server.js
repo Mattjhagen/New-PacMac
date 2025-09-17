@@ -5,8 +5,30 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path');
 // const TwitterStrategy = require('passport-twitter-oauth2').Strategy; // Temporarily disabled
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key');
-const sgMail = require('@sendgrid/mail');
+// Initialize Stripe with error handling
+let stripe;
+try {
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key');
+  console.log('✅ Stripe initialized');
+} catch (error) {
+  console.log('⚠️ Stripe initialization failed:', error.message);
+  stripe = null;
+}
+
+// Initialize SendGrid with error handling
+let sgMail;
+try {
+  sgMail = require('@sendgrid/mail');
+  if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('✅ SendGrid initialized');
+  } else {
+    console.log('⚠️ SendGrid API key not set');
+  }
+} catch (error) {
+  console.log('⚠️ SendGrid initialization failed:', error.message);
+  sgMail = null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -298,7 +320,7 @@ passport.deserializeUser((id, done) => {
 });
 
 // Configure SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || 'SG.your_sendgrid_api_key');
+// SendGrid API key already set in initialization above
 
 // Authentication middleware
 function requireAuth(req, res, next) {
@@ -526,6 +548,13 @@ app.get('/admin-sync', (req, res) => {
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
     const { amount, currency = 'usd', description } = req.body;
+
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        error: 'Payment service not available'
+      });
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
@@ -2044,6 +2073,13 @@ app.post('/api/marketplace/process-auction', async (req, res) => {
     const totalFee = flatFee + percentageFee;
     const totalAmount = Math.round((winningBid.amount + totalFee) * 100); // Convert to cents
     
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        error: 'Payment service not available'
+      });
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: 'usd',
@@ -2253,6 +2289,13 @@ app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
     const totalFee = flatFee + percentageFee;
     const totalAmount = Math.round((amount + totalFee) * 100); // Convert to cents
     
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        error: 'Payment service not available'
+      });
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: 'usd',
@@ -2336,6 +2379,13 @@ app.post('/api/marketplace/confirm-payment', async (req, res) => {
     }
     
     // Verify payment intent with Stripe
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        error: 'Payment service not available'
+      });
+    }
+
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
     if (paymentIntent.status !== 'succeeded') {
@@ -2829,8 +2879,9 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 PacMac Marketplace server running on port ${PORT}`);
   console.log(`📱 Marketplace: http://localhost:${PORT}/marketplace`);
   console.log(`🔐 OAuth: http://localhost:${PORT}/auth/google`);
-  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'Configured' : 'Not configured'}`);
-  console.log(`📧 SendGrid: ${process.env.SENDGRID_API_KEY ? 'Configured' : 'Not configured'}`);
+  console.log(`💳 Stripe: ${stripe ? 'Available' : 'Not available'}`);
+  console.log(`📧 SendGrid: ${sgMail ? 'Available' : 'Not available'}`);
+  console.log(`🗺️ Location Services: ${locationVerifier ? 'Available' : 'Not available'}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 CORS Origin: ${process.env.NODE_ENV === 'production' ? (process.env.RENDER_EXTERNAL_URL || 'https://pacmac-marketplace.onrender.com') : 'http://localhost:3000'}`);
   console.log(`💚 Health check available at http://localhost:${PORT}/health`);
