@@ -1307,8 +1307,27 @@
 
     // Show main app
     function showMainApp() {
-      document.getElementById('oauthSplash').classList.add('hidden');
-      document.getElementById('mainApp').classList.remove('hidden');
+      try {
+        console.log('Showing main app...');
+        const oauthSplash = document.getElementById('oauthSplash');
+        const mainApp = document.getElementById('mainApp');
+        
+        if (oauthSplash) {
+          oauthSplash.classList.add('hidden');
+          console.log('OAuth splash hidden');
+        } else {
+          console.error('oauthSplash element not found');
+        }
+        
+        if (mainApp) {
+          mainApp.classList.remove('hidden');
+          console.log('Main app shown');
+        } else {
+          console.error('mainApp element not found');
+        }
+      } catch (error) {
+        console.error('Error in showMainApp:', error);
+      }
     }
 
     // Demo login function
@@ -1901,7 +1920,21 @@
             
             // Update UI to show logged in state after a brief delay
             setTimeout(() => {
-              updateAuthUI(mockUser);
+              try {
+                console.log('Updating UI for user:', mockUser);
+                updateAuthUI(mockUser);
+                console.log('UI update completed');
+              } catch (uiError) {
+                console.error('UI update error:', uiError);
+                // Fallback: try to show main app directly
+                try {
+                  document.getElementById('oauthSplash').classList.add('hidden');
+                  document.getElementById('mainApp').classList.remove('hidden');
+                  console.log('Fallback UI update completed');
+                } catch (fallbackError) {
+                  console.error('Fallback UI update failed:', fallbackError);
+                }
+              }
             }, 1000);
             
           } catch (innerError) {
