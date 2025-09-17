@@ -3,6 +3,7 @@ const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const path = require('path');
 // const TwitterStrategy = require('passport-twitter-oauth2').Strategy; // Temporarily disabled
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key');
 const sgMail = require('@sendgrid/mail');
@@ -19,6 +20,11 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.static('.'));
+
+// Google domain verification endpoint
+app.get('/google-verification-file.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'google-verification-file.html'));
+});
 
 // Session configuration
 app.use(session({
