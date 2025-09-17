@@ -62,7 +62,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.17',
+        version: '1.0.18',
         port: PORT,
         nodeVersion: process.version
       }));
@@ -169,7 +169,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-        version: '1.0.17',
+        version: '1.0.18',
       port: PORT,
       nodeVersion: process.version
     }));
