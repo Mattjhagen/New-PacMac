@@ -4,9 +4,12 @@
   "description": "PacMac Mobile e-commerce platform with trade-ins, leasing, and internet services",
   "main": "server.js",
   "scripts": {
-    "start": "node server-render-test.js",
-    "start-full": "node server.js",
-    "start-minimal": "node server-ultra-minimal.js",
+    "start": "node server.js",
+    "start-minimal": "node server-minimal.js",
+    "start-simple": "node server-simple.js",
+    "dev": "nodemon server.js",
+    "dev-simple": "nodemon server-simple.js",
+    "dev-minimal": "nodemon server-minimal.js",
     "build": "echo 'No build step required for this Node.js application'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +26,9 @@
   "license": "MIT",
   "dependencies": {
     "@sendgrid/mail": "^8.0.1",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
+    "@vercel/toolbar": "^0.1.41",
     "axios": "^1.6.0",
     "cheerio": "^1.1.2",
     "cors": "^2.8.5",
@@ -35,15 +41,18 @@
     "plaid": "^12.0.0",
     "stripe": "^14.7.0"
   },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Mattjhagen/New-PacMac.git"
+    "url": "https://github.com/pacmacmobile/pacmac-mobile.git"
   },
   "bugs": {
-    "url": "https://github.com/Mattjhagen/New-PacMac/issues"
+    "url": "https://github.com/pacmacmobile/pacmac-mobile/issues"
   },
-  "homepage": "https://new-pacmac.onrender.com"
+  "homepage": "https://pacmacmobile.com"
 }
