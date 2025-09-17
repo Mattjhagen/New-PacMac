@@ -5,7 +5,7 @@
 
 class LocationVerification {
   constructor() {
-    this.GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+    this.GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY';
     this.PROXIMITY_RADIUS_FEET = 100;
     this.PROXIMITY_RADIUS_METERS = 30.48; // 100 feet in meters
   }

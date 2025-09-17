@@ -27,12 +27,26 @@ app.get('/google-verification-file.html', (req, res) => {
 });
 
 // Location verification endpoints
-const LocationVerification = require('./location-verification');
-const locationVerifier = new LocationVerification();
+let LocationVerification, locationVerifier;
+try {
+  LocationVerification = require('./location-verification');
+  locationVerifier = new LocationVerification();
+  console.log('✅ Location verification system initialized');
+} catch (error) {
+  console.log('⚠️ Location verification system not available:', error.message);
+  locationVerifier = null;
+}
 
 // Verify transaction proximity
 app.post('/api/verify-transaction-location', async (req, res) => {
   try {
+    if (!locationVerifier) {
+      return res.status(503).json({
+        success: false,
+        error: 'Location verification service not available'
+      });
+    }
+
     const { transactionId, customerLocation, meetingLocation } = req.body;
     
     if (!customerLocation || !meetingLocation) {
@@ -62,6 +76,13 @@ app.post('/api/verify-transaction-location', async (req, res) => {
 // Get directions to meeting location
 app.post('/api/get-directions', async (req, res) => {
   try {
+    if (!locationVerifier) {
+      return res.status(503).json({
+        success: false,
+        error: 'Location verification service not available'
+      });
+    }
+
     const { customerLocation, meetingLocation } = req.body;
     
     if (!customerLocation || !meetingLocation) {
@@ -89,6 +110,13 @@ app.post('/api/get-directions', async (req, res) => {
 // Geocode address to coordinates
 app.post('/api/geocode-address', async (req, res) => {
   try {
+    if (!locationVerifier) {
+      return res.status(503).json({
+        success: false,
+        error: 'Location verification service not available'
+      });
+    }
+
     const { address } = req.body;
     
     if (!address) {
