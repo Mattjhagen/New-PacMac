@@ -163,6 +163,33 @@
             cursor: not-allowed;
             transform: none;
         }
+        
+        .reserve-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .reserve-status {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .reserve-status.met {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .reserve-status.not-met {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
 
         .bids-list {
             margin-top: 15px;
@@ -435,6 +462,14 @@
                             <div><strong>Current Highest Bid:</strong> $${currentBid}</div>
                             <div><strong>Current Leader:</strong> ${bidderName}</div>
                             <div><strong>Total Bids:</strong> ${item.bids ? item.bids.length : 0}</div>
+                            ${item.reservePrice ? `
+                                <div class="reserve-info">
+                                    <strong>Reserve Price:</strong> $${item.reservePrice}
+                                    <span class="reserve-status ${currentBid >= item.reservePrice ? 'met' : 'not-met'}">
+                                        ${currentBid >= item.reservePrice ? '✅ MET' : '❌ NOT MET'}
+                                    </span>
+                                </div>
+                            ` : ''}
                             
                             ${item.auctionEndTime ? `
                                 <div class="countdown" id="countdown-${item.id}">

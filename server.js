@@ -1961,6 +1961,15 @@ app.post('/api/marketplace/bid', requireAgeVerification, async (req, res) => {
       });
     }
     
+    // Check if bid meets reserve price (if set)
+    if (item.reservePrice && amount < item.reservePrice) {
+      return res.status(400).json({
+        success: false,
+        error: `Bid must be at least $${item.reservePrice} to meet the reserve price`,
+        reservePrice: item.reservePrice
+      });
+    }
+    
     // Create bid record (no payment required yet)
     const bid = {
       id: 'bid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -2067,6 +2076,18 @@ app.post('/api/marketplace/process-auction', async (req, res) => {
       bid.amount > highest.amount ? bid : highest
     );
     
+    // Check if winning bid meets reserve price
+    if (item.reservePrice && winningBid.amount < item.reservePrice) {
+      item.auctionStatus = 'reserve_not_met';
+      return res.json({
+        success: true,
+        message: `Auction ended but reserve price of $${item.reservePrice} not met. Highest bid was $${winningBid.amount}`,
+        auctionStatus: 'reserve_not_met',
+        reservePrice: item.reservePrice,
+        highestBid: winningBid.amount
+      });
+    }
+    
     // Create payment intent for winning bidder
     const flatFee = 3.00; // $3 flat fee
     const percentageFee = winningBid.amount * 0.03; // 3% of bid amount
@@ -2153,6 +2174,64 @@ app.post('/api/marketplace/process-auction', async (req, res) => {
   }
 });
 
+// Set reserve price for an item (Admin only)
+app.post('/api/marketplace/set-reserve', requireAuth, async (req, res) => {
+  try {
+    const { itemId, reservePrice } = req.body;
+    const user = req.user;
+    
+    // Check if user is admin
+    if (!user.isAdmin && !(user.email && (user.email.endsWith('@pacmacmobile.com') || user.email === 'pacmacmobile@gmail.com'))) {
+      return res.status(403).json({
+        success: false,
+        error: 'Admin access required'
+      });
+    }
+    
+    if (!itemId || reservePrice === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'Item ID and reserve price are required'
+      });
+    }
+    
+    const item = marketplaceData.items.find(i => i.id === itemId);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+    
+    // Check if auction has already started
+    if (item.auctionStatus === 'active' || item.bids.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot set reserve price after auction has started'
+      });
+    }
+    
+    item.reservePrice = parseFloat(reservePrice);
+    item.updatedAt = new Date().toISOString();
+    
+    res.json({
+      success: true,
+      message: `Reserve price set to $${item.reservePrice}`,
+      item: {
+        id: item.id,
+        title: item.title,
+        reservePrice: item.reservePrice
+      }
+    });
+  } catch (error) {
+    console.error('Error setting reserve price:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Get auction status for an item
 app.get('/api/marketplace/auction/:itemId', (req, res) => {
   try {
@@ -2182,6 +2261,8 @@ app.get('/api/marketplace/auction/:itemId', (req, res) => {
         isActive: timeLeft > 0,
         bidsCount: item.bids.length,
         auctionStatus: item.auctionStatus || 'not_started',
+        reservePrice: item.reservePrice || null,
+        reserveMet: item.reservePrice ? (item.currentHighestBid || 0) >= item.reservePrice : true,
         bids: item.bids.map(bid => ({
           id: bid.id,
           bidderName: bid.bidderName,
@@ -2737,6 +2818,7 @@ function initializeMarketplaceData() {
       currentHighestBidder: null,
       currentHighestBidderName: null,
       auctionEndTime: null,
+      reservePrice: 500.00, // Reserve price for iPhone 13 Pro
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     },
@@ -2761,6 +2843,7 @@ function initializeMarketplaceData() {
       currentHighestBidder: null,
       currentHighestBidderName: null,
       auctionEndTime: null,
+      reservePrice: 60.00, // Reserve price for leather jacket
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     },
@@ -2785,6 +2868,7 @@ function initializeMarketplaceData() {
       currentHighestBidder: null,
       currentHighestBidderName: null,
       auctionEndTime: null,
+      reservePrice: 1500.00, // Reserve price for MacBook Pro
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
