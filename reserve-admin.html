@@ -181,6 +181,41 @@
             color: #666;
             font-style: italic;
         }
+        
+        .login-section {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .login-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .login-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .auth-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -211,18 +246,39 @@
                     
                     // Check if user is admin
                     if (!currentUser.isAdmin && !(currentUser.email && (currentUser.email.endsWith('@pacmacmobile.com') || currentUser.email === 'pacmacmobile@gmail.com'))) {
-                        showAlert('Admin access required. Please login with an admin account.', 'error');
+                        showLoginInterface('Admin access required. Please login with an admin account.');
                         return false;
                     }
                     return true;
                 } else {
-                    showAlert('Please login to access admin features.', 'error');
+                    showLoginInterface('Please login to access admin features.');
                     return false;
                 }
             } catch (error) {
-                showAlert('Authentication error: ' + error.message, 'error');
+                showLoginInterface('Authentication error: ' + error.message);
                 return false;
             }
+        }
+        
+        // Show login interface
+        function showLoginInterface(message) {
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = `
+                <div class="auth-info">
+                    <h3>🔐 Authentication Required</h3>
+                    <p>${message}</p>
+                    <p><strong>Admin accounts:</strong> @pacmacmobile.com or pacmacmobile@gmail.com</p>
+                </div>
+                <div class="login-section">
+                    <a href="/auth/google" class="login-button">
+                        🔑 Login with Google
+                    </a>
+                    <br>
+                    <a href="/marketplace.html" class="login-button" style="background: #28a745;">
+                        🏠 Back to Marketplace
+                    </a>
+                </div>
+            `;
         }
         
         // Show alert message
@@ -354,6 +410,18 @@
             const isAuthenticated = await checkAuth();
             if (isAuthenticated) {
                 loadItems();
+            } else {
+                // Check if we're coming back from OAuth
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('auth') === 'success') {
+                    // Retry authentication after OAuth redirect
+                    setTimeout(async () => {
+                        const retryAuth = await checkAuth();
+                        if (retryAuth) {
+                            loadItems();
+                        }
+                    }, 1000);
+                }
             }
         });
     </script>
