@@ -66,6 +66,90 @@ const server = http.createServer((req, res) => {
         port: PORT,
         nodeVersion: process.version
       }));
+    } else if (req.url === '/api/user/profile') {
+      // Mock user profile for admin pages
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        user: {
+          id: 'demo-admin',
+          name: 'Demo Admin',
+          email: 'pacmacmobile@gmail.com',
+          isAdmin: true,
+          avatar: null
+        }
+      }));
+    } else if (req.url === '/api/marketplace/items') {
+      // Mock marketplace items for admin pages
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        items: [
+          {
+            id: 'demo_item_1',
+            title: 'iPhone 13 Pro',
+            description: 'Excellent condition, 128GB, space gray.',
+            price: 650.00,
+            category: 'electronics',
+            location: 'Downtown Omaha',
+            distance: '2.3 miles',
+            image: '📱',
+            seller: {
+              id: 'demo_seller_1',
+              name: 'TechTrader',
+              rating: 4.8
+            },
+            bids: [],
+            status: 'active',
+            auctionStatus: 'not_started',
+            currentHighestBid: 0,
+            currentHighestBidder: null,
+            currentHighestBidderName: null,
+            auctionEndTime: null,
+            reservePrice: 500.00,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'demo_item_2',
+            title: 'Vintage Leather Jacket',
+            description: 'Classic brown leather jacket, size M.',
+            price: 85.00,
+            category: 'clothing',
+            location: 'Midtown',
+            distance: '1.8 miles',
+            image: '🧥',
+            seller: {
+              id: 'demo_seller_2',
+              name: 'StyleCollector',
+              rating: 4.9
+            },
+            bids: [],
+            status: 'active',
+            auctionStatus: 'not_started',
+            currentHighestBid: 0,
+            currentHighestBidder: null,
+            currentHighestBidderName: null,
+            auctionEndTime: null,
+            reservePrice: 60.00,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ],
+        total: 2
+      }));
+    } else if (req.url === '/api/marketplace/set-reserve' && req.method === 'POST') {
+      // Mock reserve price setting
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        message: 'Reserve price set successfully (demo mode)',
+        item: {
+          id: 'demo-item',
+          title: 'Demo Item',
+          reservePrice: 100.00
+        }
+      }));
     } else {
       res.writeHead(501);
       res.end(JSON.stringify({
