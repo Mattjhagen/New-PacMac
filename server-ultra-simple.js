@@ -62,7 +62,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.16',
+        version: '1.0.17',
         port: PORT,
         nodeVersion: process.version
       }));
@@ -169,7 +169,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-        version: '1.0.16',
+        version: '1.0.17',
       port: PORT,
       nodeVersion: process.version
     }));
@@ -210,7 +210,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Ultra-simple server running on port ${PORT}`);
+  console.log(`🚀 Ultra-simple server running on port ${PORT} - Clean deployment`);
   console.log(`📦 Node version: ${process.version}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 }).on('error', (err) => {
