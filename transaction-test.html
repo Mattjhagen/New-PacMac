@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacMac Marketplace - Transaction Location Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .transaction-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            background: #f9f9f9;
+        }
+        
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .transaction-id {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 1.1em;
+        }
+        
+        .transaction-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .product-info {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .product-image {
+            width: 100px;
+            height: 100px;
+            background: #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        
+        .product-details h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+        }
+        
+        .product-details p {
+            margin: 0.25rem 0;
+            color: #666;
+        }
+        
+        .meeting-info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .meeting-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1976d2;
+        }
+        
+        .location-actions {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        button.success {
+            background: #28a745;
+        }
+        
+        button.warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        button.danger {
+            background: #dc3545;
+        }
+        
+        .verification-result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .verification-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .verification-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .verification-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .verification-result.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .step {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+        }
+        
+        .step.active .step-number {
+            background: #007bff;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step.failed .step-number {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .step.active .step-label {
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        .step.completed .step-label {
+            color: #28a745;
+            font-weight: 500;
+        }
+        
+        .step.failed .step-label {
+            color: #dc3545;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 PacMac Marketplace - Transaction Location Test</h1>
+        
+        <!-- Transaction Card -->
+        <div class="transaction-card">
+            <div class="transaction-header">
+                <div class="transaction-id" id="transaction-id">TX-2024-001</div>
+                <div class="transaction-status status-pending" id="transaction-status">Location Verification Required</div>
+            </div>
+            
+            <div class="product-info">
+                <div class="product-image">📱</div>
+                <div class="product-details">
+                    <h3>iPhone 15 Pro Max 256GB</h3>
+                    <p><strong>Price:</strong> $1,199.00</p>
+                    <p><strong>Condition:</strong> Like New</p>
+                    <p><strong>Seller:</strong> John Doe</p>
+                    <p><strong>Buyer:</strong> You (Test User)</p>
+                </div>
+            </div>
+            
+            <div class="meeting-info">
+                <h4>📍 Meeting Location</h4>
+                <p><strong>Address:</strong> <span id="meeting-address">Central Park, New York, NY</span></p>
+                <p><strong>Coordinates:</strong> <span id="meeting-coords">40.7829, -73.9654</span></p>
+                <p><strong>Meeting Time:</strong> Today, 2:00 PM</p>
+                <p><strong>Proximity Required:</strong> Within 100 feet</p>
+            </div>
+            
+            <div class="location-actions">
+                <button id="start-verification-btn" onclick="startLocationVerification()">🔍 Start Location Verification</button>
+                <button id="get-directions-btn" onclick="getDirections()" disabled>🗺️ Get Directions</button>
+                <button id="confirm-transaction-btn" onclick="confirmTransaction()" disabled>✅ Confirm Transaction</button>
+                <button id="cancel-transaction-btn" onclick="cancelTransaction()" class="danger">❌ Cancel Transaction</button>
+            </div>
+            
+            <div id="verification-result" class="verification-result" style="display: none;"></div>
+            <div id="map-container" style="display: none;">
+                <h4>📍 Meeting Location Map</h4>
+                <div id="map"></div>
+            </div>
+        </div>
+        
+        <!-- Progress Steps -->
+        <div class="step-indicator">
+            <div class="step" id="step-1">
+                <div class="step-number">1</div>
+                <div class="step-label">Get Location</div>
+            </div>
+            <div class="step" id="step-2">
+                <div class="step-number">2</div>
+                <div class="step-label">Verify Proximity</div>
+            </div>
+            <div class="step" id="step-3">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirm Transaction</div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="transaction-card">
+            <h3>🧪 Test Controls</h3>
+            <p>Use these controls to test different scenarios:</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                <div>
+                    <label><strong>Test Meeting Location:</strong></label>
+                    <select id="test-location" onchange="changeTestLocation()">
+                        <option value="central-park">Central Park, NY (Easy to find)</option>
+                        <option value="times-square">Times Square, NY (Popular location)</option>
+                        <option value="brooklyn-bridge">Brooklyn Bridge, NY (Landmark)</option>
+                        <option value="custom">Custom Address...</option>
+                    </select>
+                </div>
+                <div>
+                    <label><strong>Simulate Distance:</strong></label>
+                    <select id="simulate-distance" onchange="simulateDistance()">
+                        <option value="real">Use Real Location</option>
+                        <option value="close">Simulate: 50 feet away</option>
+                        <option value="far">Simulate: 200 feet away</option>
+                        <option value="very-far">Simulate: 500 feet away</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="custom-address" style="display: none; margin-top: 1rem;">
+                <label><strong>Custom Meeting Address:</strong></label>
+                <input type="text" id="custom-address-input" placeholder="Enter custom address..." style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                <button onclick="setCustomAddress()" style="margin-top: 0.5rem;">Set Custom Address</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set API key from environment
+        window.GOOGLE_MAPS_API_KEY = 'YOUR_ACTUAL_API_KEY_HERE';
+    </script>
+    <script src="location-verification-frontend.js"></script>
+    <script>
+        let locationVerifier = null;
+        let currentTransaction = {
+            id: 'TX-2024-001',
+            product: 'iPhone 15 Pro Max 256GB',
+            price: 1199.00,
+            seller: 'John Doe',
+            buyer: 'You (Test User)',
+            meetingLocation: {
+                address: 'Central Park, New York, NY',
+                lat: 40.7829,
+                lng: -73.9654
+            },
+            status: 'pending',
+            proximityVerified: false
+        };
+        
+        let simulatedLocation = null;
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeLocationVerifier();
+            updateTransactionDisplay();
+        });
+        
+        async function initializeLocationVerifier() {
+            try {
+                locationVerifier = new LocationVerificationFrontend();
+                await locationVerifier.initializeMaps();
+                showResult('Location verifier initialized successfully!', 'success');
+            } catch (error) {
+                showResult(`Failed to initialize: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateTransactionDisplay() {
+            document.getElementById('transaction-id').textContent = currentTransaction.id;
+            document.getElementById('meeting-address').textContent = currentTransaction.meetingLocation.address;
+            document.getElementById('meeting-coords').textContent = `${currentTransaction.meetingLocation.lat}, ${currentTransaction.meetingLocation.lng}`;
+            
+            const statusElement = document.getElementById('transaction-status');
+            if (currentTransaction.proximityVerified) {
+                statusElement.textContent = 'Location Verified - Ready to Complete';
+                statusElement.className = 'transaction-status status-verified';
+                document.getElementById('confirm-transaction-btn').disabled = false;
+            } else {
+                statusElement.textContent = 'Location Verification Required';
+                statusElement.className = 'transaction-status status-pending';
+                document.getElementById('confirm-transaction-btn').disabled = true;
+            }
+        }
+        
+        async function startLocationVerification() {
+            if (!locationVerifier) {
+                showResult('Location verifier not initialized', 'error');
+                return;
+            }
+            
+            try {
+                updateStep(1, 'active');
+                showResult('Step 1: Getting your current location...', 'info');
+                
+                // Get current location (or use simulated location)
+                let customerLocation;
+                if (simulatedLocation) {
+                    customerLocation = simulatedLocation;
+                    showResult(`Using simulated location: ${customerLocation.lat}, ${customerLocation.lng}`, 'info');
+                } else {
+                    customerLocation = await locationVerifier.getCurrentLocation();
+                    showResult(`Current location: ${customerLocation.lat}, ${customerLocation.lng}`, 'success');
+                }
+                
+                updateStep(1, 'completed');
+                updateStep(2, 'active');
+                
+                // Verify proximity
+                showResult('Step 2: Verifying proximity to meeting location...', 'info');
+                const proximityResult = await locationVerifier.verifyProximity(currentTransaction.meetingLocation);
+                
+                if (proximityResult.isWithinRange) {
+                    showResult(`✅ PROXIMITY VERIFIED!\nYou are ${proximityResult.distanceFeet} feet away (within 100ft range)\nTransaction can proceed!`, 'success');
+                    currentTransaction.proximityVerified = true;
+                    updateStep(2, 'completed');
+                    updateStep(3, 'active');
+                    document.getElementById('confirm-transaction-btn').disabled = false;
+                } else {
+                    showResult(`⚠️ TOO FAR AWAY\nYou are ${proximityResult.distanceFeet} feet away (need to be within 100ft)\nPlease get closer to the meeting location.`, 'warning');
+                    updateStep(2, 'failed');
+                    document.getElementById('get-directions-btn').disabled = false;
+                }
+                
+                updateTransactionDisplay();
+                
+            } catch (error) {
+                showResult(`Location verification failed: ${error.message}`, 'error');
+                updateStep(1, 'failed');
+            }
+        }
+        
+        async function getDirections() {
+            if (!locationVerifier) {
+                showResult('Location verifier not initialized', 'error');
+                return;
+            }
+            
+            try {
+                showResult('Getting directions to meeting location...', 'info');
+                
+                const directions = await locationVerifier.getDirections(currentTransaction.meetingLocation);
+                
+                if (directions.success) {
+                    const resultText = `Directions to ${currentTransaction.meetingLocation.address}:
+Distance: ${directions.distance.text}
+Duration: ${directions.duration.text}
+
+Route Steps:
+${directions.steps.map((step, index) => `${index + 1}. ${step.instruction}`).join('\n')}`;
+                    
+                    showResult(resultText, 'success');
+                    
+                    // Show map
+                    document.getElementById('map-container').style.display = 'block';
+                    await locationVerifier.displayDirections(currentTransaction.meetingLocation);
+                    
+                } else {
+                    showResult(`Failed to get directions: ${directions.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`Directions failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function confirmTransaction() {
+            if (!currentTransaction.proximityVerified) {
+                showResult('Location must be verified before confirming transaction', 'error');
+                return;
+            }
+            
+            showResult(`✅ TRANSACTION CONFIRMED!\n\nTransaction ID: ${currentTransaction.id}\nProduct: ${currentTransaction.product}\nPrice: $${currentTransaction.price}\nMeeting Location: ${currentTransaction.meetingLocation.address}\nProximity Verified: ✅ Within 100 feet\n\nTransaction completed successfully!`, 'success');
+            
+            updateStep(3, 'completed');
+            document.getElementById('transaction-status').textContent = 'Transaction Completed';
+            document.getElementById('transaction-status').className = 'transaction-status status-verified';
+            
+            // Disable all buttons
+            document.getElementById('start-verification-btn').disabled = true;
+            document.getElementById('get-directions-btn').disabled = true;
+            document.getElementById('confirm-transaction-btn').disabled = true;
+        }
+        
+        function cancelTransaction() {
+            if (confirm('Are you sure you want to cancel this transaction?')) {
+                showResult('❌ TRANSACTION CANCELLED\n\nTransaction has been cancelled by user.', 'error');
+                updateStep(1, 'failed');
+                updateStep(2, 'failed');
+                updateStep(3, 'failed');
+                
+                document.getElementById('transaction-status').textContent = 'Transaction Cancelled';
+                document.getElementById('transaction-status').className = 'transaction-status status-failed';
+                
+                // Disable all buttons
+                document.getElementById('start-verification-btn').disabled = true;
+                document.getElementById('get-directions-btn').disabled = true;
+                document.getElementById('confirm-transaction-btn').disabled = true;
+            }
+        }
+        
+        function changeTestLocation() {
+            const locationSelect = document.getElementById('test-location');
+            const customAddressDiv = document.getElementById('custom-address');
+            
+            if (locationSelect.value === 'custom') {
+                customAddressDiv.style.display = 'block';
+            } else {
+                customAddressDiv.style.display = 'none';
+                
+                const locations = {
+                    'central-park': { address: 'Central Park, New York, NY', lat: 40.7829, lng: -73.9654 },
+                    'times-square': { address: 'Times Square, New York, NY', lat: 40.7580, lng: -73.9855 },
+                    'brooklyn-bridge': { address: 'Brooklyn Bridge, New York, NY', lat: 40.7061, lng: -73.9969 }
+                };
+                
+                const location = locations[locationSelect.value];
+                currentTransaction.meetingLocation = location;
+                updateTransactionDisplay();
+            }
+        }
+        
+        function setCustomAddress() {
+            const customAddress = document.getElementById('custom-address-input').value.trim();
+            if (!customAddress) {
+                alert('Please enter a custom address');
+                return;
+            }
+            
+            currentTransaction.meetingLocation.address = customAddress;
+            // Note: In a real app, you'd geocode this address to get coordinates
+            // For testing, we'll use approximate coordinates
+            currentTransaction.meetingLocation.lat = 40.7128;
+            currentTransaction.meetingLocation.lng = -74.0060;
+            
+            updateTransactionDisplay();
+            showResult(`Custom address set: ${customAddress}`, 'success');
+        }
+        
+        function simulateDistance() {
+            const distanceSelect = document.getElementById('simulate-distance');
+            
+            if (distanceSelect.value === 'real') {
+                simulatedLocation = null;
+                showResult('Using real location', 'info');
+            } else {
+                // Simulate different distances from meeting location
+                const baseLocation = currentTransaction.meetingLocation;
+                const distances = {
+                    'close': 0.0001,    // ~50 feet
+                    'far': 0.0005,      // ~200 feet  
+                    'very-far': 0.001   // ~500 feet
+                };
+                
+                const offset = distances[distanceSelect.value];
+                simulatedLocation = {
+                    lat: baseLocation.lat + offset,
+                    lng: baseLocation.lng + offset,
+                    accuracy: 10
+                };
+                
+                showResult(`Simulated location set: ${simulatedLocation.lat}, ${simulatedLocation.lng}`, 'info');
+            }
+        }
+        
+        function updateStep(stepNumber, status) {
+            const step = document.getElementById(`step-${stepNumber}`);
+            step.className = `step ${status}`;
+        }
+        
+        function showResult(message, type) {
+            const element = document.getElementById('verification-result');
+            element.textContent = message;
+            element.className = `verification-result ${type}`;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
