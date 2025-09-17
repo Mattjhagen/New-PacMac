@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacMac Marketplace - Location Verification Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .test-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        
+        .form-group {
+            margin: 1rem 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.success {
+            background: #28a745;
+        }
+        
+        .status-indicator.error {
+            background: #dc3545;
+        }
+        
+        .status-indicator.warning {
+            background: #ffc107;
+        }
+        
+        .status-indicator.info {
+            background: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📍 PacMac Marketplace - Location Verification Test</h1>
+        
+        <div class="test-section">
+            <h3>🔧 Configuration</h3>
+            <div class="form-group">
+                <label for="api-key">Google Maps API Key:</label>
+                <input type="text" id="api-key" placeholder="Enter your Google Maps API key">
+                <small>Get your API key from <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></small>
+            </div>
+            <button onclick="saveApiKey()">Save API Key</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📍 Current Location Test</h3>
+            <p>Test getting your current location and displaying it on a map.</p>
+            <button onclick="getCurrentLocation()">Get My Location</button>
+            <div id="location-result" class="result" style="display: none;"></div>
+            <div id="location-map" style="display: none;">
+                <h4>Your Location:</h4>
+                <div id="map"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Proximity Verification Test</h3>
+            <p>Test the 100-foot proximity verification system.</p>
+            <div class="form-group">
+                <label for="meeting-lat">Meeting Location Latitude:</label>
+                <input type="number" id="meeting-lat" step="any" placeholder="40.7128">
+            </div>
+            <div class="form-group">
+                <label for="meeting-lng">Meeting Location Longitude:</label>
+                <input type="number" id="meeting-lng" step="any" placeholder="-74.0060">
+            </div>
+            <button onclick="testProximity()">Test Proximity Verification</button>
+            <div id="proximity-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🗺️ Directions Test</h3>
+            <p>Test getting directions to a meeting location.</p>
+            <div class="form-group">
+                <label for="destination-address">Destination Address:</label>
+                <input type="text" id="destination-address" placeholder="123 Main St, New York, NY">
+            </div>
+            <button onclick="testDirections()">Get Directions</button>
+            <div id="directions-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🏢 Geocoding Test</h3>
+            <p>Test converting an address to coordinates.</p>
+            <div class="form-group">
+                <label for="geocode-address">Address to Geocode:</label>
+                <input type="text" id="geocode-address" placeholder="Times Square, New York, NY">
+            </div>
+            <button onclick="testGeocoding()">Geocode Address</button>
+            <div id="geocode-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔄 Full Transaction Test</h3>
+            <p>Test the complete location verification flow for a transaction.</p>
+            <div class="form-group">
+                <label for="transaction-id">Transaction ID:</label>
+                <input type="text" id="transaction-id" placeholder="tx_123456">
+            </div>
+            <div class="form-group">
+                <label for="meeting-address">Meeting Address:</label>
+                <input type="text" id="meeting-address" placeholder="Central Park, New York, NY">
+            </div>
+            <button onclick="testFullTransaction()">Test Full Transaction Flow</button>
+            <div id="transaction-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="location-verification-frontend.js"></script>
+    <script>
+        let locationVerifier = null;
+        let currentLocation = null;
+        
+        // Initialize location verifier when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            const apiKey = localStorage.getItem('google_maps_api_key');
+            if (apiKey) {
+                document.getElementById('api-key').value = apiKey;
+                await initializeLocationVerifier(apiKey);
+            }
+        });
+        
+        async function saveApiKey() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            if (!apiKey) {
+                alert('Please enter a valid API key');
+                return;
+            }
+            
+            localStorage.setItem('google_maps_api_key', apiKey);
+            await initializeLocationVerifier(apiKey);
+            showResult('location-result', 'API key saved successfully!', 'success');
+        }
+        
+        async function initializeLocationVerifier(apiKey) {
+            try {
+                locationVerifier = new LocationVerificationFrontend();
+                locationVerifier.GOOGLE_MAPS_API_KEY = apiKey;
+                await locationVerifier.initializeMaps();
+                showResult('location-result', 'Location verifier initialized successfully!', 'success');
+            } catch (error) {
+                showResult('location-result', `Failed to initialize: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getCurrentLocation() {
+            if (!locationVerifier) {
+                showResult('location-result', 'Please save your API key first', 'error');
+                return;
+            }
+            
+            try {
+                showResult('location-result', 'Getting your location...', 'info');
+                currentLocation = await locationVerifier.getCurrentLocation();
+                
+                const result = `Location found successfully!
+Latitude: ${currentLocation.lat}
+Longitude: ${currentLocation.lng}
+Accuracy: ${currentLocation.accuracy} meters`;
+                
+                showResult('location-result', result, 'success');
+                
+                // Show map
+                document.getElementById('location-map').style.display = 'block';
+                const map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 15,
+                    center: new google.maps.LatLng(currentLocation.lat, currentLocation.lng)
+                });
+                
+                new google.maps.Marker({
+                    position: new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
+                    map: map,
+                    title: 'Your Location'
+                });
+                
+            } catch (error) {
+                showResult('location-result', `Failed to get location: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProximity() {
+            if (!locationVerifier) {
+                showResult('proximity-result', 'Please save your API key first', 'error');
+                return;
+            }
+            
+            if (!currentLocation) {
+                showResult('proximity-result', 'Please get your current location first', 'error');
+                return;
+            }
+            
+            const meetingLat = parseFloat(document.getElementById('meeting-lat').value);
+            const meetingLng = parseFloat(document.getElementById('meeting-lng').value);
+            
+            if (isNaN(meetingLat) || isNaN(meetingLng)) {
+                showResult('proximity-result', 'Please enter valid meeting coordinates', 'error');
+                return;
+            }
+            
+            try {
+                const meetingLocation = { lat: meetingLat, lng: meetingLng };
+                const result = await locationVerifier.verifyProximity(meetingLocation);
+                
+                const resultText = `Proximity Verification Result:
+Within Range: ${result.isWithinRange ? 'YES' : 'NO'}
+Distance: ${result.distanceFeet} feet (${result.distanceMeters} meters)
+Max Allowed: ${result.maxDistanceFeet} feet
+Status: ${result.isWithinRange ? '✅ Transaction can proceed' : '⚠️ Too far away - show directions'}`;
+                
+                showResult('proximity-result', resultText, result.isWithinRange ? 'success' : 'warning');
+                
+            } catch (error) {
+                showResult('proximity-result', `Proximity test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDirections() {
+            if (!locationVerifier) {
+                showResult('directions-result', 'Please save your API key first', 'error');
+                return;
+            }
+            
+            if (!currentLocation) {
+                showResult('directions-result', 'Please get your current location first', 'error');
+                return;
+            }
+            
+            const destinationAddress = document.getElementById('destination-address').value.trim();
+            if (!destinationAddress) {
+                showResult('directions-result', 'Please enter a destination address', 'error');
+                return;
+            }
+            
+            try {
+                showResult('directions-result', 'Getting directions...', 'info');
+                
+                // First geocode the destination
+                const geocodeResult = await locationVerifier.geocodeAddress(destinationAddress);
+                if (!geocodeResult.success) {
+                    showResult('directions-result', `Geocoding failed: ${geocodeResult.error}`, 'error');
+                    return;
+                }
+                
+                const destination = { lat: geocodeResult.lat, lng: geocodeResult.lng };
+                const directions = await locationVerifier.getDirections(destination);
+                
+                const resultText = `Directions to ${geocodeResult.formattedAddress}:
+Distance: ${directions.distance.text}
+Duration: ${directions.duration.text}
+
+Route Steps:
+${directions.steps.map((step, index) => `${index + 1}. ${step.instruction}`).join('\n')}`;
+                
+                showResult('directions-result', resultText, 'success');
+                
+            } catch (error) {
+                showResult('directions-result', `Directions test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGeocoding() {
+            if (!locationVerifier) {
+                showResult('geocode-result', 'Please save your API key first', 'error');
+                return;
+            }
+            
+            const address = document.getElementById('geocode-address').value.trim();
+            if (!address) {
+                showResult('geocode-result', 'Please enter an address to geocode', 'error');
+                return;
+            }
+            
+            try {
+                showResult('geocode-result', 'Geocoding address...', 'info');
+                const result = await locationVerifier.geocodeAddress(address);
+                
+                if (result.success) {
+                    const resultText = `Geocoding successful!
+Address: ${result.formattedAddress}
+Latitude: ${result.lat}
+Longitude: ${result.lng}
+Place ID: ${result.placeId}`;
+                    showResult('geocode-result', resultText, 'success');
+                } else {
+                    showResult('geocode-result', `Geocoding failed: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('geocode-result', `Geocoding test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFullTransaction() {
+            if (!locationVerifier) {
+                showResult('transaction-result', 'Please save your API key first', 'error');
+                return;
+            }
+            
+            const transactionId = document.getElementById('transaction-id').value.trim();
+            const meetingAddress = document.getElementById('meeting-address').value.trim();
+            
+            if (!transactionId || !meetingAddress) {
+                showResult('transaction-result', 'Please enter transaction ID and meeting address', 'error');
+                return;
+            }
+            
+            try {
+                showResult('transaction-result', 'Testing full transaction flow...', 'info');
+                
+                // Step 1: Get current location
+                currentLocation = await locationVerifier.getCurrentLocation();
+                
+                // Step 2: Geocode meeting address
+                const geocodeResult = await locationVerifier.geocodeAddress(meetingAddress);
+                if (!geocodeResult.success) {
+                    showResult('transaction-result', `Meeting address not found: ${geocodeResult.error}`, 'error');
+                    return;
+                }
+                
+                const meetingLocation = { lat: geocodeResult.lat, lng: geocodeResult.lng };
+                
+                // Step 3: Verify proximity
+                const proximityResult = await locationVerifier.verifyProximity(meetingLocation);
+                
+                // Step 4: Get directions if needed
+                let directionsResult = null;
+                if (!proximityResult.isWithinRange) {
+                    directionsResult = await locationVerifier.getDirections(meetingLocation);
+                }
+                
+                const resultText = `Full Transaction Test Results:
+Transaction ID: ${transactionId}
+Meeting Address: ${geocodeResult.formattedAddress}
+
+Location Verification:
+✅ Current location obtained
+✅ Meeting address geocoded
+${proximityResult.isWithinRange ? '✅ Within 100ft range - transaction can proceed' : '⚠️ Outside 100ft range - directions provided'}
+
+Distance: ${proximityResult.distanceFeet} feet
+${directionsResult ? `Directions: ${directionsResult.distance.text}, ${directionsResult.duration.text}` : 'No directions needed'}`;
+                
+                showResult('transaction-result', resultText, proximityResult.isWithinRange ? 'success' : 'warning');
+                
+            } catch (error) {
+                showResult('transaction-result', `Transaction test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

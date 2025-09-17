@@ -26,6 +26,90 @@ app.get('/google-verification-file.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'google-verification-file.html'));
 });
 
+// Location verification endpoints
+const LocationVerification = require('./location-verification');
+const locationVerifier = new LocationVerification();
+
+// Verify transaction proximity
+app.post('/api/verify-transaction-location', async (req, res) => {
+  try {
+    const { transactionId, customerLocation, meetingLocation } = req.body;
+    
+    if (!customerLocation || !meetingLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'Customer location and meeting location are required'
+      });
+    }
+
+    const result = locationVerifier.verifyProximity(customerLocation, meetingLocation);
+    
+    res.json({
+      success: true,
+      verified: result.isWithinRange,
+      proximity: result,
+      transactionId
+    });
+  } catch (error) {
+    console.error('Location verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get directions to meeting location
+app.post('/api/get-directions', async (req, res) => {
+  try {
+    const { customerLocation, meetingLocation } = req.body;
+    
+    if (!customerLocation || !meetingLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'Customer location and meeting location are required'
+      });
+    }
+
+    const directions = await locationVerifier.getDirections(customerLocation, meetingLocation);
+    
+    res.json({
+      success: true,
+      directions
+    });
+  } catch (error) {
+    console.error('Directions error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Geocode address to coordinates
+app.post('/api/geocode-address', async (req, res) => {
+  try {
+    const { address } = req.body;
+    
+    if (!address) {
+      return res.status(400).json({
+        success: false,
+        error: 'Address is required'
+      });
+    }
+
+    const result = await locationVerifier.geocodeAddress(address);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'pacmac-marketplace-secret-key',
