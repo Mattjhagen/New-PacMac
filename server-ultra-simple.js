@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
-console.log(`Starting ultra-simple server on port ${PORT}`);
+console.log(`Starting ultra-simple server with static file serving on port ${PORT}`);
 
 // MIME types for static files
 const mimeTypes = {
@@ -62,7 +62,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.11',
+        version: '1.0.12',
         port: PORT,
         nodeVersion: process.version
       }));
@@ -85,7 +85,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      version: '1.0.11',
+      version: '1.0.12',
       port: PORT,
       nodeVersion: process.version
     }));
