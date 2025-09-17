@@ -77,7 +77,7 @@ const server = http.createServer((req, res) => {
         arch: process.arch
       }));
     } else if (pathname === '/api/user/profile') {
-      // Mock user profile for admin pages
+      // Mock user profile for admin pages - handle both GET and POST
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,
