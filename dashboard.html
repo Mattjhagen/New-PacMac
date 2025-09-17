@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PacMac Marketplace - Dashboard</title>
+  <meta name="description" content="Your PacMac Marketplace dashboard - manage your trades, view activity, and discover new opportunities." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📱</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .hero-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 8s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .glass-effect-dark {
+      backdrop-filter: blur(20px);
+      background: rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-float-delayed {
+      animation: float 6s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    
+    .animate-pulse-slow {
+      animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    .text-gradient {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .floating-elements {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    
+    .floating-element {
+      position: absolute;
+      opacity: 0.1;
+      animation: float 8s ease-in-out infinite;
+    }
+    
+    .floating-element:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+    .floating-element:nth-child(2) { top: 20%; right: 10%; animation-delay: 2s; }
+    .floating-element:nth-child(3) { bottom: 20%; left: 20%; animation-delay: 4s; }
+    .floating-element:nth-child(4) { bottom: 10%; right: 20%; animation-delay: 6s; }
+  </style>
+</head>
+<body class="hero-gradient min-h-screen text-white">
+  <!-- Floating Background Elements -->
+  <div class="floating-elements">
+    <div class="floating-element text-6xl">📱</div>
+    <div class="floating-element text-4xl">💰</div>
+    <div class="floating-element text-5xl">🛡️</div>
+    <div class="floating-element text-3xl">📍</div>
+  </div>
+
+  <!-- Header -->
+  <header class="relative z-10 p-6">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-lg">PM</span>
+        </div>
+        <span class="text-2xl font-bold">PacMac Marketplace</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 glass-effect px-4 py-2 rounded-lg">
+          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <span class="text-white text-sm font-bold">U</span>
+          </div>
+          <span class="text-sm">Welcome back!</span>
+        </div>
+        <button onclick="logout()" class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+    <!-- Welcome Section -->
+    <div class="text-center mb-12">
+      <h1 class="text-5xl md:text-6xl font-black mb-6">
+        <span class="block animate-float">Welcome to Your</span>
+        <span class="block text-gradient animate-float-delayed">Dashboard</span>
+      </h1>
+      <p class="text-xl opacity-90 max-w-2xl mx-auto">
+        Manage your trades, track your activity, and discover amazing deals in your area.
+      </p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+      <div class="glass-effect p-6 rounded-2xl text-center">
+        <div class="text-3xl mb-2">📊</div>
+        <div class="text-2xl font-bold mb-1">12</div>
+        <div class="text-sm opacity-80">Active Listings</div>
+      </div>
+      <div class="glass-effect p-6 rounded-2xl text-center">
+        <div class="text-3xl mb-2">💰</div>
+        <div class="text-2xl font-bold mb-1">$2,340</div>
+        <div class="text-sm opacity-80">Total Earnings</div>
+      </div>
+      <div class="glass-effect p-6 rounded-2xl text-center">
+        <div class="text-3xl mb-2">⭐</div>
+        <div class="text-2xl font-bold mb-1">4.9</div>
+        <div class="text-sm opacity-80">Rating</div>
+      </div>
+      <div class="glass-effect p-6 rounded-2xl text-center">
+        <div class="text-3xl mb-2">🎯</div>
+        <div class="text-2xl font-bold mb-1">47</div>
+        <div class="text-sm opacity-80">Successful Trades</div>
+      </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <div class="glass-effect p-8 rounded-2xl text-center hover:bg-white/20 transition-colors cursor-pointer" onclick="goToMarketplace()">
+        <div class="text-4xl mb-4">🛒</div>
+        <h3 class="text-xl font-bold mb-2">Browse Marketplace</h3>
+        <p class="opacity-80">Discover amazing deals and start trading</p>
+      </div>
+      <div class="glass-effect p-8 rounded-2xl text-center hover:bg-white/20 transition-colors cursor-pointer" onclick="createListing()">
+        <div class="text-4xl mb-4">➕</div>
+        <h3 class="text-xl font-bold mb-2">Create Listing</h3>
+        <p class="opacity-80">Sell your items and earn money</p>
+      </div>
+      <div class="glass-effect p-8 rounded-2xl text-center hover:bg-white/20 transition-colors cursor-pointer" onclick="viewProfile()">
+        <div class="text-4xl mb-4">👤</div>
+        <h3 class="text-xl font-bold mb-2">View Profile</h3>
+        <p class="opacity-80">Manage your account and settings</p>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="glass-effect p-8 rounded-2xl">
+      <h2 class="text-2xl font-bold mb-6">Recent Activity</h2>
+      <div class="space-y-4">
+        <div class="flex items-center space-x-4 p-4 bg-white/10 rounded-lg">
+          <div class="text-2xl">📱</div>
+          <div class="flex-1">
+            <div class="font-semibold">iPhone 13 Pro - New Bid</div>
+            <div class="text-sm opacity-80">Someone bid $650 on your listing</div>
+          </div>
+          <div class="text-green-400 font-bold">+$50</div>
+        </div>
+        <div class="flex items-center space-x-4 p-4 bg-white/10 rounded-lg">
+          <div class="text-2xl">✅</div>
+          <div class="flex-1">
+            <div class="font-semibold">Samsung Galaxy S24 - Sold</div>
+            <div class="text-sm opacity-80">Successfully completed transaction</div>
+          </div>
+          <div class="text-green-400 font-bold">+$799</div>
+        </div>
+        <div class="flex items-center space-x-4 p-4 bg-white/10 rounded-lg">
+          <div class="text-2xl">💬</div>
+          <div class="flex-1">
+            <div class="font-semibold">New Message</div>
+            <div class="text-sm opacity-80">Buyer interested in your MacBook Pro</div>
+          </div>
+          <div class="text-blue-400">View</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/splash.html';
+      }
+    }
+    
+    function goToMarketplace() {
+      window.location.href = '/marketplace.html';
+    }
+    
+    function createListing() {
+      alert('Create Listing feature coming soon!');
+    }
+    
+    function viewProfile() {
+      alert('Profile management coming soon!');
+    }
+  </script>
+</body>
+</html>
