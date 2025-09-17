@@ -2,9 +2,9 @@
   "name": "pacmac-mobile-minimal",
   "version": "1.0.0",
   "description": "PacMac Mobile - Minimal Server",
-  "main": "server-ultra-simple.js",
+  "main": "server-absolute-minimal.js",
   "scripts": {
-    "start": "node server-ultra-simple.js",
+    "start": "node server-absolute-minimal.js",
     "build": "echo 'No build step required'",
     "test": "echo 'No tests'"
   },

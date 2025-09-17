@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     buildCommand: npm install
-    startCommand: node server-absolute-minimal.js
+    startCommand: node server-ultra-simple.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
