@@ -2154,7 +2154,7 @@ app.post('/api/marketplace/process-auction', async (req, res) => {
     item.soldTo = winningBid.bidderId;
     item.soldAt = new Date().toISOString();
     
-    console.log(`✅ Auction completed: ${item.title} won by ${winningBid.bidderName} for $${winningBid.amount}`);
+    console.log(`✅ Auction completed: ${item.title} won by ${winningBid.bidderName} for $${winningBid.amount} - v1.0.7`);
     
     res.json({
       success: true,
