@@ -384,10 +384,11 @@
         async function initializeLocationVerifier() {
             try {
                 locationVerifier = new LocationVerificationFrontend();
+                showResult('Initializing Google Maps API...', 'info');
                 await locationVerifier.initializeMaps();
-                showResult('Location verifier initialized successfully!', 'success');
+                showResult('✅ Location verifier initialized successfully!\nGoogle Maps API loaded and ready.', 'success');
             } catch (error) {
-                showResult(`Failed to initialize: ${error.message}`, 'error');
+                showResult(`❌ Failed to initialize: ${error.message}\n\nPlease check:\n1. Your Google Maps API key is correct\n2. The Maps JavaScript API is enabled\n3. Your API key has proper restrictions`, 'error');
             }
         }
         

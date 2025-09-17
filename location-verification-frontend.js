@@ -24,13 +24,32 @@ class LocationVerificationFrontend {
       script.defer = true;
       document.head.appendChild(script);
 
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         script.onload = () => {
-          this.directionsService = new google.maps.DirectionsService();
-          this.directionsRenderer = new google.maps.DirectionsRenderer();
-          resolve();
+          try {
+            this.directionsService = new google.maps.DirectionsService();
+            this.directionsRenderer = new google.maps.DirectionsRenderer();
+            console.log('✅ Google Maps API initialized successfully');
+            resolve();
+          } catch (error) {
+            console.error('❌ Failed to initialize Google Maps services:', error);
+            reject(error);
+          }
+        };
+        script.onerror = () => {
+          reject(new Error('Failed to load Google Maps API'));
         };
       });
+    } else {
+      // Google Maps already loaded
+      try {
+        this.directionsService = new google.maps.DirectionsService();
+        this.directionsRenderer = new google.maps.DirectionsRenderer();
+        console.log('✅ Google Maps API already available');
+      } catch (error) {
+        console.error('❌ Failed to initialize Google Maps services:', error);
+        throw error;
+      }
     }
   }
 
@@ -148,6 +167,11 @@ class LocationVerificationFrontend {
    */
   async getDirections(transactionLocation) {
     try {
+      // Check if Google Maps services are initialized
+      if (!this.directionsService || !google || !google.maps) {
+        throw new Error('Google Maps services not initialized. Please ensure the API key is correct and the Maps API is loaded.');
+      }
+
       const customerLocation = await this.getCurrentLocation();
       
       const request = {
@@ -189,6 +213,11 @@ class LocationVerificationFrontend {
   displayDirections(transactionLocation, mapElementId = 'map') {
     return new Promise(async (resolve, reject) => {
       try {
+        // Check if Google Maps services are initialized
+        if (!this.directionsService || !this.directionsRenderer || !google || !google.maps) {
+          throw new Error('Google Maps services not initialized. Please ensure the API key is correct and the Maps API is loaded.');
+        }
+
         const customerLocation = await this.getCurrentLocation();
         
         // Initialize map
