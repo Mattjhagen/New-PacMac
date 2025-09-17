@@ -1880,28 +1880,35 @@
       try {
         // In demo mode, simulate successful login
         setTimeout(() => {
-          // Simulate successful authentication
-          const mockUser = {
-            id: 'demo-user-123',
-            name: 'Demo User',
-            email: 'demo@pacmacmobile.com',
-            avatar: null,
-            isAdmin: false
-          };
-          
-          // Store user in localStorage for demo
-          localStorage.setItem('user', JSON.stringify(mockUser));
-          
-          // Update UI to show logged in state
-          updateAuthUI(mockUser);
-          
-          // Show success message
-          showAuthError('Demo login successful! Welcome to PacMac Marketplace.', 'success');
-          
-          // Reset button after a moment
-          setTimeout(() => {
+          try {
+            // Simulate successful authentication
+            const mockUser = {
+              id: 'demo-user-123',
+              name: 'Demo User',
+              email: 'demo@pacmacmobile.com',
+              avatar: null,
+              isAdmin: false
+            };
+            
+            // Store user in localStorage for demo
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            
+            // Show success message first
+            showAuthError('Demo login successful! Welcome to PacMac Marketplace.', 'success');
+            
+            // Reset button immediately
             resetAuthButton();
-          }, 2000);
+            
+            // Update UI to show logged in state after a brief delay
+            setTimeout(() => {
+              updateAuthUI(mockUser);
+            }, 1000);
+            
+          } catch (innerError) {
+            console.error('Demo auth inner error:', innerError);
+            showAuthError('Demo authentication failed. Please try again.');
+            resetAuthButton();
+          }
         }, 1500);
       } catch (error) {
         console.error('Demo auth error:', error);
