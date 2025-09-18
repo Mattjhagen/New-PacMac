@@ -481,10 +481,86 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-        version: '1.0.24',
+        version: '1.0.25',
       port: PORT,
       nodeVersion: process.version
     }));
+    return;
+  }
+
+  // Create Stripe Checkout Session
+  if (req.method === 'POST' && req.url === '/api/stripe/create-checkout-session') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    
+    req.on('end', () => {
+      try {
+        const { items, success_url, cancel_url, metadata = {} } = JSON.parse(body);
+        
+        if (!items || !Array.isArray(items) || items.length === 0) {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({
+            error: 'Items are required for checkout session'
+          }));
+          return;
+        }
+
+        // Calculate total amount
+        const totalAmount = items.reduce((sum, item) => {
+          return sum + (item.amount || 0);
+        }, 0);
+
+        if (totalAmount < 5) { // Minimum $0.05 for demo items
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({
+            error: 'Invalid amount. Minimum charge is $0.05.'
+          }));
+          return;
+        }
+
+        // Create mock checkout session
+        const sessionId = `cs_mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const mockCheckoutSession = {
+          id: sessionId,
+          url: `${req.headers.host ? 'https://' + req.headers.host : 'https://new-pacmac.onrender.com'}/stripe-checkout?session_id=${sessionId}`,
+          amount_total: Math.round(totalAmount * 100), // Convert to cents
+          currency: 'usd',
+          status: 'open',
+          payment_status: 'unpaid',
+          metadata: {
+            ...metadata,
+            timestamp: new Date().toISOString(),
+            source: 'pacmac-mobile',
+            items: JSON.stringify(items)
+          }
+        };
+
+        console.log('Created Stripe checkout session:', sessionId);
+        console.log('Checkout URL:', mockCheckoutSession.url);
+
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          sessionId: mockCheckoutSession.id,
+          checkoutUrl: mockCheckoutSession.url,
+          amount: mockCheckoutSession.amount_total,
+          currency: mockCheckoutSession.currency,
+          status: mockCheckoutSession.status
+        }));
+      } catch (error) {
+        console.error('Stripe checkout session error:', error);
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(500);
+        res.end(JSON.stringify({
+          error: 'Failed to create checkout session'
+        }));
+      }
+    });
     return;
   }
   
