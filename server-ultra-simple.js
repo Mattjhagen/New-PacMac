@@ -65,7 +65,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.20',
+        version: '1.0.21',
         port: PORT,
         nodeVersion: process.version
       }));
@@ -205,8 +205,8 @@ const server = http.createServer((req, res) => {
         stats: {
           totalProducts: 3,
           totalValue: 4297.00,
-          postedToday: 1,
-          pendingPosts: 6
+          postedToday: 2,
+          pendingPosts: 4
         }
       }));
     } else if (req.url === '/api/inventory/set-reserve' && req.method === 'POST') {
@@ -244,19 +244,69 @@ const server = http.createServer((req, res) => {
         totalProcessed: 0,
         errors: []
       }));
-    } else if (req.url === '/api/inventory/auto-posting/start' && req.method === 'POST') {
+    } else if (req.url === '/api/auto-poster/start' && req.method === 'POST') {
       // Mock start auto-posting
       res.writeHead(200);
       res.end(JSON.stringify({
         success: true,
         message: 'Auto-posting started successfully'
       }));
-    } else if (req.url === '/api/inventory/auto-posting/stop' && req.method === 'POST') {
+    } else if (req.url === '/api/auto-poster/stop' && req.method === 'POST') {
       // Mock stop auto-posting
       res.writeHead(200);
       res.end(JSON.stringify({
         success: true,
         message: 'Auto-posting stopped successfully'
+      }));
+    } else if (req.url === '/api/auto-poster/schedule') {
+      // Mock schedule data
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        schedule: [
+          {
+            day: 'Monday',
+            products: ['iPhone 15 Pro Max', 'Samsung Galaxy S24 Ultra'],
+            status: 'completed',
+            postedCount: 2
+          },
+          {
+            day: 'Tuesday',
+            products: ['MacBook Pro 14"'],
+            status: 'pending',
+            postedCount: 0
+          },
+          {
+            day: 'Wednesday',
+            products: ['iPhone 15 Pro Max', 'Samsung Galaxy S24 Ultra'],
+            status: 'pending',
+            postedCount: 0
+          },
+          {
+            day: 'Thursday',
+            products: ['MacBook Pro 14"'],
+            status: 'pending',
+            postedCount: 0
+          },
+          {
+            day: 'Friday',
+            products: ['iPhone 15 Pro Max', 'Samsung Galaxy S24 Ultra'],
+            status: 'pending',
+            postedCount: 0
+          },
+          {
+            day: 'Saturday',
+            products: ['MacBook Pro 14"'],
+            status: 'pending',
+            postedCount: 0
+          },
+          {
+            day: 'Sunday',
+            products: ['iPhone 15 Pro Max', 'Samsung Galaxy S24 Ultra'],
+            status: 'pending',
+            postedCount: 0
+          }
+        ]
       }));
     } else {
       res.writeHead(501);
@@ -277,7 +327,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-        version: '1.0.20',
+        version: '1.0.21',
       port: PORT,
       nodeVersion: process.version
     }));
