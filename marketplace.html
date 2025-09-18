@@ -904,6 +904,48 @@
       box-shadow: var(--shadow);
     }
 
+    /* Auction status styles */
+    .current-bid {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .highest-bidder {
+      color: #007bff;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .auction-ended {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 2px solid #dee2e6;
+    }
+
+    .winner-badge {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .winning-bid {
+      color: #007bff;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .no-bids {
+      color: #6c757d;
+      font-style: italic;
+      font-size: 14px;
+    }
+
     /* Floating Action Button */
     .fab {
       position: fixed;
@@ -1209,7 +1251,13 @@
         reviews: "4.8/5 stars (2,847 reviews)",
         seller: "TechDeals Pro",
         condition: "Brand New",
-        warranty: "1 Year Apple Warranty"
+        warranty: "1 Year Apple Warranty",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 2,
@@ -1225,7 +1273,13 @@
         reviews: "4.7/5 stars (1,234 reviews)",
         seller: "SneakerHead",
         condition: "Like New",
-        warranty: "30 Day Return"
+        warranty: "30 Day Return",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 3,
@@ -1241,7 +1295,13 @@
         reviews: "4.9/5 stars (3,156 reviews)",
         seller: "Apple Certified",
         condition: "Excellent",
-        warranty: "1 Year Apple Care"
+        warranty: "1 Year Apple Care",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 4,
@@ -1257,7 +1317,13 @@
         reviews: "4.6/5 stars (89 reviews)",
         seller: "Vintage Finds",
         condition: "Good",
-        warranty: "No Warranty"
+        warranty: "No Warranty",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 5,
@@ -1273,7 +1339,13 @@
         reviews: "4.8/5 stars (2,341 reviews)",
         seller: "Gaming Gear Pro",
         condition: "Like New",
-        warranty: "2 Year Secretlab"
+        warranty: "2 Year Secretlab",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 6,
@@ -1289,7 +1361,13 @@
         reviews: "4.5/5 stars (567 reviews)",
         seller: "Sports Central",
         condition: "Good",
-        warranty: "90 Day Parts"
+        warranty: "90 Day Parts",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 7,
@@ -1305,7 +1383,13 @@
         reviews: "4.8/5 stars (4,523 reviews)",
         seller: "Audio Excellence",
         condition: "Excellent",
-        warranty: "1 Year Sony"
+        warranty: "1 Year Sony",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       },
       {
         id: 8,
@@ -1321,7 +1405,13 @@
         reviews: "4.6/5 stars (2,891 reviews)",
         seller: "Sneaker Vault",
         condition: "Very Good",
-        warranty: "30 Day Return"
+        warranty: "30 Day Return",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       }
     ];
 
@@ -1620,6 +1710,8 @@
               <div class="item-price">$${item.price}</div>
               <div class="item-distance">${item.distance}</div>
               <div class="item-bids">${item.currentBids} bids</div>
+              ${item.currentBid > 0 ? `<div class="current-bid">Current Bid: $${item.currentBid.toFixed(2)}</div>` : ''}
+              ${item.highestBidder ? `<div class="highest-bidder">Leading: ${item.highestBidder}</div>` : ''}
             </div>
             
             <div class="countdown-timer" data-end-time="${item.endTime.getTime()}">
@@ -1630,15 +1722,26 @@
             </div>
             
             <div class="item-actions">
-              <button class="action-btn pass-btn" onclick="passItem(${item.id})">
-                👎 Pass
-              </button>
-              <button class="action-btn bid-btn" onclick="bidOnItem(${item.id})">
-                ❤️ $${(item.price * 0.8).toFixed(2)}
-              </button>
-              <button class="action-btn heart-btn" onclick="bidFiveCents(${item.id})">
-                ✅ Bid $${(item.price * 0.9).toFixed(2)}
-              </button>
+              ${item.isActive ? `
+                <button class="action-btn pass-btn" onclick="passItem(${item.id})">
+                  👎 Pass
+                </button>
+                <button class="action-btn bid-btn" onclick="placeBid(${item.id}, ${(item.price * 0.8).toFixed(2)})">
+                  💰 Bid $${(item.price * 0.8).toFixed(2)}
+                </button>
+                <button class="action-btn heart-btn" onclick="placeBid(${item.id}, ${(item.price * 0.9).toFixed(2)})">
+                  🚀 Bid $${(item.price * 0.9).toFixed(2)}
+                </button>
+              ` : `
+                <div class="auction-ended">
+                  ${item.winner ? `
+                    <span class="winner-badge">🏆 Won by ${item.winner}</span>
+                    <span class="winning-bid">$${item.currentBid.toFixed(2)}</span>
+                  ` : `
+                    <span class="no-bids">⏰ Auction ended with no bids</span>
+                  `}
+                </div>
+              `}
             </div>
           </div>
         </div>
@@ -1675,45 +1778,75 @@
       }
     }
 
-    function bidOnItem(itemId) {
+    // Proper auction bidding system
+    function placeBid(itemId, bidAmount) {
       const item = sampleItems.find(i => i.id === itemId);
       if (!item) return;
       
-      const bidAmount = item.price * 0.8; // 80% of list price
-      console.log(`Bidding $${bidAmount.toFixed(2)} on item:`, itemId);
+      // Check if auction is still active
+      if (!item.isActive) {
+        showNotification('This auction has ended!', 'error');
+        return;
+      }
       
-      // Show bid confirmation with Stripe fee breakdown
-      const flatFee = 3.00;
-      const percentageFee = bidAmount * 0.03;
-      const totalFee = flatFee + percentageFee;
-      const totalAmount = bidAmount + totalFee;
+      // Check if bid is higher than current bid
+      if (bidAmount <= item.currentBid) {
+        showNotification(`Bid must be higher than current bid of $${item.currentBid.toFixed(2)}`, 'error');
+        return;
+      }
       
-      // Simulate winning the item (for demo purposes)
-      addToCart(item, bidAmount);
-      showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
+      // Get current user
+      const currentUser = JSON.parse(localStorage.getItem('demoUser') || localStorage.getItem('oauthUser') || '{}');
+      const bidderName = currentUser.name || 'Anonymous Bidder';
       
-      alert(`Bid placed! $${bidAmount.toFixed(2)} bid added to this item.\n\nStripe fees:\n- Flat fee: $${flatFee.toFixed(2)}\n- 3% of bid: $${percentageFee.toFixed(2)}\n- Total charged: $${totalAmount.toFixed(2)}`);
+      // Update item with new bid
+      item.currentBid = bidAmount;
+      item.highestBidder = bidderName;
+      item.bidHistory.push({
+        bidder: bidderName,
+        amount: bidAmount,
+        timestamp: new Date().toISOString()
+      });
+      item.currentBids++;
+      
+      // Show bid confirmation
+      showNotification(`💰 Bid placed! You're now leading with $${bidAmount.toFixed(2)}`, 'success');
+      
+      // Re-render items to show updated bid
+      loadItems();
+      
+      console.log(`Bid placed: $${bidAmount.toFixed(2)} by ${bidderName} on item ${itemId}`);
     }
 
-    function bidFiveCents(itemId) {
-      const item = sampleItems.find(i => i.id === itemId);
-      if (!item) return;
+    // Check for ended auctions and determine winners
+    function checkEndedAuctions() {
+      const now = Date.now();
       
-      const bidAmount = item.price * 0.9; // 90% of list price
-      console.log(`Bidding $${bidAmount.toFixed(2)} on item:`, itemId);
-      
-      // Show bid confirmation with Stripe fee breakdown
-      const flatFee = 3.00;
-      const percentageFee = bidAmount * 0.03;
-      const totalFee = flatFee + percentageFee;
-      const totalAmount = bidAmount + totalFee;
-      
-      // Simulate winning the item (for demo purposes)
-      addToCart(item, bidAmount);
-      showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
-      
-      alert(`Bid placed! $${bidAmount.toFixed(2)} bid added to this item.\n\nStripe fees:\n- Flat fee: $${flatFee.toFixed(2)}\n- 3% of bid: $${percentageFee.toFixed(2)}\n- Total charged: $${totalAmount.toFixed(2)}`);
+      sampleItems.forEach(item => {
+        if (item.isActive && item.endTime.getTime() <= now) {
+          // Auction has ended
+          item.isActive = false;
+          
+          if (item.highestBidder) {
+            // There was a winning bid
+            item.winner = item.highestBidder;
+            showNotification(`🏆 Auction ended! ${item.highestBidder} won "${item.title}" for $${item.currentBid.toFixed(2)}`, 'info');
+            
+            // Add to winner's cart if they're the current user
+            const currentUser = JSON.parse(localStorage.getItem('demoUser') || localStorage.getItem('oauthUser') || '{}');
+            if (currentUser.name === item.highestBidder) {
+              addToCart(item, item.currentBid);
+            }
+          } else {
+            // No bids were placed
+            showNotification(`⏰ Auction ended for "${item.title}" with no bids`, 'info');
+          }
+        }
+      });
     }
+
+    // Start auction timer checking
+    setInterval(checkEndedAuctions, 1000); // Check every second
 
     // Upload Modal Functions
     function showAddItemModal() {
