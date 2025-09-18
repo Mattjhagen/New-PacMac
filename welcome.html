@@ -1077,7 +1077,7 @@
       
       try {
         // Redirect to Google OAuth
-        const redirectUri = encodeURIComponent(window.location.origin + '/auth/google/callback');
+        const redirectUri = encodeURIComponent('https://new-pacmac.onrender.com/auth/google/callback');
         const clientId = '1053950032683-igseosamup9cej3bn1o8lj5kqdok1t1b.apps.googleusercontent.com';
         const scope = encodeURIComponent('openid email profile');
         const state = Date.now().toString();
