@@ -1364,7 +1364,42 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.1'
+    version: '1.0.25'
+  });
+});
+
+// Bidding timer endpoints
+app.get('/api/bidding/timer', (req, res) => {
+  res.json({
+    success: true,
+    timers: {},
+    serverTime: Date.now(),
+    message: 'Bidding timer system active'
+  });
+});
+
+app.get('/api/bidding/timer/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  res.json({
+    success: true,
+    itemId,
+    timeLeft: 0,
+    isActive: false,
+    serverTime: Date.now(),
+    message: `Timer for item ${itemId} not found`
+  });
+});
+
+app.post('/api/bidding/start/:itemId', (req, res) => {
+  const { itemId } = req.params;
+  const { duration = 24 * 60 * 60 * 1000 } = req.body; // Default 24 hours
+  
+  res.json({
+    success: true,
+    itemId,
+    endTime: Date.now() + duration,
+    duration,
+    message: `Bidding timer started for item ${itemId}`
   });
 });
 
@@ -1375,7 +1410,7 @@ app.get('/health', (req, res) => {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      version: '1.0.1',
+      version: '1.0.25',
       environment: process.env.NODE_ENV || 'development',
       port: process.env.PORT || 3000
     });
