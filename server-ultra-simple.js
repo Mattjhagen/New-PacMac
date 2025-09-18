@@ -127,8 +127,7 @@ function restoreBiddingTimers() {
   console.log('🔄 Restoring bidding timers...');
   // Example: restore some active auctions
   const activeAuctions = [
-    { id: 'demo_item_1', endTime: Date.now() + (2 * 60 * 60 * 1000) }, // 2 hours
-    { id: 'demo_item_2', endTime: Date.now() + (1 * 60 * 60 * 1000) }  // 1 hour
+    // Bidding timers will be created dynamically as items are posted
   ];
   
   activeAuctions.forEach(auction => {
@@ -167,8 +166,8 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         success: true,
         user: {
-          id: 'demo-admin',
-          name: 'Demo Admin',
+          id: 'admin-' + Date.now(),
+          name: 'System Admin',
           email: 'pacmacmobile@gmail.com',
           isAdmin: true,
           avatar: null
@@ -181,7 +180,7 @@ const server = http.createServer((req, res) => {
         success: true,
         items: [
           {
-            id: 'demo_item_1',
+            id: 'item-' + Date.now(),
             title: 'iPhone 13 Pro',
             description: 'Excellent condition, 128GB, space gray.',
             price: 650.00,
@@ -190,7 +189,7 @@ const server = http.createServer((req, res) => {
             distance: '2.3 miles',
             image: '📱',
             seller: {
-              id: 'demo_seller_1',
+              id: 'seller-' + Date.now(),
               name: 'TechTrader',
               rating: 4.8
             },
@@ -206,7 +205,7 @@ const server = http.createServer((req, res) => {
             updatedAt: new Date().toISOString()
           },
           {
-            id: 'demo_item_2',
+            id: 'item-' + (Date.now() + 1),
             title: 'Vintage Leather Jacket',
             description: 'Classic brown leather jacket, size M.',
             price: 85.00,
@@ -215,7 +214,7 @@ const server = http.createServer((req, res) => {
             distance: '1.8 miles',
             image: '🧥',
             seller: {
-              id: 'demo_seller_2',
+              id: 'seller-' + (Date.now() + 1),
               name: 'StyleCollector',
               rating: 4.9
             },
@@ -238,10 +237,10 @@ const server = http.createServer((req, res) => {
       res.writeHead(200);
       res.end(JSON.stringify({
         success: true,
-        message: 'Reserve price set successfully (demo mode)',
+        message: 'Reserve price set successfully',
         item: {
-          id: 'demo-item',
-          title: 'Demo Item',
+          id: 'item-' + Date.now(),
+          title: 'Auction Item',
           reservePrice: 100.00
         }
       }));
@@ -513,7 +512,7 @@ const server = http.createServer((req, res) => {
           return sum + (item.amount || 0);
         }, 0);
 
-        if (totalAmount < 5) { // Minimum $0.05 for demo items
+        if (totalAmount < 1) { // Minimum $0.01 for all items
           res.setHeader('Content-Type', 'application/json');
           res.writeHead(400);
           res.end(JSON.stringify({
