@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auction Flow - PacMac</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #007AFF;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .test-step {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007AFF;
+        }
+        
+        .test-step h3 {
+            color: #1d1d1f;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn.success {
+            background: #28a745;
+        }
+        
+        .btn.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn.danger {
+            background: #dc3545;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .auction-item {
+            background: white;
+            border: 2px solid #e5e5e7;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .auction-item.active {
+            border-color: #007AFF;
+        }
+        
+        .auction-item.ended {
+            border-color: #28a745;
+        }
+        
+        .bid-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .current-bid {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .highest-bidder {
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .timer {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 18px;
+            color: #dc3545;
+        }
+        
+        .payment-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .chat-interface {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        
+        .message {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 3px solid #007AFF;
+        }
+        
+        .message.seller {
+            border-left-color: #28a745;
+        }
+        
+        .proximity-status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .proximity-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .proximity-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .proximity-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Auction Flow Test</h1>
+        <p>Testing complete auction flow: bidding → winning → payment → chat unlock → proximity verification</p>
+        
+        <!-- Step 1: Auction Bidding -->
+        <div class="test-section">
+            <h2>Step 1: Auction Bidding</h2>
+            <div class="test-step">
+                <h3>Test Item: iPhone 15 Pro Max</h3>
+                <div class="auction-item" id="auctionItem">
+                    <h4>iPhone 15 Pro Max 256GB</h4>
+                    <p>Starting Price: $1,099.00</p>
+                    <div class="bid-info">
+                        <span class="current-bid" id="currentBid">Current Bid: $0.00</span>
+                        <span class="highest-bidder" id="highestBidder">No bids yet</span>
+                    </div>
+                    <div class="timer" id="auctionTimer">Time Left: 02:00</div>
+                    <div id="bidButtons">
+                        <button class="btn" onclick="placeTestBid(879.20)">Bid $879.20 (80%)</button>
+                        <button class="btn" onclick="placeTestBid(989.10)">Bid $989.10 (90%)</button>
+                    </div>
+                </div>
+                <div id="bidStatus"></div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Auction Win -->
+        <div class="test-section">
+            <h2>Step 2: Auction Win & Payment</h2>
+            <div class="test-step">
+                <h3>Payment Processing</h3>
+                <div id="paymentSection" style="display: none;">
+                    <div class="payment-form">
+                        <h4>Complete Your Purchase</h4>
+                        <p>You won the auction! Complete payment to unlock chat and meetup details.</p>
+                        <div class="form-group">
+                            <label>Card Number:</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" value="4242424242424242">
+                        </div>
+                        <div class="form-group">
+                            <label>Expiry:</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" value="12/25">
+                        </div>
+                        <div class="form-group">
+                            <label>CVC:</label>
+                            <input type="text" id="cvc" placeholder="123" value="123">
+                        </div>
+                        <button class="btn success" onclick="processTestPayment()">Complete Payment</button>
+                    </div>
+                </div>
+                <div id="paymentStatus"></div>
+            </div>
+        </div>
+        
+        <!-- Step 3: Chat Unlock -->
+        <div class="test-section">
+            <h2>Step 3: Chat Unlock</h2>
+            <div class="test-step">
+                <h3>Chat with Seller</h3>
+                <div id="chatSection" style="display: none;">
+                    <div class="chat-interface">
+                        <h4>Chat with TechDeals Pro</h4>
+                        <div id="chatMessages">
+                            <div class="message seller">
+                                <strong>TechDeals Pro:</strong> Hi! Thanks for winning the auction. When would you like to meet up?
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="chatInput" placeholder="Type your message..." style="width: 70%; padding: 8px;">
+                            <button class="btn" onclick="sendTestMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="chatStatus"></div>
+            </div>
+        </div>
+        
+        <!-- Step 4: Proximity Verification -->
+        <div class="test-section">
+            <h2>Step 4: Proximity Verification</h2>
+            <div class="test-step">
+                <h3>Location Safety Check</h3>
+                <div id="proximitySection" style="display: none;">
+                    <div class="proximity-status" id="proximityStatus">
+                        <h4>Location Verification</h4>
+                        <p>We need to verify you're within 100 feet of the meetup location for safety.</p>
+                        <button class="btn" onclick="startLocationTracking()">Start Location Tracking</button>
+                    </div>
+                    <div id="locationStatus"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <div class="test-step">
+                <h3>Quick Test Actions</h3>
+                <button class="btn" onclick="simulateAuctionWin()">Simulate Auction Win</button>
+                <button class="btn success" onclick="simulatePaymentSuccess()">Simulate Payment Success</button>
+                <button class="btn warning" onclick="simulateChatUnlock()">Simulate Chat Unlock</button>
+                <button class="btn" onclick="simulateProximityCheck()">Simulate Proximity Check</button>
+                <button class="btn danger" onclick="resetTest()">Reset Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test state
+        let testState = {
+            auctionActive: true,
+            currentBid: 0,
+            highestBidder: null,
+            timeLeft: 120, // 2 minutes
+            paymentComplete: false,
+            chatUnlocked: false,
+            proximityVerified: false
+        };
+
+        // Initialize test
+        function initTest() {
+            updateAuctionDisplay();
+            startAuctionTimer();
+        }
+
+        // Auction timer
+        function startAuctionTimer() {
+            const timer = setInterval(() => {
+                testState.timeLeft--;
+                updateAuctionDisplay();
+                
+                if (testState.timeLeft <= 0) {
+                    clearInterval(timer);
+                    endAuction();
+                }
+            }, 1000);
+        }
+
+        // Update auction display
+        function updateAuctionDisplay() {
+            const minutes = Math.floor(testState.timeLeft / 60);
+            const seconds = testState.timeLeft % 60;
+            document.getElementById('auctionTimer').textContent = 
+                `Time Left: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById('currentBid').textContent = 
+                `Current Bid: $${testState.currentBid.toFixed(2)}`;
+            document.getElementById('highestBidder').textContent = 
+                testState.highestBidder || 'No bids yet';
+        }
+
+        // Place test bid
+        function placeTestBid(amount) {
+            if (!testState.auctionActive) {
+                showStatus('bidStatus', 'Auction has ended!', 'error');
+                return;
+            }
+            
+            if (amount <= testState.currentBid) {
+                showStatus('bidStatus', `Bid must be higher than $${testState.currentBid.toFixed(2)}`, 'error');
+                return;
+            }
+            
+            testState.currentBid = amount;
+            testState.highestBidder = 'Test User';
+            
+            showStatus('bidStatus', `✅ Bid placed! You're now leading with $${amount.toFixed(2)}`, 'success');
+            updateAuctionDisplay();
+        }
+
+        // End auction
+        function endAuction() {
+            testState.auctionActive = false;
+            const auctionItem = document.getElementById('auctionItem');
+            auctionItem.classList.remove('active');
+            auctionItem.classList.add('ended');
+            
+            document.getElementById('bidButtons').innerHTML = 
+                '<div class="status success">🏆 Auction ended! You won!</div>';
+            
+            if (testState.highestBidder) {
+                showStatus('bidStatus', 
+                    `🎉 Auction ended! ${testState.highestBidder} won for $${testState.currentBid.toFixed(2)}`, 
+                    'success');
+                document.getElementById('paymentSection').style.display = 'block';
+            } else {
+                showStatus('bidStatus', '⏰ Auction ended with no bids', 'info');
+            }
+        }
+
+        // Process test payment
+        function processTestPayment() {
+            const cardNumber = document.getElementById('cardNumber').value;
+            const expiry = document.getElementById('expiry').value;
+            const cvc = document.getElementById('cvc').value;
+            
+            if (!cardNumber || !expiry || !cvc) {
+                showStatus('paymentStatus', 'Please fill in all payment fields', 'error');
+                return;
+            }
+            
+            // Simulate payment processing
+            showStatus('paymentStatus', 'Processing payment...', 'info');
+            
+            setTimeout(() => {
+                testState.paymentComplete = true;
+                showStatus('paymentStatus', '✅ Payment successful! Chat unlocked.', 'success');
+                document.getElementById('chatSection').style.display = 'block';
+            }, 2000);
+        }
+
+        // Send test message
+        function sendTestMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
+            chatMessages.appendChild(messageDiv);
+            
+            input.value = '';
+            
+            // Simulate seller response
+            setTimeout(() => {
+                const responseDiv = document.createElement('div');
+                responseDiv.className = 'message seller';
+                responseDiv.innerHTML = '<strong>TechDeals Pro:</strong> Great! Let\'s meet at the coffee shop on Main St. I\'ll share the exact location.';
+                chatMessages.appendChild(responseDiv);
+                
+                // Show proximity section
+                document.getElementById('proximitySection').style.display = 'block';
+            }, 1000);
+        }
+
+        // Start location tracking
+        function startLocationTracking() {
+            showStatus('locationStatus', 'Getting your location...', 'info');
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        // Simulate proximity check
+                        setTimeout(() => {
+                            const distance = Math.random() * 50; // Random distance 0-50 feet
+                            if (distance <= 30) {
+                                testState.proximityVerified = true;
+                                showStatus('locationStatus', 
+                                    `✅ Proximity verified! You're ${distance.toFixed(1)} feet away. Safe to proceed.`, 
+                                    'success');
+                                document.getElementById('proximityStatus').className = 'proximity-status proximity-verified';
+                            } else {
+                                showStatus('locationStatus', 
+                                    `⚠️ You're ${distance.toFixed(1)} feet away. Please get closer (within 30 feet).`, 
+                                    'error');
+                                document.getElementById('proximityStatus').className = 'proximity-status proximity-warning';
+                            }
+                        }, 2000);
+                    },
+                    (error) => {
+                        showStatus('locationStatus', 'Location access denied. Please enable location services.', 'error');
+                    }
+                );
+            } else {
+                showStatus('locationStatus', 'Geolocation not supported by this browser.', 'error');
+            }
+        }
+
+        // Test Stripe API
+        async function testStripeAPI() {
+            try {
+                const response = await fetch('/api/stripe/create-payment-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: testState.currentBid,
+                        currency: 'usd',
+                        metadata: {
+                            test: 'true',
+                            item: 'iPhone 15 Pro Max'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.clientSecret) {
+                    showStatus('paymentStatus', '✅ Stripe API working! Payment intent created.', 'success');
+                    return true;
+                } else {
+                    showStatus('paymentStatus', '❌ Stripe API error: ' + data.error, 'error');
+                    return false;
+                }
+            } catch (error) {
+                showStatus('paymentStatus', '❌ Stripe API error: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        // Simulate functions for quick testing
+        function simulateAuctionWin() {
+            testState.currentBid = 989.10;
+            testState.highestBidder = 'Test User';
+            testState.timeLeft = 0;
+            endAuction();
+        }
+
+        function simulatePaymentSuccess() {
+            testState.paymentComplete = true;
+            showStatus('paymentStatus', '✅ Payment successful! Chat unlocked.', 'success');
+            document.getElementById('chatSection').style.display = 'block';
+        }
+
+        function simulateChatUnlock() {
+            testState.chatUnlocked = true;
+            showStatus('chatStatus', '✅ Chat unlocked! You can now message the seller.', 'success');
+            document.getElementById('proximitySection').style.display = 'block';
+        }
+
+        function simulateProximityCheck() {
+            testState.proximityVerified = true;
+            showStatus('locationStatus', '✅ Proximity verified! Safe to proceed with meetup.', 'success');
+            document.getElementById('proximityStatus').className = 'proximity-status proximity-verified';
+        }
+
+        function resetTest() {
+            testState = {
+                auctionActive: true,
+                currentBid: 0,
+                highestBidder: null,
+                timeLeft: 120,
+                paymentComplete: false,
+                chatUnlocked: false,
+                proximityVerified: false
+            };
+            
+            document.getElementById('auctionItem').className = 'auction-item active';
+            document.getElementById('bidButtons').innerHTML = `
+                <button class="btn" onclick="placeTestBid(879.20)">Bid $879.20 (80%)</button>
+                <button class="btn" onclick="placeTestBid(989.10)">Bid $989.10 (90%)</button>
+            `;
+            document.getElementById('paymentSection').style.display = 'none';
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('proximitySection').style.display = 'none';
+            
+            // Clear status messages
+            ['bidStatus', 'paymentStatus', 'chatStatus', 'locationStatus'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            
+            initTest();
+        }
+
+        // Utility function to show status
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Initialize test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initTest();
+            
+            // Test Stripe API on load
+            setTimeout(() => {
+                testStripeAPI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
