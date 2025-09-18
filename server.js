@@ -1378,6 +1378,58 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Stripe payment intent endpoint
+app.post('/api/stripe/create-payment-intent', (req, res) => {
+  try {
+    const { amount, currency = 'usd', metadata = {} } = req.body;
+
+    // Validate amount
+    if (!amount || amount < 50) { // Minimum $0.50
+      return res.status(400).json({
+        error: 'Invalid amount. Minimum charge is $0.50.'
+      });
+    }
+
+    // For demo purposes, create a mock payment intent
+    const mockPaymentIntent = {
+      id: `pi_mock_${Date.now()}`,
+      client_secret: `pi_mock_${Date.now()}_secret_${Math.random().toString(36).substr(2, 9)}`,
+      amount: Math.round(amount * 100), // Convert to cents
+      currency,
+      status: 'requires_payment_method',
+      metadata: {
+        ...metadata,
+        timestamp: new Date().toISOString(),
+        source: 'pacmac-mobile',
+      }
+    };
+
+    res.json({
+      clientSecret: mockPaymentIntent.client_secret,
+      paymentIntentId: mockPaymentIntent.id,
+      amount: mockPaymentIntent.amount,
+      currency: mockPaymentIntent.currency,
+      status: mockPaymentIntent.status
+    });
+
+  } catch (error) {
+    console.error('Stripe payment intent error:', error);
+    res.status(500).json({
+      error: 'Failed to create payment intent'
+    });
+  }
+});
+
+// Stripe webhook endpoint
+app.post('/api/stripe/webhook', (req, res) => {
+  // Mock webhook for demo purposes
+  res.json({
+    success: true,
+    message: 'Webhook received',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Bidding timer endpoints
 app.get('/api/bidding/timer', (req, res) => {
   res.json({
