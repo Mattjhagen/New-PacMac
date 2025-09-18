@@ -1199,7 +1199,7 @@
         id: 1,
         title: "iPhone 15 Pro Max 256GB",
         description: "Apple iPhone 15 Pro Max with Titanium design, A17 Pro chip, 48MP camera system, and USB-C. Space Black color, factory sealed with warranty. Perfect condition, never used.",
-        price: 0.99,
+        price: 1099.00,
         distance: "0.3 miles",
         category: "electronics",
         image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-naturaltitanium?wid=5120&hei=3280&fmt=p-jpg&qlt=80&.v=1693009279823",
@@ -1215,7 +1215,7 @@
         id: 2,
         title: "Nike Air Jordan 1 Retro High",
         description: "Classic Air Jordan 1 Retro High in Bred colorway, size 10.5. Authentic Nike product, worn once for photos only. Includes original box and tags. Perfect for collectors or daily wear.",
-        price: 0.99,
+        price: 1099.00,
         distance: "0.7 miles",
         category: "clothing",
         image: "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Pz6fT9.png",
@@ -1231,7 +1231,7 @@
         id: 3,
         title: "MacBook Pro 14-inch M3",
         description: "Apple MacBook Pro 14-inch with M3 chip, 16GB unified memory, 512GB SSD. Space Gray finish, perfect for professionals. Includes charger and original packaging. Excellent condition.",
-        price: 0.99,
+        price: 1099.00,
         distance: "1.2 miles",
         category: "electronics",
         image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp14-spacegray-select-202310?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1697311050000",
@@ -1247,7 +1247,7 @@
         id: 4,
         title: "Vintage Leather Motorcycle Jacket",
         description: "Authentic vintage leather motorcycle jacket, size Medium. Genuine leather construction, classic biker style. Great condition with minor wear that adds character. Perfect for fall and winter.",
-        price: 0.99,
+        price: 1099.00,
         distance: "0.5 miles",
         category: "clothing",
         image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=500&fit=crop&crop=center",
@@ -1263,7 +1263,7 @@
         id: 5,
         title: "Secretlab Titan Evo Gaming Chair",
         description: "Secretlab Titan Evo 2022 Series gaming chair in Stealth color. Ergonomic design with lumbar support, RGB lighting, and premium materials. Barely used, like new condition.",
-        price: 0.99,
+        price: 1099.00,
         distance: "1.8 miles",
         category: "home",
         image: "https://secretlabcdn.com/cdn-cgi/image/width=1920,quality=75,format=auto/https://cdn.secretlab.co/americas/wp-content/uploads/2022/08/11100000_Stealth_01.png",
@@ -1279,7 +1279,7 @@
         id: 6,
         title: "Spalding NBA Portable Basketball Hoop",
         description: "Spalding NBA Portable Basketball System with 44-inch backboard. Adjustable height from 7.5 to 10 feet, professional-grade construction. Perfect for driveway or park use.",
-        price: 0.99,
+        price: 1099.00,
         distance: "2.1 miles",
         category: "sports",
         image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500&h=500&fit=crop&crop=center",
@@ -1295,7 +1295,7 @@
         id: 7,
         title: "Sony WH-1000XM5 Noise Canceling Headphones",
         description: "Sony WH-1000XM5 wireless noise canceling headphones in Black. Industry-leading noise cancellation, 30-hour battery life, premium sound quality. Includes case and cables.",
-        price: 0.99,
+        price: 1099.00,
         distance: "0.9 miles",
         category: "electronics",
         image: "https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg",
@@ -1311,7 +1311,7 @@
         id: 8,
         title: "Nike Air Force 1 '07 White",
         description: "Classic Nike Air Force 1 '07 in White, size 9. Timeless design, premium leather construction. Worn a few times, excellent condition. Includes original box and laces.",
-        price: 0.99,
+        price: 1099.00,
         distance: "1.4 miles",
         category: "clothing",
         image: "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png",
@@ -1634,10 +1634,10 @@
                 👎 Pass
               </button>
               <button class="action-btn bid-btn" onclick="bidOnItem(${item.id})">
-                ❤️ $1.00
+                ❤️ $${(item.price * 0.8).toFixed(2)}
               </button>
               <button class="action-btn heart-btn" onclick="bidFiveCents(${item.id})">
-                ✅ Bid $0.05
+                ✅ Bid $${(item.price * 0.9).toFixed(2)}
               </button>
             </div>
           </div>
@@ -1676,41 +1676,41 @@
     }
 
     function bidOnItem(itemId) {
-      console.log('Bidding $1.00 on item:', itemId);
+      const item = sampleItems.find(i => i.id === itemId);
+      if (!item) return;
+      
+      const bidAmount = item.price * 0.8; // 80% of list price
+      console.log(`Bidding $${bidAmount.toFixed(2)} on item:`, itemId);
+      
       // Show bid confirmation with Stripe fee breakdown
-      const bidAmount = 1.00;
       const flatFee = 3.00;
       const percentageFee = bidAmount * 0.03;
       const totalFee = flatFee + percentageFee;
       const totalAmount = bidAmount + totalFee;
       
       // Simulate winning the item (for demo purposes)
-      const item = sampleItems.find(i => i.id === itemId);
-      if (item) {
-        // Add to cart as won item
-        addToCart(item, bidAmount);
-        showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
-      }
+      addToCart(item, bidAmount);
+      showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
       
       alert(`Bid placed! $${bidAmount.toFixed(2)} bid added to this item.\n\nStripe fees:\n- Flat fee: $${flatFee.toFixed(2)}\n- 3% of bid: $${percentageFee.toFixed(2)}\n- Total charged: $${totalAmount.toFixed(2)}`);
     }
 
     function bidFiveCents(itemId) {
-      console.log('Bidding $0.05 on item:', itemId);
+      const item = sampleItems.find(i => i.id === itemId);
+      if (!item) return;
+      
+      const bidAmount = item.price * 0.9; // 90% of list price
+      console.log(`Bidding $${bidAmount.toFixed(2)} on item:`, itemId);
+      
       // Show bid confirmation with Stripe fee breakdown
-      const bidAmount = 0.05;
       const flatFee = 3.00;
       const percentageFee = bidAmount * 0.03;
       const totalFee = flatFee + percentageFee;
       const totalAmount = bidAmount + totalFee;
       
       // Simulate winning the item (for demo purposes)
-      const item = sampleItems.find(i => i.id === itemId);
-      if (item) {
-        // Add to cart as won item
-        addToCart(item, bidAmount);
-        showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
-      }
+      addToCart(item, bidAmount);
+      showNotification(`🎉 You won "${item.title}" for $${bidAmount.toFixed(2)}! Added to cart.`, 'success');
       
       alert(`Bid placed! $${bidAmount.toFixed(2)} bid added to this item.\n\nStripe fees:\n- Flat fee: $${flatFee.toFixed(2)}\n- 3% of bid: $${percentageFee.toFixed(2)}\n- Total charged: $${totalAmount.toFixed(2)}`);
     }
@@ -2004,6 +2004,156 @@
       cart.push(cartItem);
       updateCartDisplay();
       showCartModal();
+    }
+
+    // Update cart display in header
+    function updateCartDisplay() {
+      const cartCount = document.getElementById('cartCount');
+      if (cartCount) {
+        cartCount.textContent = cart.length;
+        cartCount.style.display = cart.length > 0 ? 'block' : 'none';
+      }
+    }
+
+    // Show cart modal
+    function showCartModal() {
+      const modal = document.getElementById('cartModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderCartItems();
+      }
+    }
+
+    // Hide cart modal
+    function hideCartModal() {
+      const modal = document.getElementById('cartModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Render cart items in modal
+    function renderCartItems() {
+      const container = document.getElementById('cartItems');
+      if (!container) return;
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666;">Your cart is empty</p>';
+        return;
+      }
+
+      container.innerHTML = cart.map(item => `
+        <div class="cart-item" style="display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee;">
+          <img src="${item.image}" alt="${item.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+          <div style="flex: 1;">
+            <h4 style="margin: 0 0 5px 0; font-size: 16px;">${item.title}</h4>
+            <p style="margin: 0; color: #666; font-size: 14px;">Winning Bid: $${item.winningBid.toFixed(2)}</p>
+          </div>
+          <button onclick="removeFromCart('${item.id}')" style="background: #ff4757; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">Remove</button>
+        </div>
+      `).join('');
+
+      // Update total
+      const total = cart.reduce((sum, item) => sum + item.winningBid, 0);
+      const totalElement = document.getElementById('cartTotal');
+      if (totalElement) {
+        totalElement.textContent = `$${total.toFixed(2)}`;
+      }
+    }
+
+    // Remove item from cart
+    function removeFromCart(itemId) {
+      cart = cart.filter(item => item.id !== itemId);
+      updateCartDisplay();
+      renderCartItems();
+      showNotification('Item removed from cart', 'info');
+    }
+
+    // Proceed to checkout
+    function proceedToCheckout() {
+      if (cart.length === 0) {
+        showNotification('Your cart is empty', 'error');
+        return;
+      }
+      
+      // Calculate total with fees
+      const subtotal = cart.reduce((sum, item) => sum + item.winningBid, 0);
+      const flatFee = 3.00;
+      const percentageFee = subtotal * 0.03;
+      const total = subtotal + flatFee + percentageFee;
+      
+      // Show payment modal
+      showPaymentModal(total);
+    }
+
+    // Show payment modal
+    function showPaymentModal(total) {
+      const modal = document.getElementById('paymentModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('paymentTotal').textContent = `$${total.toFixed(2)}`;
+      }
+    }
+
+    // Hide payment modal
+    function hidePaymentModal() {
+      const modal = document.getElementById('paymentModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Process payment
+    async function processPayment() {
+      const total = cart.reduce((sum, item) => sum + item.winningBid, 0) + 3.00 + (cart.reduce((sum, item) => sum + item.winningBid, 0) * 0.03);
+      
+      try {
+        // Create payment intent
+        const response = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            currency: 'usd',
+            metadata: {
+              items: cart.map(item => item.id).join(','),
+              user_id: 'demo-user-123'
+            }
+          })
+        });
+
+        const { clientSecret, paymentIntentId } = await response.json();
+        
+        if (clientSecret) {
+          // In a real implementation, you would use Stripe Elements here
+          // For demo purposes, we'll simulate a successful payment
+          simulatePaymentSuccess(paymentIntentId);
+        } else {
+          throw new Error('Failed to create payment intent');
+        }
+      } catch (error) {
+        console.error('Payment error:', error);
+        showNotification('Payment failed. Please try again.', 'error');
+      }
+    }
+
+    // Simulate successful payment
+    function simulatePaymentSuccess(paymentIntentId) {
+      // Clear cart
+      cart = [];
+      updateCartDisplay();
+      
+      // Hide modals
+      hideCartModal();
+      hidePaymentModal();
+      
+      // Show success message
+      showNotification('🎉 Payment successful! Your items will be shipped soon.', 'success');
+      
+      // In a real app, you would redirect to a success page or show order details
+      console.log('Payment successful:', paymentIntentId);
     }
 
     function saveForLater(itemId) {
@@ -2646,5 +2796,62 @@
       </div>
     </div>
   </footer>
-</body>
+    <!-- Cart Modal -->
+    <div id="cartModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+      <div style="background: white; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80%; overflow: hidden;">
+        <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 20px;">Shopping Cart</h3>
+          <button onclick="hideCartModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <div id="cartItems" style="max-height: 400px; overflow-y: auto;">
+          <!-- Cart items will be rendered here -->
+        </div>
+        <div style="padding: 20px; border-top: 1px solid #eee; background: #f8f9fa;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span style="font-weight: bold;">Total:</span>
+            <span id="cartTotal" style="font-weight: bold;">$0.00</span>
+          </div>
+          <button onclick="proceedToCheckout()" style="width: 100%; background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center;">
+      <div style="background: white; border-radius: 12px; width: 90%; max-width: 400px; padding: 30px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 10px 0; font-size: 24px;">Complete Payment</h3>
+          <p style="margin: 0; color: #666;">Total Amount: <span id="paymentTotal" style="font-weight: bold; color: #007bff;">$0.00</span></p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: bold;">Card Number</label>
+          <input type="text" placeholder="1234 5678 9012 3456" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;">
+        </div>
+        
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Expiry</label>
+            <input type="text" placeholder="MM/YY" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;">
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">CVC</label>
+            <input type="text" placeholder="123" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;">
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+          <button onclick="hidePaymentModal()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+            Cancel
+          </button>
+          <button onclick="processPayment()" style="flex: 1; background: #28a745; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer;">
+            Pay Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </body>
 </html>
