@@ -1,8 +1,8 @@
 // Microsoft Clarity Configuration for PacMac Marketplace
 // This file contains the Clarity setup and initialization
 
-// Clarity Project ID - Replace with your actual project ID from Clarity dashboard
-const CLARITY_PROJECT_ID = "YOUR_CLARITY_PROJECT_ID"; // Replace with actual project ID
+// Clarity Project ID - Your actual project ID from Clarity dashboard
+const CLARITY_PROJECT_ID = "tcp65xexve";
 
 // Initialize Microsoft Clarity
 function initializeClarity() {
@@ -12,7 +12,7 @@ function initializeClarity() {
     return;
   }
 
-  // Load Clarity script
+  // Load Clarity script with your exact tracking code
   const script = document.createElement('script');
   script.type = 'text/javascript';
   script.innerHTML = `
@@ -20,7 +20,7 @@ function initializeClarity() {
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
+    })(window, document, "clarity", "script", "tcp65xexve");
   `;
   
   document.head.appendChild(script);
