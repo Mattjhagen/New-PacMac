@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+
+# Main pages
+Allow: /welcome.html
+Allow: /marketplace.html
+Allow: /pacmac_privacy_policy.html
+Allow: /pacmac_terms_service.html
+
+# Admin pages (protected by authentication)
+Disallow: /admin.html
+Disallow: /inventory-admin.html
+Disallow: /reserve-admin.html
+Disallow: /hourly-auto-poster.html
+
+# Utility pages
+Allow: /stripe-checkout.html
+Disallow: /clarity-setup.html
+
+# API endpoints
+Disallow: /api/
+
+# Static files
+Allow: /clarity-config.js
+Allow: /auto-poster-hourly.js
+Allow: /inventory-data.json
+
+# Sitemap
+Sitemap: https://new-pacmac.onrender.com/sitemap.xml
+
+# Crawl delay (be respectful)
+Crawl-delay: 1

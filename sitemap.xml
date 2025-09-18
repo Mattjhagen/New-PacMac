@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Pages -->
+  <url>
+    <loc>https://new-pacmac.onrender.com/</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/welcome.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/marketplace.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://new-pacmac.onrender.com/pacmac_privacy_policy.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/pacmac_terms_service.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Admin Pages (Protected) -->
+  <url>
+    <loc>https://new-pacmac.onrender.com/admin.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/inventory-admin.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/reserve-admin.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/hourly-auto-poster.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Utility Pages -->
+  <url>
+    <loc>https://new-pacmac.onrender.com/stripe-checkout.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/clarity-setup.html</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <!-- API Endpoints (for reference) -->
+  <url>
+    <loc>https://new-pacmac.onrender.com/api/health</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/api/marketplace/items</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/api/bidding/timer</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/api/stripe/create-checkout-session</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  
+  <url>
+    <loc>https://new-pacmac.onrender.com/api/auto-poster/hourly/status</loc>
+    <lastmod>2025-01-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.1</priority>
+  </url>
+</urlset>

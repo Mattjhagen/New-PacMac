@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Map - PacMac Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #007AFF;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #007AFF;
+            padding-bottom: 10px;
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .link-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #007AFF;
+            transition: all 0.3s ease;
+        }
+
+        .link-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
+        }
+
+        .link-item h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .link-item p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .link-item a {
+            color: #007AFF;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .link-item a:hover {
+            text-decoration: underline;
+        }
+
+        .priority {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .admin-only {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+
+        .admin-only h3::after {
+            content: " (Admin Only)";
+            color: #ff9800;
+            font-size: 0.8rem;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .back-link a {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007AFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-link a:hover {
+            background: #0056CC;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            background: #e8f5e8;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stats h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .stats p {
+            color: #388e3c;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Site Map</h1>
+            <p>Navigate through all pages of PacMac Marketplace</p>
+        </div>
+
+        <div class="stats">
+            <h3>📊 Site Statistics</h3>
+            <p>Total Pages: 12 | Public Pages: 6 | Admin Pages: 4 | API Endpoints: 5</p>
+        </div>
+
+        <div class="section">
+            <h2>🏠 Main Pages</h2>
+            <div class="link-grid">
+                <div class="link-item">
+                    <h3>Homepage <span class="priority">High Priority</span></h3>
+                    <p>Main landing page with redirect to marketplace</p>
+                    <a href="/">Visit Homepage</a>
+                </div>
+                
+                <div class="link-item">
+                    <h3>Welcome Page <span class="priority">High Priority</span></h3>
+                    <p>Beautiful landing page with login and navigation</p>
+                    <a href="/welcome.html">Visit Welcome Page</a>
+                </div>
+                
+                <div class="link-item">
+                    <h3>Marketplace <span class="priority">Highest Priority</span></h3>
+                    <p>Main marketplace with auctions, bidding, and cart</p>
+                    <a href="/marketplace.html">Visit Marketplace</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📄 Legal Pages</h2>
+            <div class="link-grid">
+                <div class="link-item">
+                    <h3>Privacy Policy <span class="priority">Low Priority</span></h3>
+                    <p>Privacy policy and data protection information</p>
+                    <a href="/pacmac_privacy_policy.html">Read Privacy Policy</a>
+                </div>
+                
+                <div class="link-item">
+                    <h3>Terms of Service <span class="priority">Low Priority</span></h3>
+                    <p>Terms and conditions for using the marketplace</p>
+                    <a href="/pacmac_terms_service.html">Read Terms of Service</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Admin Pages</h2>
+            <div class="link-grid">
+                <div class="link-item admin-only">
+                    <h3>Admin Dashboard</h3>
+                    <p>Main admin dashboard for managing inventory and orders</p>
+                    <a href="/admin.html">Access Admin Dashboard</a>
+                </div>
+                
+                <div class="link-item admin-only">
+                    <h3>Inventory Management</h3>
+                    <p>Manage product inventory and auto-posting settings</p>
+                    <a href="/inventory-admin.html">Access Inventory Admin</a>
+                </div>
+                
+                <div class="link-item admin-only">
+                    <h3>Reserve Price Admin</h3>
+                    <p>Set and manage auction reserve prices</p>
+                    <a href="/reserve-admin.html">Access Reserve Admin</a>
+                </div>
+                
+                <div class="link-item admin-only">
+                    <h3>Auto-Poster Control</h3>
+                    <p>Control hourly auto-posting of products</p>
+                    <a href="/hourly-auto-poster.html">Access Auto-Poster</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🛠️ Utility Pages</h2>
+            <div class="link-grid">
+                <div class="link-item">
+                    <h3>Stripe Checkout <span class="priority">Medium Priority</span></h3>
+                    <p>Secure payment processing page</p>
+                    <a href="/stripe-checkout.html">View Checkout Page</a>
+                </div>
+                
+                <div class="link-item">
+                    <h3>Clarity Setup <span class="priority">Low Priority</span></h3>
+                    <p>Microsoft Clarity analytics setup and configuration</p>
+                    <a href="/clarity-setup.html">Setup Analytics</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔗 Important Links</h2>
+            <div class="link-grid">
+                <div class="link-item">
+                    <h3>XML Sitemap</h3>
+                    <p>Machine-readable sitemap for search engines</p>
+                    <a href="/sitemap.xml">View XML Sitemap</a>
+                </div>
+                
+                <div class="link-item">
+                    <h3>Robots.txt</h3>
+                    <p>Instructions for search engine crawlers</p>
+                    <a href="/robots.txt">View Robots.txt</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="/marketplace.html">← Back to Marketplace</a>
+        </div>
+    </div>
+
+    <!-- Microsoft Clarity Analytics -->
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "tcp65xexve");
+    </script>
+</body>
+</html>
