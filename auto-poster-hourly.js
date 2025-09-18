@@ -19,8 +19,46 @@ class HourlyAutoPoster {
         try {
             if (fs.existsSync('inventory-data.json')) {
                 const data = fs.readFileSync('inventory-data.json', 'utf8');
-                this.inventoryData = JSON.parse(data);
-                console.log('✅ Loaded inventory data');
+                const rawData = JSON.parse(data);
+                
+                // Convert existing inventory format to our format
+                if (rawData.inventory && Array.isArray(rawData.inventory)) {
+                    this.inventoryData = {
+                        products: rawData.inventory.map(item => ({
+                            id: item.itemNumber || `ITEM-${Math.random().toString(36).substr(2, 9)}`,
+                            title: `${item.manufacturer} ${item.model} ${item.capacity} ${item.color}`,
+                            description: `${item.manufacturer} ${item.model} with ${item.capacity} storage in ${item.color}`,
+                            listPrice: item.listPrice || 0,
+                            basePrice: item.listPrice || 0,
+                            category: item.category || 'Electronics',
+                            manufacturer: item.manufacturer || 'Unknown',
+                            model: item.model || 'Unknown',
+                            capacity: item.capacity || 'Unknown',
+                            color: item.color || 'Unknown',
+                            grade: item.grade || 'A',
+                            carrier: item.carrier || 'Unlocked',
+                            lockStatus: item.lockStatus || 'Unlocked',
+                            modelNumber: item.modelNumber || 'Unknown',
+                            warehouse: item.warehouse || 'Main',
+                            quantity: item.quantity || 1,
+                            images: [`https://via.placeholder.com/300x300/007AFF/FFFFFF?text=${encodeURIComponent(item.manufacturer || 'Product')}`],
+                            specs: {
+                                display: 'High-resolution display',
+                                processor: 'Advanced processor',
+                                camera: 'High-quality camera',
+                                battery: 'Long-lasting battery'
+                            },
+                            itemNumber: item.itemNumber || 'Unknown',
+                            status: 'available'
+                        })),
+                        lastUpdated: new Date(),
+                        totalProducts: rawData.inventory.length
+                    };
+                    console.log(`✅ Loaded and converted ${rawData.inventory.length} products from existing inventory`);
+                } else {
+                    console.log('❌ Invalid inventory data format. Creating sample data...');
+                    this.createSampleInventoryData();
+                }
                 return true;
             } else {
                 console.log('❌ No inventory data found. Creating sample data...');
@@ -238,7 +276,7 @@ class HourlyAutoPoster {
         console.log(`📱 Posting ${productsToPost} products this hour...`);
 
         // Get random products from inventory
-        const availableProducts = this.inventoryData.products.filter(p => p.status === 'available');
+        const availableProducts = (this.inventoryData.products || []).filter(p => p.status === 'available');
         const shuffled = this.shuffleArray([...availableProducts]);
         const selectedProducts = shuffled.slice(0, productsToPost);
 
@@ -494,7 +532,7 @@ class HourlyAutoPoster {
                 this.loadPostingQueue();
                 this.generateStatusHTML();
                 console.log('✅ Hourly Auto-Poster ready');
-                console.log(`📊 Products available: ${this.inventoryData.products.length}`);
+                console.log(`📊 Products available: ${this.inventoryData.products ? this.inventoryData.products.length : 0}`);
                 console.log(`📊 Posted today: ${this.postedToday}`);
             }
             
