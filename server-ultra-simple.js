@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const PORT = process.env.PORT || 3000;
 
 console.log(`Starting ultra-simple server with static file serving on port ${PORT}`);
@@ -47,6 +48,97 @@ function serveStaticFile(filePath, res) {
   });
 }
 
+// Keep-alive ping mechanism to prevent Render from sleeping
+function keepAlivePing() {
+  const url = process.env.RENDER_EXTERNAL_URL || 'https://new-pacmac.onrender.com';
+  console.log(`🔄 Sending keep-alive ping to ${url}`);
+  
+  const options = {
+    method: 'GET',
+    timeout: 10000,
+    headers: {
+      'User-Agent': 'PacMac-KeepAlive/1.0'
+    }
+  };
+  
+  const req = https.request(url + '/health', options, (res) => {
+    console.log(`✅ Keep-alive ping successful: ${res.statusCode}`);
+  });
+  
+  req.on('error', (error) => {
+    console.log(`❌ Keep-alive ping failed: ${error.message}`);
+  });
+  
+  req.on('timeout', () => {
+    console.log(`⏰ Keep-alive ping timeout`);
+    req.destroy();
+  });
+  
+  req.end();
+}
+
+// Start keep-alive ping every 5 minutes (300000ms)
+setInterval(keepAlivePing, 5 * 60 * 1000);
+
+// Send initial ping after 30 seconds
+setTimeout(keepAlivePing, 30000);
+
+console.log('🔄 Keep-alive ping system initialized (every 5 minutes)');
+
+// Persistent bidding timer system
+const biddingTimers = new Map();
+
+function startBiddingTimer(itemId, endTime) {
+  const now = Date.now();
+  const timeLeft = endTime - now;
+  
+  if (timeLeft <= 0) {
+    console.log(`⏰ Bidding timer for item ${itemId} has already ended`);
+    return;
+  }
+  
+  console.log(`⏰ Starting bidding timer for item ${itemId}, ends in ${Math.round(timeLeft / 1000)}s`);
+  
+  const timer = setTimeout(() => {
+    console.log(`🔔 Bidding ended for item ${itemId}`);
+    biddingTimers.delete(itemId);
+    // Here you would typically update the database to mark the auction as ended
+  }, timeLeft);
+  
+  biddingTimers.set(itemId, {
+    timer,
+    endTime,
+    startTime: now
+  });
+}
+
+function getBiddingTimeLeft(itemId) {
+  const biddingData = biddingTimers.get(itemId);
+  if (!biddingData) {
+    return null;
+  }
+  
+  const timeLeft = biddingData.endTime - Date.now();
+  return timeLeft > 0 ? timeLeft : 0;
+}
+
+// Restore bidding timers on server restart (in a real app, this would come from database)
+function restoreBiddingTimers() {
+  console.log('🔄 Restoring bidding timers...');
+  // Example: restore some active auctions
+  const activeAuctions = [
+    { id: 'demo_item_1', endTime: Date.now() + (2 * 60 * 60 * 1000) }, // 2 hours
+    { id: 'demo_item_2', endTime: Date.now() + (1 * 60 * 60 * 1000) }  // 1 hour
+  ];
+  
+  activeAuctions.forEach(auction => {
+    startBiddingTimer(auction.id, auction.endTime);
+  });
+}
+
+// Restore timers after 5 seconds
+setTimeout(restoreBiddingTimers, 5000);
+
 const server = http.createServer((req, res) => {
   console.log(`${req.method} ${req.url}`);
   
@@ -65,7 +157,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.21',
+        version: '1.0.22',
         port: PORT,
         nodeVersion: process.version
       }));
@@ -308,6 +400,68 @@ const server = http.createServer((req, res) => {
           }
         ]
       }));
+    } else if (req.url === '/api/bidding/timer' && req.method === 'GET') {
+      // Get bidding timer status for all items
+      const timers = {};
+      biddingTimers.forEach((data, itemId) => {
+        const timeLeft = getBiddingTimeLeft(itemId);
+        timers[itemId] = {
+          timeLeft,
+          endTime: data.endTime,
+          isActive: timeLeft > 0
+        };
+      });
+      
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        timers,
+        serverTime: Date.now()
+      }));
+    } else if (req.url.startsWith('/api/bidding/timer/') && req.method === 'GET') {
+      // Get bidding timer for specific item
+      const itemId = req.url.split('/').pop();
+      const timeLeft = getBiddingTimeLeft(itemId);
+      
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        itemId,
+        timeLeft,
+        isActive: timeLeft > 0,
+        serverTime: Date.now()
+      }));
+    } else if (req.url.startsWith('/api/bidding/start/') && req.method === 'POST') {
+      // Start bidding timer for item
+      const itemId = req.url.split('/').pop();
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        try {
+          const data = JSON.parse(body);
+          const duration = data.duration || (24 * 60 * 60 * 1000); // Default 24 hours
+          const endTime = Date.now() + duration;
+          
+          startBiddingTimer(itemId, endTime);
+          
+          res.writeHead(200);
+          res.end(JSON.stringify({
+            success: true,
+            itemId,
+            endTime,
+            duration,
+            message: `Bidding timer started for item ${itemId}`
+          }));
+        } catch (error) {
+          res.writeHead(400);
+          res.end(JSON.stringify({
+            success: false,
+            error: 'Invalid request data'
+          }));
+        }
+      });
     } else {
       res.writeHead(501);
       res.end(JSON.stringify({
@@ -327,7 +481,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-        version: '1.0.21',
+        version: '1.0.22',
       port: PORT,
       nodeVersion: process.version
     }));
