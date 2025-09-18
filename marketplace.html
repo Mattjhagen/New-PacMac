@@ -1458,12 +1458,12 @@
         if (data.success && data.user) {
           updateUserInfo(data.user);
         } else {
-          // Redirect to login if not authenticated
-          window.location.href = '/marketplace.html';
+          // Redirect to welcome page if not authenticated
+          window.location.href = '/welcome.html';
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        window.location.href = '/marketplace.html';
+        window.location.href = '/welcome.html';
       }
     }
 
