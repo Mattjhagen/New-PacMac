@@ -563,6 +563,69 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
+
+  // Auto-poster API endpoints
+  if (req.url === '/api/auto-poster/hourly/start' && req.method === 'POST') {
+    if (hourlyAutoPoster) {
+      hourlyAutoPoster.startHourlyPosting();
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        message: 'Hourly auto-posting started',
+        status: hourlyAutoPoster.getStatus()
+      }));
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(500);
+      res.end(JSON.stringify({
+        success: false,
+        error: 'Auto-poster not available'
+      }));
+    }
+    return;
+  }
+
+  if (req.url === '/api/auto-poster/hourly/stop' && req.method === 'POST') {
+    if (hourlyAutoPoster) {
+      hourlyAutoPoster.stopHourlyPosting();
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        message: 'Hourly auto-posting stopped',
+        status: hourlyAutoPoster.getStatus()
+      }));
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(500);
+      res.end(JSON.stringify({
+        success: false,
+        error: 'Auto-poster not available'
+      }));
+    }
+    return;
+  }
+
+  if (req.url === '/api/auto-poster/hourly/status' && req.method === 'GET') {
+    if (hourlyAutoPoster) {
+      const status = hourlyAutoPoster.getStatus();
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        status
+      }));
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(500);
+      res.end(JSON.stringify({
+        success: false,
+        error: 'Auto-poster not available'
+      }));
+    }
+    return;
+  }
   
   // Static file serving
   let filePath = req.url;
@@ -601,6 +664,16 @@ const server = http.createServer((req, res) => {
 
   serveStaticFile(fullPath, res);
 });
+
+// Initialize hourly auto-poster
+let hourlyAutoPoster = null;
+try {
+  const HourlyAutoPoster = require('./auto-poster-hourly.js');
+  hourlyAutoPoster = new HourlyAutoPoster();
+  console.log('✅ Hourly Auto-Poster initialized');
+} catch (error) {
+  console.log('⚠️ Hourly Auto-Poster not available:', error.message);
+}
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Ultra-simple server running on port ${PORT} - Clean deployment`);
