@@ -65,7 +65,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.19',
+        version: '1.0.20',
         port: PORT,
         nodeVersion: process.version
       }));
@@ -153,6 +153,111 @@ const server = http.createServer((req, res) => {
           reservePrice: 100.00
         }
       }));
+    } else if (req.url === '/api/inventory/products') {
+      // Mock inventory products with reserve prices
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        products: [
+          {
+            id: 'prod_1',
+            name: 'iPhone 15 Pro Max',
+            price: 1099.00,
+            reservePrice: 1099.00,
+            category: 'Main Product',
+            description: 'Latest iPhone with Pro features',
+            specifications: '{"storage": "256GB", "color": "Natural Titanium", "condition": "New"}',
+            tags: 'iphone,apple,pro,max',
+            image: '📱',
+            status: 'active',
+            postedToday: false,
+            pendingPosts: 3
+          },
+          {
+            id: 'prod_2',
+            name: 'Samsung Galaxy S24 Ultra',
+            price: 1199.00,
+            reservePrice: 1199.00,
+            category: 'Main Product',
+            description: 'Premium Android flagship',
+            specifications: '{"storage": "512GB", "color": "Titanium Black", "condition": "New"}',
+            tags: 'samsung,galaxy,ultra',
+            image: '📱',
+            status: 'active',
+            postedToday: true,
+            pendingPosts: 2
+          },
+          {
+            id: 'prod_3',
+            name: 'MacBook Pro 14"',
+            price: 1999.00,
+            reservePrice: 1999.00,
+            category: 'Main Product',
+            description: 'Professional laptop for creators',
+            specifications: '{"processor": "M3 Pro", "memory": "18GB", "storage": "512GB SSD"}',
+            tags: 'macbook,apple,pro',
+            image: '💻',
+            status: 'active',
+            postedToday: false,
+            pendingPosts: 1
+          }
+        ],
+        stats: {
+          totalProducts: 3,
+          totalValue: 4297.00,
+          postedToday: 1,
+          pendingPosts: 6
+        }
+      }));
+    } else if (req.url === '/api/inventory/set-reserve' && req.method === 'POST') {
+      // Handle setting reserve prices for inventory products
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        try {
+          const data = JSON.parse(body);
+          res.writeHead(200);
+          res.end(JSON.stringify({
+            success: true,
+            message: `Reserve price set to $${data.reservePrice} for product ${data.productId}`,
+            productId: data.productId,
+            reservePrice: data.reservePrice
+          }));
+        } catch (error) {
+          res.writeHead(400);
+          res.end(JSON.stringify({
+            success: false,
+            error: 'Invalid request data'
+          }));
+        }
+      });
+    } else if (req.url === '/api/inventory/auto-posting/status') {
+      // Mock auto-posting status
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        isRunning: false,
+        lastRun: null,
+        nextRun: null,
+        totalProcessed: 0,
+        errors: []
+      }));
+    } else if (req.url === '/api/inventory/auto-posting/start' && req.method === 'POST') {
+      // Mock start auto-posting
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        message: 'Auto-posting started successfully'
+      }));
+    } else if (req.url === '/api/inventory/auto-posting/stop' && req.method === 'POST') {
+      // Mock stop auto-posting
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        success: true,
+        message: 'Auto-posting stopped successfully'
+      }));
     } else {
       res.writeHead(501);
       res.end(JSON.stringify({
@@ -172,7 +277,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-        version: '1.0.19',
+        version: '1.0.20',
       port: PORT,
       nodeVersion: process.version
     }));
