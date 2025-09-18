@@ -182,8 +182,13 @@ const server = http.createServer((req, res) => {
   // Static file serving
   let filePath = req.url;
   
+  // Remove query parameters from URL
+  if (filePath.includes('?')) {
+    filePath = filePath.split('?')[0];
+  }
+  
   // Default to index.html for root
-  if (req.url === '/') {
+  if (filePath === '/') {
     filePath = '/index.html';
   }
   
