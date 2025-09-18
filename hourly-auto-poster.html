@@ -426,8 +426,32 @@
         // Auto-refresh every 30 seconds
         setInterval(refreshStatus, 30000);
 
+        // Check admin authentication
+        function checkAdminAuth() {
+            const authUser = localStorage.getItem('authUser');
+            if (!authUser) {
+                alert('❌ Access denied. Please log in first.');
+                window.location.href = '/welcome.html';
+                return false;
+            }
+            
+            const user = JSON.parse(authUser);
+            if (!user.isAdmin || !user.email || !user.email.toLowerCase().endsWith('@pacmacmobile.com')) {
+                alert('❌ Admin access required. Only @pacmacmobile.com users can access this page.');
+                window.location.href = '/marketplace.html';
+                return false;
+            }
+            
+            console.log('✅ Admin access granted for:', user.email);
+            return true;
+        }
+
         // Load initial status
-        document.addEventListener('DOMContentLoaded', refreshStatus);
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkAdminAuth()) {
+                refreshStatus();
+            }
+        });
     </script>
 
     <!-- Microsoft Clarity Analytics -->

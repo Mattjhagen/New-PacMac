@@ -1075,13 +1075,24 @@
       button.disabled = true;
       
       setTimeout(() => {
+        // Prompt for email to determine admin status
+        const email = prompt('Enter your email address:');
+        if (!email) {
+          button.textContent = originalText;
+          button.disabled = false;
+          return;
+        }
+        
+        // Check if user is admin (pacmacmobile.com domain)
+        const isAdmin = email.toLowerCase().endsWith('@pacmacmobile.com');
+        
         // Create authenticated user session
         const authUser = {
           id: 'user-' + Date.now(),
-          name: 'Authenticated User',
-          email: 'user@pacmacmobile.com',
+          name: isAdmin ? 'Admin User' : 'Customer User',
+          email: email,
           avatar: null,
-          isAdmin: false
+          isAdmin: isAdmin
         };
         
         localStorage.setItem('authUser', JSON.stringify(authUser));
@@ -1089,6 +1100,13 @@
         // Track successful login
         if (typeof trackLoginSuccess === 'function') {
           trackLoginSuccess(authUser.id);
+        }
+        
+        // Show admin status
+        if (isAdmin) {
+          alert('✅ Admin access granted! You have access to admin features.');
+        } else {
+          alert('✅ Customer access granted! Welcome to PacMac Marketplace.');
         }
         
         // Redirect to marketplace

@@ -1229,8 +1229,33 @@ Shipping Address: ${order.shippingAddress}
             inventoryManager.loadInventoryGrid();
         }
         
-        // Initialize the inventory manager
-        const inventoryManager = new InventoryManager();
+        // Check admin authentication before showing page
+        function checkAdminAuth() {
+            const authUser = localStorage.getItem('authUser');
+            if (!authUser) {
+                alert('❌ Access denied. Please log in first.');
+                window.location.href = '/welcome.html';
+                return false;
+            }
+            
+            const user = JSON.parse(authUser);
+            if (!user.isAdmin || !user.email || !user.email.toLowerCase().endsWith('@pacmacmobile.com')) {
+                alert('❌ Admin access required. Only @pacmacmobile.com users can access this page.');
+                window.location.href = '/marketplace.html';
+                return false;
+            }
+            
+            console.log('✅ Admin access granted for:', user.email);
+            return true;
+        }
+        
+        // Check authentication on page load
+        if (!checkAdminAuth()) {
+            // Redirect will happen in checkAdminAuth
+        } else {
+            // Initialize the inventory manager only if admin
+            const inventoryManager = new InventoryManager();
+        }
     </script>
     
     <!--Start of Tawk.to Script-->

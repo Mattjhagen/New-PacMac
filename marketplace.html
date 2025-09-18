@@ -1607,12 +1607,13 @@
         userAvatar.textContent = '';
       }
 
-      // Show admin section for admin users
-      if (user.isAdmin || (user.email && (user.email.endsWith('@pacmacmobile.com') || user.email === 'pacmacmobile@gmail.com'))) {
+      // Show admin section only for @pacmacmobile.com users
+      if (user.isAdmin && user.email && user.email.toLowerCase().endsWith('@pacmacmobile.com')) {
         adminSection.style.display = 'block';
         console.log('🔧 Admin user detected:', user.email);
-        } else {
+      } else {
         adminSection.style.display = 'none';
+        console.log('👤 Regular user:', user.email);
       }
 
       // Update credit balance
