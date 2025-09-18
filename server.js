@@ -1394,7 +1394,8 @@ function initializeAuctionTimers() {
     'item_5': Date.now() + (24 * 60 * 60 * 1000),
     'item_6': Date.now() + (24 * 60 * 60 * 1000),
     'item_7': Date.now() + (24 * 60 * 60 * 1000),
-    'item_8': Date.now() + (24 * 60 * 60 * 1000)
+    'item_8': Date.now() + (24 * 60 * 60 * 1000),
+    'item_9': Date.now() + (24 * 60 * 60 * 1000) // Demo item
   };
   
   // Load existing end times or use defaults

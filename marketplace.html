@@ -1444,6 +1444,28 @@
         bidHistory: [],
         isActive: true,
         winner: null
+      },
+      {
+        id: 9,
+        title: "🎯 DEMO TEST ITEM - Win for 5¢",
+        description: "This is a demo item for testing the complete auction and checkout flow. Perfect for testing bidding, winning, payment processing, chat unlock, and proximity verification. Bid 5 cents to win!",
+        price: 0.05,
+        distance: "0.1 miles",
+        category: "electronics",
+        image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500&h=500&fit=crop&crop=center",
+        badge: "DEMO",
+        currentBids: 0,
+        endTime: getPersistentEndTime(9), // Get persistent end time for item 9
+        reviews: "5.0/5 stars (1 review)",
+        seller: "Demo Seller",
+        condition: "Brand New",
+        warranty: "Demo Warranty",
+        // Auction properties
+        currentBid: 0,
+        highestBidder: null,
+        bidHistory: [],
+        isActive: true,
+        winner: null
       }
     ];
 
@@ -1755,15 +1777,27 @@
             
             <div class="item-actions">
               ${item.isActive ? `
-                <button class="action-btn pass-btn" onclick="passItem(${item.id})">
-                  👎 Pass
-                </button>
-                <button class="action-btn bid-btn" onclick="placeBid(${item.id}, ${(item.price * 0.8).toFixed(2)})">
-                  💰 Bid $${(item.price * 0.8).toFixed(2)}
-                </button>
-                <button class="action-btn heart-btn" onclick="placeBid(${item.id}, ${(item.price * 0.9).toFixed(2)})">
-                  🚀 Bid $${(item.price * 0.9).toFixed(2)}
-                </button>
+                ${item.id === 9 ? `
+                  <button class="action-btn pass-btn" onclick="passItem(${item.id})">
+                    👎 Pass
+                  </button>
+                  <button class="action-btn bid-btn" onclick="placeBid(${item.id}, 0.05)" style="background: #28a745;">
+                    🎯 Win for $0.05
+                  </button>
+                  <button class="action-btn heart-btn" onclick="instantWinDemo(${item.id})" style="background: #dc3545;">
+                    ⚡ Instant Win (Test)
+                  </button>
+                ` : `
+                  <button class="action-btn pass-btn" onclick="passItem(${item.id})">
+                    👎 Pass
+                  </button>
+                  <button class="action-btn bid-btn" onclick="placeBid(${item.id}, ${(item.price * 0.8).toFixed(2)})">
+                    💰 Bid $${(item.price * 0.8).toFixed(2)}
+                  </button>
+                  <button class="action-btn heart-btn" onclick="placeBid(${item.id}, ${(item.price * 0.9).toFixed(2)})">
+                    🚀 Bid $${(item.price * 0.9).toFixed(2)}
+                  </button>
+                `}
               ` : `
                 <div class="auction-ended">
                   ${item.winner ? `
@@ -1879,6 +1913,38 @@
 
     // Start auction timer checking
     setInterval(checkEndedAuctions, 1000); // Check every second
+
+    // Instant win function for demo testing
+    function instantWinDemo(itemId) {
+      const item = sampleItems.find(i => i.id === itemId);
+      if (!item) return;
+      
+      // Get current user
+      const currentUser = JSON.parse(localStorage.getItem('demoUser') || localStorage.getItem('oauthUser') || '{}');
+      const bidderName = currentUser.name || 'Demo User';
+      
+      // Instantly win the auction
+      item.currentBid = 0.05;
+      item.highestBidder = bidderName;
+      item.bidHistory.push({
+        bidder: bidderName,
+        amount: 0.05,
+        timestamp: new Date().toISOString()
+      });
+      item.currentBids = 1;
+      item.isActive = false;
+      item.winner = bidderName;
+      
+      // Add to cart immediately
+      addToCart(item, 0.05);
+      
+      showNotification(`🎉 Demo item won instantly! Added to cart for testing.`, 'success');
+      
+      // Re-render items
+      loadItems();
+      
+      console.log(`Demo item ${itemId} won instantly by ${bidderName}`);
+    }
 
     // Load persistent timers when page loads
     document.addEventListener('DOMContentLoaded', () => {
