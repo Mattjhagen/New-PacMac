@@ -2424,15 +2424,20 @@
     // Process card payment
     async function processCardPayment(total, cardNumber, expiry, cvc) {
       try {
-        // Create payment intent
-        const response = await fetch('/api/stripe/create-payment-intent', {
+        // Create Stripe checkout session
+        const response = await fetch('/api/stripe/create-checkout-session', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            amount: total,
-            currency: 'usd',
+            items: cart.map(item => ({
+              name: item.title,
+              amount: item.winningBid,
+              quantity: 1
+            })),
+            success_url: `${window.location.origin}/marketplace.html?payment=success`,
+            cancel_url: `${window.location.origin}/marketplace.html?payment=cancelled`,
             metadata: {
               items: cart.map(item => item.id).join(','),
               user_id: 'demo-user-123',
@@ -2441,47 +2446,95 @@
           })
         });
 
-        const { clientSecret, paymentIntentId } = await response.json();
+        const { checkoutUrl, sessionId } = await response.json();
         
-        if (clientSecret) {
-          // Simulate card payment processing
-          showNotification('Processing card payment...', 'info');
+        if (checkoutUrl) {
+          // Store cart data for checkout page
+          localStorage.setItem('checkoutCart', JSON.stringify({
+            items: cart.map(item => ({
+              name: item.title,
+              price: item.winningBid,
+              quantity: 1
+            })),
+            total: cart.reduce((sum, item) => sum + item.winningBid, 0),
+            fees: cart.reduce((sum, item) => sum + item.winningBid, 0) * 0.03,
+            shipping: 3.00
+          }));
+
+          showNotification('Redirecting to secure checkout...', 'info');
           
+          // Redirect to Stripe checkout
           setTimeout(() => {
-            simulatePaymentSuccess(paymentIntentId, 'card');
-          }, 2000);
+            window.location.href = checkoutUrl;
+          }, 1000);
         } else {
-          throw new Error('Failed to create payment intent');
+          throw new Error('Failed to create checkout session');
         }
       } catch (error) {
         console.error('Card payment error:', error);
-        showNotification('Card payment failed. Please try again.', 'error');
+        showNotification('Failed to create checkout session. Please try again.', 'error');
       }
     }
 
     // Process bank payment
     async function processBankPayment(total, bankName, accountNumber, routingNumber, accountType) {
       try {
-        showNotification('Setting up bank account linking...', 'info');
+        // Create Stripe checkout session for bank payment
+        const response = await fetch('/api/stripe/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: cart.map(item => ({
+              name: item.title,
+              amount: item.winningBid,
+              quantity: 1
+            })),
+            success_url: `${window.location.origin}/marketplace.html?payment=success&method=bank`,
+            cancel_url: `${window.location.origin}/marketplace.html?payment=cancelled`,
+            metadata: {
+              items: cart.map(item => item.id).join(','),
+              user_id: 'demo-user-123',
+              payment_method: 'bank',
+              bank_name: bankName,
+              account_type: accountType
+            }
+          })
+        });
+
+        const { checkoutUrl, sessionId } = await response.json();
         
-        // Simulate bank account verification
-        setTimeout(() => {
-          showNotification('Redirecting to bank verification...', 'info');
+        if (checkoutUrl) {
+          // Store cart data for checkout page
+          localStorage.setItem('checkoutCart', JSON.stringify({
+            items: cart.map(item => ({
+              name: item.title,
+              price: item.winningBid,
+              quantity: 1
+            })),
+            total: cart.reduce((sum, item) => sum + item.winningBid, 0),
+            fees: cart.reduce((sum, item) => sum + item.winningBid, 0) * 0.03,
+            shipping: 3.00,
+            paymentMethod: 'bank',
+            bankInfo: {
+              name: bankName,
+              accountType: accountType
+            }
+          }));
+
+          showNotification('Redirecting to secure bank checkout...', 'info');
           
-          // Simulate bank verification process
+          // Redirect to Stripe checkout
           setTimeout(() => {
-            showNotification('Bank account verified! Processing payment...', 'success');
-            
-            // Simulate bank payment processing
-            setTimeout(() => {
-              simulatePaymentSuccess('bank_payment_' + Date.now(), 'bank');
-            }, 2000);
-          }, 3000);
-        }, 1000);
-        
+            window.location.href = checkoutUrl;
+          }, 1000);
+        } else {
+          throw new Error('Failed to create checkout session');
+        }
       } catch (error) {
         console.error('Bank payment error:', error);
-        showNotification('Bank account linking failed. Please try again.', 'error');
+        showNotification('Failed to create bank checkout session. Please try again.', 'error');
       }
     }
 
@@ -3120,11 +3173,47 @@
       });
     }
 
+    // Handle payment return from checkout
+    function handlePaymentReturn() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentStatus = urlParams.get('payment');
+      const paymentMethod = urlParams.get('method');
+      
+      if (paymentStatus === 'success') {
+        // Clear cart
+        cart = [];
+        updateCartDisplay();
+        
+        // Show success message
+        let successMessage = '🎉 Payment successful! Your items will be shipped soon.';
+        if (paymentMethod === 'bank') {
+          successMessage = '🏦 Bank account linked and payment successful! Your items will be shipped soon.';
+        }
+        
+        showNotification(successMessage, 'success');
+        
+        // Show additional options for bank account users
+        if (paymentMethod === 'bank') {
+          setTimeout(() => {
+            showNotification('💡 Your bank account is now linked for future purchases!', 'info');
+          }, 2000);
+        }
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (paymentStatus === 'cancelled') {
+        showNotification('Payment was cancelled. You can try again anytime.', 'info');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', () => {
       initApp();
       startCountdownTimers();
       addSwipeListeners();
+      handlePaymentReturn();
     });
   </script>
 

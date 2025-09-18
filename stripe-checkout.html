@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Checkout - PacMac Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .checkout-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .checkout-header {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .checkout-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .checkout-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .checkout-content {
+            padding: 30px;
+        }
+
+        .order-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .item-price {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-top: 2px solid #007bff;
+            margin-top: 15px;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .total-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .payment-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .card-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .card-row .form-group {
+            flex: 1;
+        }
+
+        .payment-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-primary:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 6px;
+            color: #28a745;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>🔒 Secure Checkout</h1>
+            <p>Complete your payment securely with Stripe</p>
+        </div>
+
+        <div class="checkout-content">
+            <div class="error-message" id="errorMessage"></div>
+
+            <div id="checkoutForm">
+                <div class="order-summary">
+                    <h3 style="margin-bottom: 15px; color: #333;">Order Summary</h3>
+                    <div id="orderItems">
+                        <!-- Order items will be populated here -->
+                    </div>
+                    <div class="total">
+                        <span class="total-label">Total</span>
+                        <span class="total-amount" id="totalAmount">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="payment-form">
+                    <h3 style="margin-bottom: 20px; color: #333;">Payment Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+
+                    <div class="card-row">
+                        <div class="form-group">
+                            <label for="expiry">Expiry Date</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvc">CVC</label>
+                            <input type="text" id="cvc" placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Cardholder Name</label>
+                        <input type="text" id="name" placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="john@example.com">
+                    </div>
+                </div>
+
+                <div class="payment-buttons">
+                    <button class="btn btn-secondary" onclick="cancelCheckout()">Cancel</button>
+                    <button class="btn btn-primary" onclick="processPayment()" id="payButton">
+                        Pay <span id="payAmount">$0.00</span>
+                    </button>
+                </div>
+
+                <div class="security-badge">
+                    <span>🔒</span>
+                    <span>Secured by Stripe • Your payment information is encrypted</span>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your payment...</p>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">✅</div>
+                <h3>Payment Successful!</h3>
+                <p>Your order has been processed and will be delivered soon.</p>
+                <button class="btn btn-primary" onclick="returnToMarketplace()" style="margin-top: 20px;">
+                    Return to Marketplace
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let orderData = null;
+
+        // Get session ID from URL
+        function getSessionId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('session_id');
+        }
+
+        // Load order data
+        async function loadOrderData() {
+            sessionId = getSessionId();
+            if (!sessionId) {
+                showError('Invalid checkout session');
+                return;
+            }
+
+            try {
+                // In a real implementation, you would fetch the session data from Stripe
+                // For demo purposes, we'll use localStorage data
+                const cartData = localStorage.getItem('checkoutCart');
+                if (cartData) {
+                    orderData = JSON.parse(cartData);
+                    displayOrderSummary();
+                } else {
+                    // Fallback demo data
+                    orderData = {
+                        items: [
+                            { name: "🎯 DEMO TEST ITEM", price: 0.05, quantity: 1 }
+                        ],
+                        total: 0.05,
+                        fees: 0.03,
+                        shipping: 3.00
+                    };
+                    displayOrderSummary();
+                }
+            } catch (error) {
+                console.error('Error loading order data:', error);
+                showError('Failed to load order data');
+            }
+        }
+
+        // Display order summary
+        function displayOrderSummary() {
+            const orderItemsContainer = document.getElementById('orderItems');
+            const totalAmountElement = document.getElementById('totalAmount');
+            const payAmountElement = document.getElementById('payAmount');
+
+            let total = 0;
+            let itemsHtml = '';
+
+            orderData.items.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                itemsHtml += `
+                    <div class="order-item">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">$${itemTotal.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            // Add fees and shipping
+            if (orderData.fees) {
+                itemsHtml += `
+                    <div class="order-item">
+                        <span class="item-name">Processing Fee (3%)</span>
+                        <span class="item-price">$${orderData.fees.toFixed(2)}</span>
+                    </div>
+                `;
+                total += orderData.fees;
+            }
+
+            if (orderData.shipping) {
+                itemsHtml += `
+                    <div class="order-item">
+                        <span class="item-name">Shipping</span>
+                        <span class="item-price">$${orderData.shipping.toFixed(2)}</span>
+                    </div>
+                `;
+                total += orderData.shipping;
+            }
+
+            orderItemsContainer.innerHTML = itemsHtml;
+            totalAmountElement.textContent = `$${total.toFixed(2)}`;
+            payAmountElement.textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.style.display = 'none';
+        }
+
+        // Process payment
+        async function processPayment() {
+            hideError();
+
+            // Validate form
+            const cardNumber = document.getElementById('cardNumber').value;
+            const expiry = document.getElementById('expiry').value;
+            const cvc = document.getElementById('cvc').value;
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            if (!cardNumber || !expiry || !cvc || !name || !email) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            // Basic validation
+            if (cardNumber.replace(/\s/g, '').length < 13) {
+                showError('Please enter a valid card number');
+                return;
+            }
+
+            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+                showError('Please enter expiry date in MM/YY format');
+                return;
+            }
+
+            if (!/^\d{3,4}$/.test(cvc)) {
+                showError('Please enter a valid CVC');
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('checkoutForm').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                // Simulate payment processing
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Show success
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+
+                // Clear cart from localStorage
+                localStorage.removeItem('checkoutCart');
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('checkoutForm').style.display = 'block';
+                showError('Payment failed. Please try again.');
+            }
+        }
+
+        // Cancel checkout
+        function cancelCheckout() {
+            if (confirm('Are you sure you want to cancel this payment?')) {
+                window.location.href = '/marketplace.html';
+            }
+        }
+
+        // Return to marketplace
+        function returnToMarketplace() {
+            window.location.href = '/marketplace.html';
+        }
+
+        // Format card number input
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Format expiry input
+        document.getElementById('expiry').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Load order data on page load
+        document.addEventListener('DOMContentLoaded', loadOrderData);
+    </script>
+</body>
+</html>

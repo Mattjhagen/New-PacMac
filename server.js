@@ -1518,6 +1518,64 @@ app.post('/api/stripe/create-payment-intent', (req, res) => {
   }
 });
 
+// Create Stripe Checkout Session
+app.post('/api/stripe/create-checkout-session', (req, res) => {
+  try {
+    const { items, success_url, cancel_url, metadata = {} } = req.body;
+    
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        error: 'Items are required for checkout session'
+      });
+    }
+
+    // Calculate total amount
+    const totalAmount = items.reduce((sum, item) => {
+      return sum + (item.amount || 0);
+    }, 0);
+
+    if (totalAmount < 50) { // Minimum $0.50
+      return res.status(400).json({
+        error: 'Invalid amount. Minimum charge is $0.50.'
+      });
+    }
+
+    // Create mock checkout session
+    const sessionId = `cs_mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const mockCheckoutSession = {
+      id: sessionId,
+      url: `${req.protocol}://${req.get('host')}/stripe-checkout?session_id=${sessionId}`,
+      amount_total: Math.round(totalAmount * 100), // Convert to cents
+      currency: 'usd',
+      status: 'open',
+      payment_status: 'unpaid',
+      metadata: {
+        ...metadata,
+        timestamp: new Date().toISOString(),
+        source: 'pacmac-mobile',
+        items: JSON.stringify(items)
+      }
+    };
+
+    console.log('Created Stripe checkout session:', sessionId);
+    console.log('Checkout URL:', mockCheckoutSession.url);
+
+    res.json({
+      sessionId: mockCheckoutSession.id,
+      checkoutUrl: mockCheckoutSession.url,
+      amount: mockCheckoutSession.amount_total,
+      currency: mockCheckoutSession.currency,
+      status: mockCheckoutSession.status
+    });
+  } catch (error) {
+    console.error('Stripe checkout session error:', error);
+    res.status(500).json({
+      error: 'Failed to create checkout session'
+    });
+  }
+});
+
 // Stripe webhook endpoint
 app.post('/api/stripe/webhook', (req, res) => {
   // Mock webhook for demo purposes
