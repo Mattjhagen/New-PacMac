@@ -429,5 +429,27 @@
         // Load initial status
         document.addEventListener('DOMContentLoaded', refreshStatus);
     </script>
+
+    <!-- Microsoft Clarity Analytics -->
+    <script src="/clarity-config.js"></script>
+    <script>
+      // Track auto-poster page events
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.PacMacClarity) {
+          PacMacClarity.trackPageView('Auto-Poster Control', 'admin');
+        }
+
+        // Track auto-poster actions
+        document.addEventListener('click', function(e) {
+          if (e.target.classList.contains('btn-start') && window.PacMacClarity) {
+            PacMacClarity.trackAdminAction('auto_poster_start');
+          }
+          
+          if (e.target.classList.contains('btn-stop') && window.PacMacClarity) {
+            PacMacClarity.trackAdminAction('auto_poster_stop');
+          }
+        });
+      });
+    </script>
 </body>
 </html>

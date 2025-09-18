@@ -1037,7 +1037,7 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K98ZGN2N"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-  <!-- Header -->
+      <!-- Header -->
   <header class="header">
     <div class="header-content">
       <div class="logo">🛒 PacMac</div>
@@ -1050,7 +1050,7 @@
           💾
           <span class="badge" id="savedCount" style="display: none;">0</span>
         </button>
-      </div>
+        </div>
       <div class="user-info">
         <div class="user-dropdown">
           <button class="user-menu-btn" onclick="toggleUserMenu()">
@@ -1064,7 +1064,7 @@
               <a href="#" onclick="showAddressVerification()">📍 Address Verification</a>
               <a href="#" onclick="showIdentityVerification()">🆔 Identity Verification</a>
               <a href="#" onclick="showBankVerification()">🏦 Bank Verification</a>
-            </div>
+      </div>
             <div class="dropdown-section">
               <h4>Account</h4>
               <a href="#" onclick="showOrderHistory()">📋 Order History</a>
@@ -1074,18 +1074,18 @@
             <div class="dropdown-section">
               <h4>Credits</h4>
               <div class="credit-display">Credits: <span id="creditBalance">5</span></div>
-            </div>
+                </div>
             <div class="dropdown-section admin-section" id="adminSection" style="display: none;">
               <h4>🔧 Admin Tools</h4>
               <a href="#" onclick="showAdminDashboard()">📊 Admin Dashboard</a>
               <a href="#" onclick="showUserManagement()">👥 User Management</a>
               <a href="#" onclick="showChatMonitoring()">💬 Chat Monitoring</a>
               <a href="#" onclick="showDeviceManagement()">📱 Device Management</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              </div>
+                </div>
+              </div>
+                </div>
+              </div>
   </header>
 
   <!-- Main Content -->
@@ -1096,7 +1096,7 @@
       <p class="welcome-subtitle">Swipe, bid, and find amazing deals in your area</p>
       <div class="location-info">
         📍 <span id="userLocation">Detecting your location...</span>
-      </div>
+            </div>
     </section>
 
     <!-- Filters -->
@@ -1117,7 +1117,7 @@
     <!-- Loading State -->
     <div class="loading" id="loadingState" style="display: none;">
       <div class="spinner"></div>
-    </div>
+            </div>
   </main>
 
   <!-- Floating Action Button -->
@@ -1130,13 +1130,13 @@
         <h2>📤 Add New Item</h2>
         <button class="close-btn" onclick="closeUploadModal()">&times;</button>
       </div>
-      
+
       <form id="uploadForm" class="upload-form">
         <div class="form-group">
           <label for="itemTitle">Item Title *</label>
           <input type="text" id="itemTitle" name="title" required placeholder="e.g., iPhone 15 Pro Max">
-        </div>
-        
+  </div>
+
         <div class="form-group">
           <label for="itemDescription">Description *</label>
           <textarea id="itemDescription" name="description" required rows="3" placeholder="Describe your item in detail..."></textarea>
@@ -1145,8 +1145,8 @@
         <div class="form-group">
           <label for="itemPrice">Price ($) *</label>
           <input type="number" id="itemPrice" name="price" required min="0.01" step="0.01" placeholder="0.00">
-        </div>
-        
+    </div>
+
         <div class="form-group">
           <label for="itemCategory">Category *</label>
           <select id="itemCategory" name="category" required>
@@ -1168,14 +1168,14 @@
               <div class="upload-icon">📷</div>
               <p>Click to upload image</p>
               <small>JPG, PNG, GIF up to 5MB</small>
-            </div>
+        </div>
             <div class="image-preview" id="imagePreview" style="display: none;">
               <img id="previewImg" src="" alt="Preview">
               <button type="button" class="remove-image" onclick="removeImage()">×</button>
             </div>
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="auctionDuration">Auction Duration</label>
           <select id="auctionDuration" name="duration">
@@ -1185,14 +1185,14 @@
             <option value="168">1 week</option>
           </select>
         </div>
-        
+
         <div class="form-actions">
           <button type="button" class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
           <button type="submit" class="btn-submit">🚀 List Item</button>
-        </div>
+          </div>
       </form>
-    </div>
-  </div>
+        </div>
+      </div>
 
   <!-- Cart Modal -->
   <div id="cartModal" class="modal" style="display: none;">
@@ -1200,7 +1200,7 @@
       <div class="modal-header">
         <h2>🛒 Your Cart</h2>
         <button class="close-btn" onclick="closeCartModal()">&times;</button>
-      </div>
+        </div>
       
       <div class="cart-content">
         <div id="cartItems" class="cart-items">
@@ -1211,10 +1211,10 @@
           <div class="cart-total">
             <p>Total Items: <span id="cartTotalItems">0</span></p>
             <p>Total: $<span id="cartTotalAmount">0.00</span></p>
-          </div>
+        </div>
           <button class="btn-checkout" onclick="checkout()">💳 Checkout</button>
         </div>
-      </div>
+        </div>
     </div>
   </div>
 
@@ -1224,13 +1224,13 @@
       <div class="modal-header">
         <h2>💾 Saved for Later</h2>
         <button class="close-btn" onclick="closeSavedItemsModal()">&times;</button>
-      </div>
-      
+  </div>
+
       <div class="saved-items-content">
         <div id="savedItemsList" class="saved-items-list">
           <!-- Saved items will be rendered here -->
         </div>
-      </div>
+        </div>
     </div>
   </div>
 
@@ -1474,21 +1474,21 @@
           
           if (userData.success && userData.user) {
             // Use actual user data from Google
-            const oauthUser = {
+        const oauthUser = {
               id: userData.user.id || 'oauth-user-' + Date.now(),
               name: userData.user.name || userData.user.displayName || 'Google User',
               email: userData.user.email || 'user@google.com',
               avatar: userData.user.avatar || userData.user.photos?.[0]?.value || 
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.user.name || 'Google User')}&background=3b82f6&color=fff`,
-              ageVerified: true,
-              identityVerified: false,
-              totalEarnings: 0,
-              isOAuth: true,
-              provider: provider
-            };
-            
-            // Store in localStorage to maintain login state
-            localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
+          ageVerified: true,
+          identityVerified: false,
+          totalEarnings: 0,
+          isOAuth: true,
+          provider: provider
+        };
+        
+        // Store in localStorage to maintain login state
+        localStorage.setItem('oauthUser', JSON.stringify(oauthUser));
             
             // Update UI immediately
             updateUserInfo(oauthUser);
@@ -1611,7 +1611,7 @@
       if (user.isAdmin || (user.email && (user.email.endsWith('@pacmacmobile.com') || user.email === 'pacmacmobile@gmail.com'))) {
         adminSection.style.display = 'block';
         console.log('🔧 Admin user detected:', user.email);
-      } else {
+        } else {
         adminSection.style.display = 'none';
       }
 
@@ -1878,7 +1878,7 @@
             if (currentUser.name === item.highestBidder) {
               addToCart(item, item.currentBid);
             }
-          } else {
+        } else {
             // No bids were placed
             showNotification(`⏰ Auction ended for "${item.title}" with no bids`, 'info');
           }
@@ -1923,9 +1923,9 @@
         // Validate file size (5MB limit)
         if (file.size > 5 * 1024 * 1024) {
           alert('Image size must be less than 5MB');
-          return;
-        }
-
+        return;
+      }
+      
         // Validate file type
         if (!file.type.startsWith('image/')) {
           alert('Please select a valid image file');
@@ -2069,7 +2069,7 @@
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {
           document.body.removeChild(notification);
-        }, 300);
+      }, 300);
       }, 3000);
     }
 
@@ -2370,11 +2370,11 @@
       try {
         // Create Stripe checkout session
         const response = await fetch('/api/stripe/create-checkout-session', {
-          method: 'POST',
-          headers: {
+            method: 'POST',
+            headers: {
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+            },
+            body: JSON.stringify({
             items: cart.map(item => ({
               name: item.title,
               amount: item.winningBid,
@@ -2387,9 +2387,9 @@
               user_id: currentUser.id || 'user-' + Date.now(),
               payment_method: 'card'
             }
-          })
-        });
-
+            })
+          });
+          
         const { checkoutUrl, sessionId } = await response.json();
         
         if (checkoutUrl) {
@@ -2411,10 +2411,10 @@
           setTimeout(() => {
             window.location.href = checkoutUrl;
           }, 1000);
-        } else {
+          } else {
           throw new Error('Failed to create checkout session');
-        }
-      } catch (error) {
+          }
+        } catch (error) {
         console.error('Card payment error:', error);
         showNotification('Failed to create checkout session. Please try again.', 'error');
       }
@@ -2638,7 +2638,7 @@
         savedItemsList.innerHTML = '<p class="empty-saved">No items saved for later</p>';
         return;
       }
-
+      
       savedItemsList.innerHTML = savedItems.map(item => `
         <div class="saved-item">
           <img src="${item.image}" alt="${item.title}" class="saved-item-image">
@@ -2692,11 +2692,11 @@
           const [street, city, state, zipcode] = addressParts;
           
           fetch('/api/verification/address', {
-            method: 'POST',
-            headers: {
+          method: 'POST',
+          headers: {
               'Content-Type': 'application/json',
-            },
-            credentials: 'include',
+          },
+          credentials: 'include',
             body: JSON.stringify({ street, city, state, zipcode })
           })
           .then(response => response.json())
@@ -2747,8 +2747,8 @@
     function showBankVerification() {
       if (confirm('🏦 Bank Verification\n\nThis will connect you to Plaid for secure bank account verification.\n\nYour bank account will be verified for:\n• Secure payouts\n• Transaction processing\n• Fraud prevention\n\nContinue?')) {
         fetch('/api/verification/bank/create-link-token', {
-          method: 'POST',
-          headers: {
+            method: 'POST',
+            headers: {
             'Content-Type': 'application/json',
           },
           credentials: 'include'
@@ -2802,8 +2802,8 @@
             avatar.style.backgroundPosition = 'center';
             avatar.textContent = '';
             showNotification('Avatar uploaded successfully!', 'success');
-          };
-          reader.readAsDataURL(file);
+      };
+      reader.readAsDataURL(file);
         }
       };
       input.click();
@@ -2908,9 +2908,9 @@
 
     function suspendUser(userId, reason) {
       fetch(`/api/admin/users/${userId}/suspend`, {
-        method: 'POST',
+          method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+          credentials: 'include',
         body: JSON.stringify({ reason, duration: 'indefinite' })
       })
       .then(response => response.json())
@@ -3046,9 +3046,9 @@
 
     function banDevice(deviceId, reason) {
       fetch(`/api/admin/devices/${deviceId}/ban`, {
-        method: 'POST',
+          method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+          credentials: 'include',
         body: JSON.stringify({ reason })
       })
       .then(response => response.json())
@@ -3277,5 +3277,40 @@
   </script>
   <!--End of Tawk.to Script-->
 
-  </body>
+  <!-- Microsoft Clarity Analytics -->
+  <script src="/clarity-config.js"></script>
+  <script>
+    // Track marketplace-specific events
+    document.addEventListener('DOMContentLoaded', function() {
+      // Track page view
+      if (window.PacMacClarity) {
+        PacMacClarity.trackPageView('Marketplace', 'customer');
+      }
+
+      // Track product interactions
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('bid-btn') && window.PacMacClarity) {
+          const itemId = e.target.getAttribute('onclick')?.match(/placeBid\((\d+)/)?.[1];
+          if (itemId) {
+            PacMacClarity.trackBid(itemId, 'bid_clicked');
+          }
+        }
+        
+        if (e.target.classList.contains('heart-btn') && window.PacMacClarity) {
+          PacMacClarity.trackClarityEvent('add_to_favorites');
+        }
+      });
+
+      // Track cart actions
+      if (window.addToCart && window.PacMacClarity) {
+        const originalAddToCart = window.addToCart;
+        window.addToCart = function(item, price) {
+          PacMacClarity.trackAddToCart(item.id, item.title, price);
+          return originalAddToCart.apply(this, arguments);
+        };
+      }
+    });
+  </script>
+
+</body>
 </html>

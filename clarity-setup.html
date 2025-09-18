@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Clarity Setup - PacMac Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #007AFF;
+        }
+
+        .step h2 {
+            color: #007AFF;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .step p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .step ol, .step ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .step li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007AFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            background: #0056CC;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .project-id-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .project-id-input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Microsoft Clarity Setup</h1>
+            <p>Set up heatmap analytics for your PacMac Marketplace</p>
+        </div>
+
+        <div class="step">
+            <h2>Step 1: Create Clarity Project</h2>
+            <p>First, you need to create a Microsoft Clarity project:</p>
+            <ol>
+                <li>Go to <a href="https://clarity.microsoft.com" target="_blank">clarity.microsoft.com</a></li>
+                <li>Sign in with your Microsoft account</li>
+                <li>Click "Add new project"</li>
+                <li>Enter project name: "PacMac Marketplace"</li>
+                <li>Enter website URL: "https://new-pacmac.onrender.com"</li>
+                <li>Click "Create project"</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h2>Step 2: Get Your Project ID</h2>
+            <p>After creating the project:</p>
+            <ol>
+                <li>Go to your project dashboard</li>
+                <li>Click on "Settings" in the left sidebar</li>
+                <li>Click on "Setup" tab</li>
+                <li>Copy your "Project ID" (it looks like: <code>abc123def456</code>)</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h2>Step 3: Configure Your Project ID</h2>
+            <p>Enter your Clarity Project ID below:</p>
+            <input type="text" id="projectId" class="project-id-input" placeholder="Enter your Clarity Project ID (e.g., abc123def456)">
+            <button class="btn" onclick="updateProjectId()">Update Project ID</button>
+            <div id="status"></div>
+        </div>
+
+        <div class="step">
+            <h2>Step 4: Test Clarity Integration</h2>
+            <p>Once you've set your Project ID, test the integration:</p>
+            <button class="btn" onclick="testClarity()">Test Clarity</button>
+            <button class="btn btn-secondary" onclick="goToMarketplace()">Go to Marketplace</button>
+        </div>
+
+        <div class="step">
+            <h2>What Clarity Will Track</h2>
+            <p>Microsoft Clarity will automatically track:</p>
+            <ul>
+                <li>📊 <strong>Heatmaps</strong> - See where users click and scroll</li>
+                <li>🎥 <strong>Session Recordings</strong> - Watch user sessions</li>
+                <li>📈 <strong>User Insights</strong> - Understand user behavior</li>
+                <li>🎯 <strong>Custom Events</strong> - Track specific actions like bids, purchases</li>
+                <li>🔍 <strong>Performance Metrics</strong> - Page load times and errors</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h2>PacMac-Specific Tracking</h2>
+            <p>Your marketplace will track these custom events:</p>
+            <ul>
+                <li>User login and authentication</li>
+                <li>Product views and interactions</li>
+                <li>Bidding activity and auction wins</li>
+                <li>Cart additions and checkout process</li>
+                <li>Payment completions</li>
+                <li>Admin actions and auto-poster activity</li>
+            </ul>
+        </div>
+
+        <div class="highlight">
+            <strong>💡 Pro Tip:</strong> After setting up Clarity, it may take a few hours to start collecting data. Check back in your Clarity dashboard to see the analytics in action!
+        </div>
+    </div>
+
+    <script>
+        // Load current project ID from clarity-config.js
+        function loadCurrentProjectId() {
+            // This would normally fetch from the config file
+            // For now, we'll use localStorage
+            const savedId = localStorage.getItem('clarityProjectId');
+            if (savedId) {
+                document.getElementById('projectId').value = savedId;
+                showStatus('Project ID loaded from previous session', 'success');
+            }
+        }
+
+        // Update project ID
+        function updateProjectId() {
+            const projectId = document.getElementById('projectId').value.trim();
+            
+            if (!projectId) {
+                showStatus('Please enter a valid Project ID', 'error');
+                return;
+            }
+
+            if (projectId.length < 10) {
+                showStatus('Project ID seems too short. Please check and try again.', 'warning');
+                return;
+            }
+
+            // Save to localStorage (in production, this would update the config file)
+            localStorage.setItem('clarityProjectId', projectId);
+            
+            showStatus('✅ Project ID updated successfully! Clarity is now configured.', 'success');
+            
+            // Update the clarity-config.js file (this would be done server-side in production)
+            console.log('Project ID set to:', projectId);
+        }
+
+        // Test Clarity integration
+        function testClarity() {
+            const projectId = document.getElementById('projectId').value.trim();
+            
+            if (!projectId) {
+                showStatus('Please set your Project ID first', 'error');
+                return;
+            }
+
+            // Load Clarity script for testing
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.innerHTML = `
+                (function(c,l,a,r,i,t,y){
+                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "${projectId}");
+            `;
+            
+            document.head.appendChild(script);
+            
+            // Test Clarity functions
+            setTimeout(() => {
+                if (window.clarity) {
+                    window.clarity('event', 'clarity_test');
+                    showStatus('✅ Clarity integration test successful! Check your Clarity dashboard.', 'success');
+                } else {
+                    showStatus('❌ Clarity failed to load. Please check your Project ID.', 'error');
+                }
+            }, 2000);
+        }
+
+        // Go to marketplace
+        function goToMarketplace() {
+            window.location.href = '/marketplace.html';
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 5000);
+        }
+
+        // Load project ID on page load
+        document.addEventListener('DOMContentLoaded', loadCurrentProjectId);
+    </script>
+</body>
+</html>

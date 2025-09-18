@@ -338,6 +338,11 @@ class HourlyAutoPoster {
 
             console.log(`✅ Posted: ${product.title} - $${product.basePrice}`);
 
+            // Track auto-poster activity in Clarity (if available)
+            if (typeof window !== 'undefined' && window.PacMacClarity) {
+              window.PacMacClarity.trackAutoPost(1);
+            }
+
         } catch (error) {
             console.error(`❌ Failed to post ${product.title}:`, error.message);
         }

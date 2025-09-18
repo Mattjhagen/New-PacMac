@@ -1086,6 +1086,11 @@
         
         localStorage.setItem('authUser', JSON.stringify(authUser));
         
+        // Track successful login
+        if (typeof trackLoginSuccess === 'function') {
+          trackLoginSuccess(authUser.id);
+        }
+        
         // Redirect to marketplace
         window.location.href = '/marketplace.html';
       }, 1500);
@@ -1165,6 +1170,35 @@
   })();
   </script>
   <!--End of Tawk.to Script-->
+
+  <!-- Microsoft Clarity Analytics -->
+  <script src="/clarity-config.js"></script>
+  <script>
+    // Track welcome page events
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.PacMacClarity) {
+        PacMacClarity.trackPageView('Welcome Page', 'visitor');
+      }
+
+      // Track login button clicks
+      document.addEventListener('click', function(e) {
+        if (e.target.textContent.includes('Sign In') && window.PacMacClarity) {
+          PacMacClarity.trackClarityEvent('login_button_clicked');
+        }
+        
+        if (e.target.textContent.includes('Get Started') && window.PacMacClarity) {
+          PacMacClarity.trackClarityEvent('get_started_clicked');
+        }
+      });
+    });
+
+    // Track successful login
+    function trackLoginSuccess(userId) {
+      if (window.PacMacClarity) {
+        PacMacClarity.trackLogin(userId, 'customer');
+      }
+    }
+  </script>
 
   </body>
 </html>

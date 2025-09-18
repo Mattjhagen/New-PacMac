@@ -1246,5 +1246,24 @@ Shipping Address: ${order.shippingAddress}
     })();
     </script>
     <!--End of Tawk.to Script-->
+
+    <!-- Microsoft Clarity Analytics -->
+    <script src="/clarity-config.js"></script>
+    <script>
+      // Track admin page events
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.PacMacClarity) {
+          PacMacClarity.trackPageView('Admin Dashboard', 'admin');
+        }
+
+        // Track admin actions
+        document.addEventListener('click', function(e) {
+          if (e.target.classList.contains('tab-btn') && window.PacMacClarity) {
+            const tabName = e.target.textContent.trim();
+            PacMacClarity.trackAdminAction('tab_switch', tabName);
+          }
+        });
+      });
+    </script>
 </body>
 </html>
