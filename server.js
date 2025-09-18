@@ -1482,9 +1482,9 @@ app.post('/api/stripe/create-payment-intent', (req, res) => {
     const { amount, currency = 'usd', metadata = {} } = req.body;
 
     // Validate amount
-    if (!amount || amount < 50) { // Minimum $0.50
+    if (!amount || amount < 5) { // Minimum $0.05 for demo items
       return res.status(400).json({
-        error: 'Invalid amount. Minimum charge is $0.50.'
+        error: 'Invalid amount. Minimum charge is $0.05.'
       });
     }
 
@@ -1534,9 +1534,9 @@ app.post('/api/stripe/create-checkout-session', (req, res) => {
       return sum + (item.amount || 0);
     }, 0);
 
-    if (totalAmount < 50) { // Minimum $0.50
+    if (totalAmount < 5) { // Minimum $0.05 for demo items
       return res.status(400).json({
-        error: 'Invalid amount. Minimum charge is $0.50.'
+        error: 'Invalid amount. Minimum charge is $0.05.'
       });
     }
 
