@@ -1364,7 +1364,17 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.25'
+    version: '1.0.26'
+  });
+});
+
+// Test endpoint to verify deployment
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Test endpoint working',
+    timestamp: new Date().toISOString(),
+    version: '1.0.26'
   });
 });
 
