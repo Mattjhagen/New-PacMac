@@ -1069,50 +1069,45 @@
     }
     
     function loginWithGoogle() {
-      // Authenticate user
+      // Authenticate user with Google OAuth
       const button = event.target;
       const originalText = button.textContent;
       button.textContent = '🚀 Loading...';
       button.disabled = true;
       
-      setTimeout(() => {
-        // Prompt for email to determine admin status
-        const email = prompt('Enter your email address:');
-        if (!email) {
-          button.textContent = originalText;
-          button.disabled = false;
-          return;
+      try {
+        // Redirect to Google OAuth
+        const redirectUri = encodeURIComponent(window.location.origin + '/auth/google/callback');
+        const clientId = '1053950032683-igseosamup9cej3bn1o8lj5kqdok1t1b.apps.googleusercontent.com';
+        const scope = encodeURIComponent('openid email profile');
+        const state = Date.now().toString();
+        
+        // Store state for verification
+        localStorage.setItem('oauth_state', state);
+        
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+          `client_id=${clientId}&` +
+          `redirect_uri=${redirectUri}&` +
+          `scope=${scope}&` +
+          `response_type=code&` +
+          `state=${state}&` +
+          `access_type=offline&` +
+          `prompt=consent`;
+        
+        // Track OAuth attempt
+        if (typeof clarity !== 'undefined') {
+          clarity('event', 'google_oauth_initiated');
         }
         
-        // Check if user is admin (pacmacmobile.com domain)
-        const isAdmin = email.toLowerCase().endsWith('@pacmacmobile.com');
+        // Redirect to Google OAuth
+        window.location.href = authUrl;
         
-        // Create authenticated user session
-        const authUser = {
-          id: 'user-' + Date.now(),
-          name: isAdmin ? 'Admin User' : 'Customer User',
-          email: email,
-          avatar: null,
-          isAdmin: isAdmin
-        };
-        
-        localStorage.setItem('authUser', JSON.stringify(authUser));
-        
-        // Track successful login
-        if (typeof trackLoginSuccess === 'function') {
-          trackLoginSuccess(authUser.id);
-        }
-        
-        // Show admin status
-        if (isAdmin) {
-          alert('✅ Admin access granted! You have access to admin features.');
-        } else {
-          alert('✅ Customer access granted! Welcome to PacMac Marketplace.');
-        }
-        
-        // Redirect to marketplace
-        window.location.href = '/marketplace.html';
-      }, 1500);
+      } catch (error) {
+        console.error('OAuth error:', error);
+        button.textContent = originalText;
+        button.disabled = false;
+        alert('❌ Authentication failed. Please try again.');
+      }
     }
     
     // Add smooth scrolling for anchor links

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - PacMac Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007AFF;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            color: #007AFF;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .error {
+            color: #ef4444;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .success {
+            color: #10b981;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .user-info h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner" id="spinner"></div>
+        <h1 id="statusTitle">🔐 Authenticating...</h1>
+        <p id="statusMessage">Please wait while we verify your Google account.</p>
+        
+        <div id="userInfo" class="user-info" style="display: none;">
+            <img id="profilePic" class="profile-pic" src="" alt="Profile Picture">
+            <h3 id="userName"></h3>
+            <p><strong>Email:</strong> <span id="userEmail"></span></p>
+            <p><strong>Account Type:</strong> <span id="accountType"></span></p>
+        </div>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="successMessage" class="success" style="display: none;"></div>
+        
+        <div id="actionButtons" style="display: none;">
+            <a href="/user-setup.html" class="btn" id="setupBtn">Complete Profile Setup →</a>
+            <a href="/marketplace.html" class="btn" id="marketplaceBtn" style="display: none;">Go to Marketplace →</a>
+        </div>
+    </div>
+
+    <!-- Microsoft Clarity Analytics -->
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "tcp65xexve");
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            handleOAuthCallback();
+        });
+
+        async function handleOAuthCallback() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const success = urlParams.get('success');
+                const userParam = urlParams.get('user');
+                const error = urlParams.get('error');
+
+                // Check for OAuth errors
+                if (error) {
+                    showError(`Authentication failed: ${error}`);
+                    return;
+                }
+
+                // Check if authentication was successful
+                if (success === 'true' && userParam) {
+                    try {
+                        const userData = JSON.parse(decodeURIComponent(userParam));
+                        showSuccess(userData);
+                        return;
+                    } catch (e) {
+                        console.error('Error parsing user data:', e);
+                        showError('Invalid user data received.');
+                        return;
+                    }
+                }
+
+                // Fallback: check for direct OAuth parameters (for testing)
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+
+                if (code && state) {
+                    // Verify state parameter
+                    const storedState = localStorage.getItem('oauth_state');
+                    if (state !== storedState) {
+                        showError('Invalid authentication state. Please try again.');
+                        return;
+                    }
+
+                    // Exchange code for user info
+                    const userData = await exchangeCodeForUserInfo(code);
+                    
+                    if (userData) {
+                        showSuccess(userData);
+                    } else {
+                        showError('Failed to retrieve user information.');
+                    }
+                } else {
+                    showError('No authentication data received. Please try again.');
+                }
+
+            } catch (error) {
+                console.error('OAuth callback error:', error);
+                showError('An unexpected error occurred. Please try again.');
+            }
+        }
+
+        async function exchangeCodeForUserInfo(code) {
+            try {
+                // In a real implementation, you would send this to your server
+                // For now, we'll simulate the OAuth flow
+                
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Mock user data (in production, this would come from your server)
+                const mockUserData = {
+                    id: 'google_' + Date.now(),
+                    name: 'John Doe',
+                    email: 'john.doe@gmail.com',
+                    avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=3b82f6&color=fff',
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    isAdmin: false
+                };
+
+                // Check if this is an admin email
+                if (mockUserData.email.endsWith('@pacmacmobile.com')) {
+                    mockUserData.isAdmin = true;
+                    mockUserData.name = 'Admin User';
+                }
+
+                return mockUserData;
+
+            } catch (error) {
+                console.error('Error exchanging code:', error);
+                return null;
+            }
+        }
+
+        function showSuccess(userData) {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('statusTitle').textContent = '✅ Authentication Successful!';
+            document.getElementById('statusMessage').textContent = 'Welcome to PacMac Marketplace!';
+            
+            // Show user info
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('profilePic').src = userData.avatar;
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userEmail').textContent = userData.email;
+            document.getElementById('accountType').textContent = userData.isAdmin ? 'Admin Account' : 'Customer Account';
+            
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('successMessage').textContent = 
+                userData.isAdmin ? 
+                '🔧 Admin access granted! You have access to admin features.' :
+                '🎉 Welcome! Let\'s complete your profile setup.';
+            
+            // Show action buttons
+            document.getElementById('actionButtons').style.display = 'block';
+            
+            // Check if user needs profile setup
+            const existingProfile = localStorage.getItem('userProfile');
+            if (existingProfile) {
+                // User already has a profile, go directly to marketplace
+                document.getElementById('setupBtn').style.display = 'none';
+                document.getElementById('marketplaceBtn').style.display = 'inline-block';
+                
+                // Store user data and redirect
+                localStorage.setItem('authUser', JSON.stringify({
+                    ...userData,
+                    profileComplete: true
+                }));
+                
+                setTimeout(() => {
+                    window.location.href = '/marketplace.html?welcome=true';
+                }, 3000);
+            } else {
+                // User needs to complete profile setup
+                document.getElementById('setupBtn').style.display = 'inline-block';
+                document.getElementById('marketplaceBtn').style.display = 'none';
+                
+                // Store user data for profile setup
+                const userParam = encodeURIComponent(JSON.stringify(userData));
+                document.getElementById('setupBtn').href = `/user-setup.html?user=${userParam}`;
+            }
+
+            // Track successful authentication
+            if (typeof clarity !== 'undefined') {
+                clarity('event', 'google_oauth_success', {
+                    user_type: userData.isAdmin ? 'admin' : 'customer'
+                });
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('statusTitle').textContent = '❌ Authentication Failed';
+            document.getElementById('statusMessage').textContent = 'There was a problem with your authentication.';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            
+            // Show retry button
+            document.getElementById('actionButtons').style.display = 'block';
+            document.getElementById('setupBtn').textContent = 'Try Again';
+            document.getElementById('setupBtn').href = '/welcome.html';
+            document.getElementById('marketplaceBtn').style.display = 'none';
+
+            // Track authentication failure
+            if (typeof clarity !== 'undefined') {
+                clarity('event', 'google_oauth_failed', {
+                    error: message
+                });
+            }
+        }
+    </script>
+</body>
+</html>

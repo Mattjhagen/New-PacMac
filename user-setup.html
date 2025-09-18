@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile - PacMac Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step h2 {
+            color: #007AFF;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .user-info {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .user-info h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #10b981;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007AFF;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .payment-method {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: #007AFF;
+        }
+
+        .payment-method.selected {
+            border-color: #007AFF;
+            background: #eff6ff;
+        }
+
+        .payment-method input[type="radio"] {
+            display: none;
+        }
+
+        .payment-method .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row,
+            .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Complete Your Profile</h1>
+            <p>Let's set up your account to get you started on PacMac Marketplace</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+        </div>
+
+        <!-- Step 1: Personal Information -->
+        <div class="step active" id="step1">
+            <h2>👤 Personal Information</h2>
+            
+            <div class="user-info" id="userInfo">
+                <h3>Google Account Information</h3>
+                <p><strong>Name:</strong> <span id="userName">Loading...</span></p>
+                <p><strong>Email:</strong> <span id="userEmail">Loading...</span></p>
+            </div>
+
+            <div class="form-group">
+                <label for="firstName">First Name *</label>
+                <input type="text" id="firstName" name="firstName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name *</label>
+                <input type="text" id="lastName" name="lastName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
+            </div>
+
+            <div class="form-group">
+                <label for="dateOfBirth">Date of Birth *</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+            </div>
+
+            <div class="button-group">
+                <div></div>
+                <button class="btn" onclick="nextStep()">Next: Address →</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Address Information -->
+        <div class="step" id="step2">
+            <h2>🏠 Address Information</h2>
+
+            <div class="form-group">
+                <label for="streetAddress">Street Address *</label>
+                <input type="text" id="streetAddress" name="streetAddress" placeholder="123 Main St" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City *</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">State *</label>
+                    <select id="state" name="state" required>
+                        <option value="">Select State</option>
+                        <option value="AL">Alabama</option>
+                        <option value="AK">Alaska</option>
+                        <option value="AZ">Arizona</option>
+                        <option value="AR">Arkansas</option>
+                        <option value="CA">California</option>
+                        <option value="CO">Colorado</option>
+                        <option value="CT">Connecticut</option>
+                        <option value="DE">Delaware</option>
+                        <option value="FL">Florida</option>
+                        <option value="GA">Georgia</option>
+                        <option value="HI">Hawaii</option>
+                        <option value="ID">Idaho</option>
+                        <option value="IL">Illinois</option>
+                        <option value="IN">Indiana</option>
+                        <option value="IA">Iowa</option>
+                        <option value="KS">Kansas</option>
+                        <option value="KY">Kentucky</option>
+                        <option value="LA">Louisiana</option>
+                        <option value="ME">Maine</option>
+                        <option value="MD">Maryland</option>
+                        <option value="MA">Massachusetts</option>
+                        <option value="MI">Michigan</option>
+                        <option value="MN">Minnesota</option>
+                        <option value="MS">Mississippi</option>
+                        <option value="MO">Missouri</option>
+                        <option value="MT">Montana</option>
+                        <option value="NE">Nebraska</option>
+                        <option value="NV">Nevada</option>
+                        <option value="NH">New Hampshire</option>
+                        <option value="NJ">New Jersey</option>
+                        <option value="NM">New Mexico</option>
+                        <option value="NY">New York</option>
+                        <option value="NC">North Carolina</option>
+                        <option value="ND">North Dakota</option>
+                        <option value="OH">Ohio</option>
+                        <option value="OK">Oklahoma</option>
+                        <option value="OR">Oregon</option>
+                        <option value="PA">Pennsylvania</option>
+                        <option value="RI">Rhode Island</option>
+                        <option value="SC">South Carolina</option>
+                        <option value="SD">South Dakota</option>
+                        <option value="TN">Tennessee</option>
+                        <option value="TX">Texas</option>
+                        <option value="UT">Utah</option>
+                        <option value="VT">Vermont</option>
+                        <option value="VA">Virginia</option>
+                        <option value="WA">Washington</option>
+                        <option value="WV">West Virginia</option>
+                        <option value="WI">Wisconsin</option>
+                        <option value="WY">Wyoming</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="zipCode">ZIP Code *</label>
+                    <input type="text" id="zipCode" name="zipCode" placeholder="12345" required>
+                </div>
+                <div class="form-group">
+                    <label for="country">Country *</label>
+                    <select id="country" name="country" required>
+                        <option value="US">United States</option>
+                        <option value="CA">Canada</option>
+                        <option value="MX">Mexico</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                <button class="btn" onclick="nextStep()">Next: Shipping →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Shipping Preferences -->
+        <div class="step" id="step3">
+            <h2>📦 Shipping Preferences</h2>
+
+            <div class="form-group">
+                <label>Preferred Shipping Method *</label>
+                <div class="payment-methods">
+                    <div class="payment-method" onclick="selectShipping('standard')">
+                        <input type="radio" name="shippingMethod" value="standard">
+                        <div class="icon">📦</div>
+                        <div><strong>Standard</strong></div>
+                        <div>5-7 business days</div>
+                        <div>$5.99</div>
+                    </div>
+                    <div class="payment-method" onclick="selectShipping('express')">
+                        <input type="radio" name="shippingMethod" value="express">
+                        <div class="icon">🚀</div>
+                        <div><strong>Express</strong></div>
+                        <div>2-3 business days</div>
+                        <div>$12.99</div>
+                    </div>
+                    <div class="payment-method" onclick="selectShipping('overnight')">
+                        <input type="radio" name="shippingMethod" value="overnight">
+                        <div class="icon">⚡</div>
+                        <div><strong>Overnight</strong></div>
+                        <div>Next business day</div>
+                        <div>$24.99</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="shippingInstructions">Special Shipping Instructions</label>
+                <textarea id="shippingInstructions" name="shippingInstructions" rows="3" placeholder="Leave at front door, call before delivery, etc."></textarea>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="sameAsBilling" name="sameAsBilling">
+                <label for="sameAsBilling">Use same address for billing</label>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                <button class="btn" onclick="nextStep()">Next: Payment →</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Payment Information -->
+        <div class="step" id="step4">
+            <h2>💳 Payment Information</h2>
+
+            <div class="form-group">
+                <label>Preferred Payment Method *</label>
+                <div class="payment-methods">
+                    <div class="payment-method" onclick="selectPayment('card')">
+                        <input type="radio" name="paymentMethod" value="card">
+                        <div class="icon">💳</div>
+                        <div><strong>Credit/Debit Card</strong></div>
+                        <div>Visa, Mastercard, Amex</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment('bank')">
+                        <input type="radio" name="paymentMethod" value="bank">
+                        <div class="icon">🏦</div>
+                        <div><strong>Bank Transfer</strong></div>
+                        <div>ACH, Wire Transfer</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment('paypal')">
+                        <input type="radio" name="paymentMethod" value="paypal">
+                        <div class="icon">🅿️</div>
+                        <div><strong>PayPal</strong></div>
+                        <div>PayPal Account</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cardDetails" style="display: none;">
+                <div class="form-group">
+                    <label for="cardNumber">Card Number *</label>
+                    <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expiryDate">Expiry Date *</label>
+                        <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">CVV *</label>
+                        <input type="text" id="cvv" name="cvv" placeholder="123">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cardName">Name on Card *</label>
+                    <input type="text" id="cardName" name="cardName">
+                </div>
+            </div>
+
+            <div id="bankDetails" style="display: none;">
+                <div class="form-group">
+                    <label for="bankName">Bank Name *</label>
+                    <input type="text" id="bankName" name="bankName">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="accountNumber">Account Number *</label>
+                        <input type="text" id="accountNumber" name="accountNumber">
+                    </div>
+                    <div class="form-group">
+                        <label for="routingNumber">Routing Number *</label>
+                        <input type="text" id="routingNumber" name="routingNumber">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="accountType">Account Type *</label>
+                    <select id="accountType" name="accountType">
+                        <option value="">Select Type</option>
+                        <option value="checking">Checking</option>
+                        <option value="savings">Savings</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="savePayment" name="savePayment">
+                <label for="savePayment">Save payment method for future purchases</label>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                <button class="btn" onclick="nextStep()">Next: Verification →</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Verification & Terms -->
+        <div class="step" id="step5">
+            <h2>✅ Verification & Terms</h2>
+
+            <div class="form-group">
+                <label for="emergencyContact">Emergency Contact Name *</label>
+                <input type="text" id="emergencyContact" name="emergencyContact" required>
+            </div>
+
+            <div class="form-group">
+                <label for="emergencyPhone">Emergency Contact Phone *</label>
+                <input type="tel" id="emergencyPhone" name="emergencyPhone" required>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="ageVerification" name="ageVerification" required>
+                <label for="ageVerification">I confirm that I am at least 18 years old *</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="termsAgreement" name="termsAgreement" required>
+                <label for="termsAgreement">I agree to the <a href="/pacmac_terms_service.html" target="_blank">Terms of Service</a> and <a href="/pacmac_privacy_policy.html" target="_blank">Privacy Policy</a> *</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="marketingOptIn" name="marketingOptIn">
+                <label for="marketingOptIn">I would like to receive marketing emails and updates</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="identityVerification" name="identityVerification" required>
+                <label for="identityVerification">I consent to identity verification for security purposes *</label>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                <button class="btn" onclick="completeSetup()">Complete Setup 🎉</button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Setting up your account...</p>
+        </div>
+    </div>
+
+    <!-- Microsoft Clarity Analytics -->
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "tcp65xexve");
+    </script>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+        let userData = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            updateProgress();
+        });
+
+        function loadUserData() {
+            // Get user data from URL parameters or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const userParam = urlParams.get('user');
+            
+            if (userParam) {
+                try {
+                    userData = JSON.parse(decodeURIComponent(userParam));
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+
+            // Display user info
+            if (userData.name) {
+                document.getElementById('userName').textContent = userData.name;
+                document.getElementById('userEmail').textContent = userData.email;
+                
+                // Pre-fill name fields
+                const nameParts = userData.name.split(' ');
+                document.getElementById('firstName').value = nameParts[0] || '';
+                document.getElementById('lastName').value = nameParts.slice(1).join(' ') || '';
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function nextStep() {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    document.getElementById('step' + currentStep).classList.remove('active');
+                    currentStep++;
+                    document.getElementById('step' + currentStep).classList.add('active');
+                    updateProgress();
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                currentStep--;
+                document.getElementById('step' + currentStep).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.getElementById('step' + currentStep);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.style.borderColor = '#ef4444';
+                    isValid = false;
+                } else {
+                    field.style.borderColor = '#e5e7eb';
+                }
+            });
+
+            // Additional validation for specific steps
+            if (currentStep === 1) {
+                const phone = document.getElementById('phone').value;
+                if (phone && !/^\(\d{3}\) \d{3}-\d{4}$/.test(phone)) {
+                    document.getElementById('phone').style.borderColor = '#ef4444';
+                    isValid = false;
+                }
+            }
+
+            if (currentStep === 2) {
+                const zipCode = document.getElementById('zipCode').value;
+                if (zipCode && !/^\d{5}(-\d{4})?$/.test(zipCode)) {
+                    document.getElementById('zipCode').style.borderColor = '#ef4444';
+                    isValid = false;
+                }
+            }
+
+            if (currentStep === 3) {
+                const shippingMethod = document.querySelector('input[name="shippingMethod"]:checked');
+                if (!shippingMethod) {
+                    isValid = false;
+                }
+            }
+
+            if (currentStep === 4) {
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+                if (!paymentMethod) {
+                    isValid = false;
+                }
+            }
+
+            if (currentStep === 5) {
+                const requiredCheckboxes = currentStepElement.querySelectorAll('input[type="checkbox"][required]');
+                requiredCheckboxes.forEach(checkbox => {
+                    if (!checkbox.checked) {
+                        isValid = false;
+                    }
+                });
+            }
+
+            return isValid;
+        }
+
+        function selectShipping(method) {
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.querySelector(`input[value="${method}"]`).checked = true;
+        }
+
+        function selectPayment(method) {
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.querySelector(`input[value="${method}"]`).checked = true;
+
+            // Show/hide payment details
+            document.getElementById('cardDetails').style.display = method === 'card' ? 'block' : 'none';
+            document.getElementById('bankDetails').style.display = method === 'bank' ? 'block' : 'none';
+        }
+
+        function completeSetup() {
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            // Show loading
+            document.querySelector('.step.active').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Collect all form data
+            const formData = {
+                // Personal Info
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value,
+                dateOfBirth: document.getElementById('dateOfBirth').value,
+                
+                // Address
+                streetAddress: document.getElementById('streetAddress').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zipCode: document.getElementById('zipCode').value,
+                country: document.getElementById('country').value,
+                
+                // Shipping
+                shippingMethod: document.querySelector('input[name="shippingMethod"]:checked')?.value,
+                shippingInstructions: document.getElementById('shippingInstructions').value,
+                sameAsBilling: document.getElementById('sameAsBilling').checked,
+                
+                // Payment
+                paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value,
+                savePayment: document.getElementById('savePayment').checked,
+                
+                // Emergency Contact
+                emergencyContact: document.getElementById('emergencyContact').value,
+                emergencyPhone: document.getElementById('emergencyPhone').value,
+                
+                // Agreements
+                ageVerification: document.getElementById('ageVerification').checked,
+                termsAgreement: document.getElementById('termsAgreement').checked,
+                marketingOptIn: document.getElementById('marketingOptIn').checked,
+                identityVerification: document.getElementById('identityVerification').checked,
+                
+                // OAuth Data
+                ...userData
+            };
+
+            // Add payment details based on method
+            if (formData.paymentMethod === 'card') {
+                formData.cardNumber = document.getElementById('cardNumber').value;
+                formData.expiryDate = document.getElementById('expiryDate').value;
+                formData.cvv = document.getElementById('cvv').value;
+                formData.cardName = document.getElementById('cardName').value;
+            } else if (formData.paymentMethod === 'bank') {
+                formData.bankName = document.getElementById('bankName').value;
+                formData.accountNumber = document.getElementById('accountNumber').value;
+                formData.routingNumber = document.getElementById('routingNumber').value;
+                formData.accountType = document.getElementById('accountType').value;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('userProfile', JSON.stringify(formData));
+            localStorage.setItem('authUser', JSON.stringify({
+                id: userData.id || 'user-' + Date.now(),
+                name: formData.firstName + ' ' + formData.lastName,
+                email: userData.email,
+                avatar: userData.avatar,
+                isAdmin: userData.email?.endsWith('@pacmacmobile.com') || false,
+                profileComplete: true
+            }));
+
+            // Track completion
+            if (typeof clarity !== 'undefined') {
+                clarity('event', 'user_profile_completed');
+            }
+
+            // Redirect to marketplace
+            setTimeout(() => {
+                window.location.href = '/marketplace.html?welcome=true';
+            }, 2000);
+        }
+
+        // Phone number formatting
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+            } else if (value.length >= 3) {
+                value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+            }
+            e.target.value = value;
+        });
+
+        // Card number formatting
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = value;
+        });
+
+        // Expiry date formatting
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0,2) + '/' + value.slice(2,4);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

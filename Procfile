@@ -1,1 +1,1 @@
-web: node server-ultra-simple.js
+web: node server.js

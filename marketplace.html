@@ -1555,18 +1555,34 @@
     // Check authentication status
     async function checkAuthStatus() {
       try {
-        // Check for OAuth user first
-        const oauthUser = localStorage.getItem('oauthUser');
-        if (oauthUser) {
-          const user = JSON.parse(oauthUser);
+        // Check for authenticated user
+        const authUser = localStorage.getItem('authUser');
+        if (authUser) {
+          const user = JSON.parse(authUser);
+          
+          // Check if user has completed profile setup
+          const userProfile = localStorage.getItem('userProfile');
+          if (!userProfile && !user.profileComplete) {
+            // User needs to complete profile setup
+            console.log('👤 User needs to complete profile setup');
+            showNotification('Please complete your profile setup to continue.', 'info');
+            
+            // Redirect to profile setup after a short delay
+            setTimeout(() => {
+              const userParam = encodeURIComponent(JSON.stringify(user));
+              window.location.href = `/user-setup.html?user=${userParam}`;
+            }, 2000);
+            return;
+          }
+          
           updateUserInfo(user);
           return;
         }
         
-        // Check for authenticated user
-        const authUser = localStorage.getItem('authUser') || localStorage.getItem('oauthUser');
-        if (authUser) {
-          const user = JSON.parse(authUser);
+        // Check for OAuth user (legacy)
+        const oauthUser = localStorage.getItem('oauthUser');
+        if (oauthUser) {
+          const user = JSON.parse(oauthUser);
           updateUserInfo(user);
           return;
         }
@@ -3091,6 +3107,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const paymentStatus = urlParams.get('payment');
       const paymentMethod = urlParams.get('method');
+      const welcome = urlParams.get('welcome');
       
       if (paymentStatus === 'success') {
         // Clear cart
@@ -3116,6 +3133,16 @@
         window.history.replaceState({}, document.title, window.location.pathname);
       } else if (paymentStatus === 'cancelled') {
         showNotification('Payment was cancelled. You can try again anytime.', 'info');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (welcome === 'true') {
+        // Welcome new user who completed profile setup
+        const authUser = localStorage.getItem('authUser');
+        if (authUser) {
+          const user = JSON.parse(authUser);
+          showNotification(`🎉 Welcome to PacMac Marketplace, ${user.name}! Your profile is now complete.`, 'success');
+        }
+        
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }

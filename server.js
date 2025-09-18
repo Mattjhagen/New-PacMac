@@ -403,12 +403,28 @@ app.get('/auth/google', passport.authenticate('google', {
 }));
 
 app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/marketplace?error=auth_failed' }),
+  passport.authenticate('google', { failureRedirect: '/auth-callback.html?error=auth_failed' }),
   (req, res) => {
-    // Successful authentication, redirect to marketplace
+    // Successful authentication, redirect to auth callback page with user data
     console.log('✅ Google OAuth callback successful, user:', req.user?.email);
     console.log('✅ Session ID:', req.sessionID);
-    res.redirect('/home.html?auth=success&provider=google');
+    
+    // Create user data object
+    const userData = {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      avatar: req.user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.user.name)}&background=3b82f6&color=fff`,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      isAdmin: req.user.email?.endsWith('@pacmacmobile.com') || false
+    };
+    
+    // Encode user data for URL
+    const userParam = encodeURIComponent(JSON.stringify(userData));
+    
+    // Redirect to auth callback page with user data
+    res.redirect(`/auth-callback.html?success=true&user=${userParam}`);
   }
 );
 
