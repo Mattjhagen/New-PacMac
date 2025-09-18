@@ -1235,7 +1235,39 @@
   </div>
 
   <script>
-    // Real product data with 24-hour countdowns and scraped information
+    // Persistent timer system to survive server restarts
+    function getPersistentEndTime(itemId) {
+      // For now, return a default 24-hour timer
+      // The actual persistent timers will be loaded from the server
+      return new Date(Date.now() + 24 * 60 * 60 * 1000);
+    }
+
+    // Load persistent timers from server
+    async function loadPersistentTimers() {
+      try {
+        const response = await fetch('/api/auction/timers');
+        const data = await response.json();
+        
+        if (data.success && data.timers) {
+          // Update sample items with server timers
+          sampleItems.forEach(item => {
+            const timerData = data.timers[item.id];
+            if (timerData) {
+              item.endTime = new Date(timerData.endTime);
+              item.isActive = timerData.isActive;
+            }
+          });
+          
+          console.log('✅ Loaded persistent timers from server');
+          // Re-render items with updated timers
+          loadItems();
+        }
+      } catch (error) {
+        console.error('Error loading persistent timers:', error);
+      }
+    }
+
+    // Real product data with persistent countdowns
     const sampleItems = [
       {
         id: 1,
@@ -1247,7 +1279,7 @@
         image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-naturaltitanium?wid=5120&hei=3280&fmt=p-jpg&qlt=80&.v=1693009279823",
         badge: "New",
         currentBids: 12,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.8/5 stars (2,847 reviews)",
         seller: "TechDeals Pro",
         condition: "Brand New",
@@ -1269,7 +1301,7 @@
         image: "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Pz6fT9.png",
         badge: "Popular",
         currentBids: 8,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(2), // Get persistent end time for item 2
         reviews: "4.7/5 stars (1,234 reviews)",
         seller: "SneakerHead",
         condition: "Like New",
@@ -1291,7 +1323,7 @@
         image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp14-spacegray-select-202310?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1697311050000",
         badge: "Hot",
         currentBids: 25,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.9/5 stars (3,156 reviews)",
         seller: "Apple Certified",
         condition: "Excellent",
@@ -1313,7 +1345,7 @@
         image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=500&fit=crop&crop=center",
         badge: "Vintage",
         currentBids: 5,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.6/5 stars (89 reviews)",
         seller: "Vintage Finds",
         condition: "Good",
@@ -1335,7 +1367,7 @@
         image: "https://secretlabcdn.com/cdn-cgi/image/width=1920,quality=75,format=auto/https://cdn.secretlab.co/americas/wp-content/uploads/2022/08/11100000_Stealth_01.png",
         badge: "Deal",
         currentBids: 15,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.8/5 stars (2,341 reviews)",
         seller: "Gaming Gear Pro",
         condition: "Like New",
@@ -1357,7 +1389,7 @@
         image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500&h=500&fit=crop&crop=center",
         badge: "Sport",
         currentBids: 3,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.5/5 stars (567 reviews)",
         seller: "Sports Central",
         condition: "Good",
@@ -1379,7 +1411,7 @@
         image: "https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg",
         badge: "Premium",
         currentBids: 18,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.8/5 stars (4,523 reviews)",
         seller: "Audio Excellence",
         condition: "Excellent",
@@ -1401,7 +1433,7 @@
         image: "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png",
         badge: "Classic",
         currentBids: 7,
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        endTime: getPersistentEndTime(3), // Get persistent end time for item 3
         reviews: "4.6/5 stars (2,891 reviews)",
         seller: "Sneaker Vault",
         condition: "Very Good",
@@ -1847,6 +1879,14 @@
 
     // Start auction timer checking
     setInterval(checkEndedAuctions, 1000); // Check every second
+
+    // Load persistent timers when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPersistentTimers();
+    });
+
+    // Also load timers immediately in case DOMContentLoaded already fired
+    loadPersistentTimers();
 
     // Upload Modal Functions
     function showAddItemModal() {

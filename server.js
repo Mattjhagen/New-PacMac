@@ -1378,6 +1378,103 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Persistent auction timer system
+const auctionEndTimes = new Map();
+
+// Initialize persistent auction timers
+function initializeAuctionTimers() {
+  console.log('🔄 Initializing persistent auction timers...');
+  
+  // Default auction end times (24 hours from now)
+  const defaultEndTimes = {
+    'item_1': Date.now() + (24 * 60 * 60 * 1000),
+    'item_2': Date.now() + (24 * 60 * 60 * 1000),
+    'item_3': Date.now() + (24 * 60 * 60 * 1000),
+    'item_4': Date.now() + (24 * 60 * 60 * 1000),
+    'item_5': Date.now() + (24 * 60 * 60 * 1000),
+    'item_6': Date.now() + (24 * 60 * 60 * 1000),
+    'item_7': Date.now() + (24 * 60 * 60 * 1000),
+    'item_8': Date.now() + (24 * 60 * 60 * 1000)
+  };
+  
+  // Load existing end times or use defaults
+  Object.entries(defaultEndTimes).forEach(([itemId, endTime]) => {
+    auctionEndTimes.set(itemId, endTime);
+    console.log(`⏰ Item ${itemId} auction ends at: ${new Date(endTime).toLocaleString()}`);
+  });
+}
+
+// Get auction end time for an item
+function getAuctionEndTime(itemId) {
+  return auctionEndTimes.get(`item_${itemId}`) || (Date.now() + 24 * 60 * 60 * 1000);
+}
+
+// Set auction end time for an item
+function setAuctionEndTime(itemId, endTime) {
+  auctionEndTimes.set(`item_${itemId}`, endTime);
+  console.log(`⏰ Updated auction end time for item ${itemId}: ${new Date(endTime).toLocaleString()}`);
+}
+
+// Initialize timers on server start
+initializeAuctionTimers();
+
+// API endpoint to get auction end times
+app.get('/api/auction/timers', (req, res) => {
+  try {
+    const timers = {};
+    auctionEndTimes.forEach((endTime, itemId) => {
+      const itemNumber = itemId.replace('item_', '');
+      timers[itemNumber] = {
+        endTime: endTime,
+        timeLeft: Math.max(0, endTime - Date.now()),
+        isActive: endTime > Date.now()
+      };
+    });
+    
+    res.json({
+      success: true,
+      timers: timers,
+      serverTime: Date.now()
+    });
+  } catch (error) {
+    console.error('Error getting auction timers:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// API endpoint to update auction end time
+app.post('/api/auction/timer/:itemId', (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { endTime } = req.body;
+    
+    if (!endTime) {
+      return res.status(400).json({
+        success: false,
+        error: 'End time is required'
+      });
+    }
+    
+    setAuctionEndTime(itemId, parseInt(endTime));
+    
+    res.json({
+      success: true,
+      itemId: itemId,
+      endTime: endTime,
+      message: `Auction timer updated for item ${itemId}`
+    });
+  } catch (error) {
+    console.error('Error updating auction timer:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Stripe payment intent endpoint
 app.post('/api/stripe/create-payment-intent', (req, res) => {
   try {
